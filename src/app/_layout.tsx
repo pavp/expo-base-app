@@ -6,8 +6,9 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-import '@/styles/unistyles';
 import 'react-native-reanimated';
+import '@/localization/i18n';
+import '@/styles/unistyles';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

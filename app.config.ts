@@ -11,6 +11,7 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: 'com.app.rnapp',
   },
+  plugins: ['expo-localization'],
 };
 
 export default config;

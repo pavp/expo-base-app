@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Image, Platform } from 'react-native';
 import { createStyleSheet, useStyles } from 'react-native-unistyles';
 
@@ -8,6 +9,7 @@ import { ThemedView } from '@/components/ThemedView';
 
 export default function HomeScreen() {
   const { styles } = useStyles(stylesheet);
+  const { t } = useTranslation();
 
   return (
     <ParallaxScrollView
@@ -15,7 +17,7 @@ export default function HomeScreen() {
       headerImage={<Image source={require('@/assets/images/partial-react-logo.png')} style={styles.reactLogo} />}
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">{t('welcome')}</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>

@@ -15,6 +15,8 @@ PODS:
     - ExpoModulesCore
   - ExpoKeepAwake (13.0.2):
     - ExpoModulesCore
+  - ExpoLocalization (15.0.3):
+    - ExpoModulesCore
   - ExpoModulesCore (1.12.15):
     - DoubleConversion
     - glog
@@ -1327,6 +1329,7 @@ DEPENDENCIES:
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoHead (from `../node_modules/expo-router/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - ExpoLocalization (from `../node_modules/expo-localization/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
@@ -1414,6 +1417,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
+  ExpoLocalization:
+    :path: "../node_modules/expo-localization/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   ExpoSystemUI:
@@ -1548,6 +1553,7 @@ SPEC CHECKSUMS:
   ExpoFont: 43b69559cef3d773db57c7ae7edd3cb0aa0dc610
   ExpoHead: 430fba41a1d7a4f7bd440291ae992bd8e0f8d5e2
   ExpoKeepAwake: 3b8815d9dd1d419ee474df004021c69fdd316d08
+  ExpoLocalization: f04eeec2e35bed01ab61c72ee1768ec04d093d01
   ExpoModulesCore: 54c85b57000a2a82e5212d5e42cd7a36524be4ac
   ExpoSystemUI: 65007dd0537cb38649ee55b4670a6ed222769b3a
   ExpoWebBrowser: 7595ccac6938eb65b076385fd23d035db9ecdc8e
