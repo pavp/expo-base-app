@@ -6,10 +6,13 @@ import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useGetPosts } from '@/hooks';
 
 export default function HomeScreen() {
   const { styles } = useStyles(stylesheet);
   const { t } = useTranslation();
+
+  const { data } = useGetPosts();
 
   return (
     <ParallaxScrollView
@@ -41,6 +44,7 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
+      <ThemedText>{JSON.stringify(data)}</ThemedText>
     </ParallaxScrollView>
   );
 }
