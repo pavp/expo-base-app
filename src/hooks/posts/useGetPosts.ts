@@ -1,8 +1,8 @@
 import { createQuery } from 'react-query-kit';
 import type { AxiosError } from 'axios';
 
+import { PostAPI } from '@/api/services';
 import { Post } from '@/interfaces';
-import { PostAPI } from '@/services';
 
 export const useGetPosts = createQuery<Post[], void, AxiosError>({
   queryKey: ['posts'],

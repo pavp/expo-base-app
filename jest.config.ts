@@ -9,6 +9,7 @@ const config: Config = {
   collectCoverage: true,
   collectCoverageFrom: [
     'src/components/**/*.{ts,tsx}',
+    'src/modules/**/*.{ts,tsx}',
     'src/lib/**/*.{ts,tsx}',
     'src/helpers/**/*.{ts,tsx}',
     'src/views/**/*.{ts,tsx}',
@@ -22,9 +23,15 @@ const config: Config = {
       statements: 85,
     },
   },
+  moduleNameMapper: {
+    // Handle module aliases
+    '^@/test/(.*)$': '<rootDir>/test/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
   setupFilesAfterEnv: ['./test/jest.setup.ts'],
   testPathIgnorePatterns: ['./node_modules/', './.expo/', '/test/', '/public/'],
   transformIgnorePatterns: [
+    // eslint-disable-next-line max-len
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
   ],
 };

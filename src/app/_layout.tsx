@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 import 'react-native-reanimated';
 import '@/localization/i18n';
@@ -17,7 +15,6 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -34,12 +31,12 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <SafeAreaProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
-      </ThemeProvider>
+      </SafeAreaProvider>
     </QueryClientProvider>
   );
 }

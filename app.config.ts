@@ -11,6 +11,11 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: 'com.app.rnapp',
   },
+  extra: {
+    eas: {
+      projectId: '206b6326-1f7e-4025-954e-5de8a8a19cfd',
+    },
+  },
   plugins: ['expo-localization'],
 };
 

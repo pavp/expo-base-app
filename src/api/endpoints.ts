@@ -5,4 +5,6 @@ export const API_ENDPOINT = {
   REFRESH_TOKEN: 'auth/refresh',
   USERS: 'users',
   GET_POSTS: 'posts',
+  GET_POST: 'posts/',
+  GET_USER: 'users/',
 };
