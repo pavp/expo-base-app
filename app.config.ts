@@ -16,7 +16,7 @@ const config: ExpoConfig = {
       projectId: '206b6326-1f7e-4025-954e-5de8a8a19cfd',
     },
   },
-  plugins: ['expo-localization'],
+  plugins: ['expo-localization', 'expo-font', 'expo-router'],
 };
 
 export default config;
