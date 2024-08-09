@@ -31,5 +31,5 @@ const renderHookWithProviders = <Result, Props>(
 const renderWithProviders = (ui: React.ReactElement, { ...renderOptions }: Omit<RenderOptions, 'queries'> = {}) => {
   return { ...render(ui, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions }) };
 };
-
+export * from '@testing-library/react-native';
 export { renderHookWithProviders, renderWithProviders };

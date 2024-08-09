@@ -19,6 +19,17 @@
     "import/no-duplicates": "error",
     "@typescript-eslint/no-unused-vars": 2,
     "max-params": ["error", 3],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@testing-library/react-native"],
+            "message": "Please import from `@/test/test-utils` instead."
+          }
+        ]
+      }
+    ],
     "check-file/folder-naming-convention": [
       "error",
       {
@@ -72,6 +83,12 @@
       "rules": {
         "check-file/folder-naming-convention": "off",
         "check-file/filename-naming-convention": "off"
+      }
+    },
+    {
+      "files": ["test/**/*"],
+      "rules": {
+        "no-restricted-imports": "off"
       }
     }
   ],

@@ -1,7 +1,6 @@
 import React from 'react';
-import { screen } from '@testing-library/react-native';
 
-import { renderWithProviders } from '@/test/test-utils';
+import { renderWithProviders, screen } from '@/test/test-utils';
 
 import { HomeView } from './home-view';
 

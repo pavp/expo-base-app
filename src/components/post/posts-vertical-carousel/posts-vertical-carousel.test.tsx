@@ -1,10 +1,9 @@
 import React from 'react';
-import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { Post } from '@/api/services/post';
 import { mockPost } from '@/test/entities';
-import { renderWithProviders } from '@/test/test-utils';
+import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
 
 import { PostsVerticalCarousel } from './posts-vertical-carousel';
 
