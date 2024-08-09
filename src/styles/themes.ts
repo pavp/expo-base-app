@@ -5,6 +5,7 @@ export const commonTheme = {
     lg: 8,
     xl: 12,
     xxl: 16,
+    xxxl: 32,
   },
   radius: {
     sm: 2,
@@ -22,6 +23,7 @@ export const commonTheme = {
     lg: 8,
     xl: 12,
     xxl: 16,
+    xxxl: 32,
   },
   fontSize: {
     sm: 8,

@@ -1,7 +1,7 @@
 import { api, API_ENDPOINT } from '@/api';
-import { Post } from '@/interfaces';
+import { User } from '@/interfaces';
 
-export const getUser = api<string, Post>({
+export const getUser = api<string, User>({
   method: 'GET',
   path: API_ENDPOINT.GET_USER,
   type: 'public',

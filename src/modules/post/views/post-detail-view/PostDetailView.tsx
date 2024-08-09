@@ -1,18 +1,34 @@
-import { Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useStyles } from 'react-native-unistyles';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useGetPost, useGetUser } from '@/hooks';
+import { useDetailView } from './hooks';
+import { stylesheet } from './styles';
 
 export const PostDetailView = () => {
   const { id, userId } = useLocalSearchParams<{ id: string; userId: string }>();
-  const { data: post } = useGetPost({ variables: id.toString() });
-  const { data: user } = useGetUser({ variables: userId.toString() });
+  const { styles } = useStyles(stylesheet);
+  const { post, user, isLoading } = useDetailView({ id, userId });
+
+  const { title, body } = post;
+  const { name, username } = user;
 
   return (
-    <View>
-      <Text>{id}</Text>
-      <Text>{JSON.stringify({ post })}</Text>
-      <Text>{JSON.stringify({ user })}</Text>
-    </View>
+    <SafeAreaView edges={['bottom']} testID="detail-container" style={styles.container}>
+      {isLoading ? (
+        <ActivityIndicator />
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.userContainer}>
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.username}>{`@${username}`}</Text>
+          </View>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.body}>{body}</Text>
+          <View style={styles.separator} />
+        </ScrollView>
+      )}
+    </SafeAreaView>
   );
 };

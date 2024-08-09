@@ -1,28 +1,37 @@
 import { createStyleSheet } from 'react-native-unistyles';
 
 export const stylesheet = createStyleSheet((theme) => ({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: theme.colors.background,
-    color: theme.colors.background,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-
   container: {
     backgroundColor: theme.colors.darkGray,
     flex: 1,
+    paddingHorizontal: theme.padding.xxl,
+    paddingTop: theme.padding.xxl,
+  },
+  userContainer: {
+    height: 'auto',
+  },
+  name: {
+    color: theme.colors.white,
+    fontWeight: 'bold',
+  },
+  username: {
+    color: theme.colors.white,
+  },
+  title: {
+    color: theme.colors.white,
+    fontWeight: 'bold',
+    fontSize: theme.fontSize.md,
+    marginTop: theme.margins.xxl,
+  },
+  body: {
+    color: theme.colors.lightGray,
+    marginTop: theme.margins.xxl,
+  },
+  separator: {
+    height: 0.5,
     width: '100%',
+    backgroundColor: theme.colors.blue,
+    marginTop: theme.margins.xxxl,
+    alignSelf: 'center',
   },
 }));

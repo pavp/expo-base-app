@@ -12,7 +12,7 @@ export const HomeView = () => {
   const { data, isLoading } = useGetPosts();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']} testID="home-container">
+    <SafeAreaView style={styles.container} edges={['left', 'right']} testID="home-container">
       <PostsVerticalCarousel data={data} isLoading={isLoading} />
     </SafeAreaView>
   );

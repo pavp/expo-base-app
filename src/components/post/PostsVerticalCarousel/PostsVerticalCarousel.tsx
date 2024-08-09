@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
 import { Post } from '@/interfaces';
@@ -33,13 +34,13 @@ export const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarouse
       {isLoading ? (
         <ActivityIndicator testID={'indicator'} />
       ) : (
-        <FlatList
+        <FlashList
           data={data}
           renderItem={renderItem}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           testID={'data-list'}
-          style={{ width: '100%' }}
+          estimatedItemSize={100}
         />
       )}
     </View>

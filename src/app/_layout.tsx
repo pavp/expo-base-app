@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useStyles } from 'react-native-unistyles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -15,6 +16,7 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  const { theme } = useStyles();
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -31,10 +33,30 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
+      <SafeAreaProvider style={{ backgroundColor: theme.colors.darkGray }}>
+        <Stack
+          screenOptions={{
+            headerBackTitleVisible: false,
+            headerTitleStyle: {
+              color: theme.colors.blue,
+            },
+            headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: theme.colors.darkGray,
+            },
+            headerTintColor: theme.colors.blue,
+            contentStyle: {
+              backgroundColor: theme.colors.darkGray,
+            },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ title: 'PLACEHOLDERS' }} />
+          <Stack.Screen
+            name="post/[id]"
+            options={{
+              title: 'POST',
+            }}
+          />
         </Stack>
       </SafeAreaProvider>
     </QueryClientProvider>
