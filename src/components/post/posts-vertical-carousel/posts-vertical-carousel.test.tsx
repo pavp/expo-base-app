@@ -6,7 +6,7 @@ import { Post } from '@/interfaces';
 import { mockPost } from '@/test/entities';
 import { renderWithProviders } from '@/test/test-utils';
 
-import { PostsVerticalCarousel } from './PostsVerticalCarousel';
+import { PostsVerticalCarousel } from './posts-vertical-carousel';
 
 describe('PostsVerticalCarousel', () => {
   const data: Post[] = [mockPost];

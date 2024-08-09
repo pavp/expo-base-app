@@ -1,1 +1,1 @@
-export { PostDetailView } from './views/post-detail-view/PostDetailView';
+export { PostDetailView } from './views/post-detail-view/post-detail-view';

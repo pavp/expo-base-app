@@ -1,7 +1,7 @@
 import { createQuery } from 'react-query-kit';
 import type { AxiosError } from 'axios';
 
-import { UserAPI } from '@/api/services';
+import { UserAPI } from '@/api/services/user';
 import { User } from '@/interfaces';
 
 export const useGetUser = createQuery<User, string, AxiosError>({

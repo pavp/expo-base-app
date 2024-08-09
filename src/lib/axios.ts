@@ -1,6 +1,5 @@
 import axios, { AxiosError, CreateAxiosDefaults, InternalAxiosRequestConfig } from 'axios';
 
-import { UserAPI } from '@/api/services';
 import { config } from '@/config';
 import { useUserStore } from '@/store/user-store';
 
@@ -42,12 +41,9 @@ instance.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const response = await UserAPI.getRefreshToken();
-
-        const { payload } = response;
-
+        // TODO: call refresh token service (getRefreshToken)
+        const payload = { accessToken: 'new' };
         useUserStore.setState({ user: { accessToken: payload.accessToken } });
-
         originalRequest.headers.Authorization = `Bearer ${payload.accessToken}`;
 
         return instance(originalRequest);

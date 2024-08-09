@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 
 import { Post } from '@/interfaces';
 
-import { PostItemCard } from '../PostItemCard/PostItemCard';
+import { PostItemCard } from '../post-item-card/post-item-card';
 
 import { stylesheet } from './styles';
 

@@ -1,4 +1,4 @@
-import en_US from './en_US';
+import en_US from './en-us';
 
 const en_ES: typeof en_US = {
   translation: { welcome: 'Hola' },

@@ -1,4 +1,5 @@
-import { api, API_ENDPOINT } from '@/api';
+import { api } from '@/api';
+import { API_ENDPOINT } from '@/api/endpoints';
 import { User } from '@/interfaces';
 
 export const getUser = api<string, User>({

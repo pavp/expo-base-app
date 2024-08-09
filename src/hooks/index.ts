@@ -1,3 +1,3 @@
-export { useGetPost } from './posts/useGetPost';
-export { useGetPosts } from './posts/useGetPosts';
-export { useGetUser } from './user/useGetUser';
+export { useGetPost } from './posts/use-get-post';
+export { useGetPosts } from './posts/use-get-posts';
+export { useGetUser } from './user/use-get-user';

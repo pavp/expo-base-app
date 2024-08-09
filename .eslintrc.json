@@ -1,19 +1,44 @@
 {
   "extends": ["expo"],
-  "plugins": ["simple-import-sort"],
+  "plugins": ["simple-import-sort", "check-file"],
   "rules": {
     "quotes": [2, "single", { "avoidEscape": true }],
-    "max-len": [2, { "code": 120, "ignoreUrls": true }],
+    "max-len": [
+      2,
+      {
+        "code": 120,
+        "ignoreUrls": true,
+        "ignorePattern": "^(import|export) \\{(.*?)\\}"
+      }
+    ],
     "padding-line-between-statements": ["error", { "blankLine": "always", "prev": "*", "next": "return" }],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
-    "@typescript-eslint/no-unused-vars": 2
+    "@typescript-eslint/no-unused-vars": 2,
+    "max-params": ["error", 3],
+    "check-file/folder-naming-convention": [
+      "error",
+      {
+        "src/**/!(__mocks__|app)/": "KEBAB_CASE",
+        "test/**/!(__mocks__)/": "KEBAB_CASE"
+      }
+    ],
+    "check-file/filename-naming-convention": [
+      "error",
+      {
+        "**/*.{js,ts,jsx,tsx}": "KEBAB_CASE",
+        "**/test/**": "KEBAB_CASE"
+      },
+      {
+        "ignoreMiddleExtensions": true,
+        "errorMessage": "The file \"{{ target }}\" does not match file naming convention defined(\"{{ pattern }}\") for this project, see rules-conventions.md for details"
+      }
+    ]
   },
   "overrides": [
-    // override "simple-import-sort" config
     {
       "files": ["*.js", "*.jsx", "*.ts", "*.tsx"],
       "rules": {
@@ -41,6 +66,13 @@
     {
       "files": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
       "extends": ["plugin:testing-library/react"]
+    },
+    {
+      "files": ["src/app/**/*"],
+      "rules": {
+        "check-file/folder-naming-convention": "off",
+        "check-file/filename-naming-convention": "off"
+      }
     }
   ],
   "settings": {
