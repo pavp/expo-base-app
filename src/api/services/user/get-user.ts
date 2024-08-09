@@ -1,6 +1,7 @@
 import { api } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
-import { User } from '@/interfaces';
+
+import { User } from './types';
 
 export const getUser = api<string, User>({
   method: 'GET',

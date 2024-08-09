@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
 
-import { Post } from '@/interfaces';
+import { Post } from '@/api/services/post';
 
 import { stylesheet } from './styles';
 

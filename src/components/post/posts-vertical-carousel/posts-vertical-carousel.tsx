@@ -4,7 +4,7 @@ import { useStyles } from 'react-native-unistyles';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
-import { Post } from '@/interfaces';
+import { Post } from '@/api/services/post';
 
 import { PostItemCard } from '../post-item-card/post-item-card';
 

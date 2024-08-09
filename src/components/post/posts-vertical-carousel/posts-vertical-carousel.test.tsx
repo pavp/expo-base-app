@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
-import { Post } from '@/interfaces';
+import { Post } from '@/api/services/post';
 import { mockPost } from '@/test/entities';
 import { renderWithProviders } from '@/test/test-utils';
 
