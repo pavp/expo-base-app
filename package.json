@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "build-android": "eas build -p android --profile preview"
+    "build-android": "eas build -p android --profile preview",
+    "clean-xcode-env-local": "rm ./ios/.xcode.env.local"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",
