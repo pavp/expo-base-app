@@ -48,6 +48,8 @@ export default function RootLayout() {
             contentStyle: {
               backgroundColor: theme.colors.darkGray,
             },
+            animation: 'fade',
+            statusBarTranslucent: true,
           }}
         >
           <Stack.Screen name="(tabs)" options={{ title: 'PLACEHOLDERS' }} />
