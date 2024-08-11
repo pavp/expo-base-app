@@ -6,12 +6,12 @@ import { Post } from '@/api/services/post';
 
 import { stylesheet } from './styles';
 
-interface PostItemCardProps {
+export interface PostItemCardProps {
   item: Post;
   handlePressItem: () => void;
 }
 
-const PostItemCard = ({ item, handlePressItem }: PostItemCardProps) => {
+const PostVerticalCarouselItem = ({ item, handlePressItem }: PostItemCardProps) => {
   const { title, body } = item;
   const { styles } = useStyles(stylesheet);
 
@@ -25,6 +25,6 @@ const PostItemCard = ({ item, handlePressItem }: PostItemCardProps) => {
   );
 };
 
-const MemoizedComponent = memo(PostItemCard) as typeof PostItemCard;
+const MemoizedComponent = memo(PostVerticalCarouselItem) as typeof PostVerticalCarouselItem;
 
-export { MemoizedComponent as PostItemCard };
+export { MemoizedComponent as PostVerticalCarouselItem };

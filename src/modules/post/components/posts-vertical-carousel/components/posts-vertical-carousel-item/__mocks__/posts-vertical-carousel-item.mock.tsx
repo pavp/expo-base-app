@@ -9,7 +9,7 @@ interface MockPostItemCardProps {
 }
 
 // Mock component to use within the test
-export const MockPostItemCard = ({ item, testID, handlePressItem }: MockPostItemCardProps) => {
+export const MockPostVerticalCarouselItem = ({ item, testID, handlePressItem }: MockPostItemCardProps) => {
   return (
     <View>
       <Text>{item.title}</Text>

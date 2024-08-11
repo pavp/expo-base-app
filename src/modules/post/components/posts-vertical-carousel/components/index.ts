@@ -1,0 +1,1 @@
+export { PostVerticalCarouselItem } from './posts-vertical-carousel-item/posts-vertical-carousel-item';

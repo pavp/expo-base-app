@@ -1,19 +1,17 @@
-import React from 'react';
 import { router } from 'expo-router';
 
 import { Post } from '@/api/services/post';
 import { mockPost } from '@/test/entities';
 import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
 
-import { MockPostItemCard } from '../post-item-card/__mocks__';
-
+import { MockPostVerticalCarouselItem } from './components/posts-vertical-carousel-item/__mocks__';
 import { PostsVerticalCarousel } from './posts-vertical-carousel';
 
 const postItemTestID = 'post-item-onpress';
 
-jest.mock('../post-item-card/post-item-card', () => ({
-  PostItemCard: ({ item, handlePressItem }) => (
-    <MockPostItemCard item={item} handlePressItem={handlePressItem} testID={postItemTestID} />
+jest.mock('./components/posts-vertical-carousel-item/posts-vertical-carousel-item', () => ({
+  PostVerticalCarouselItem: ({ item, handlePressItem }) => (
+    <MockPostVerticalCarouselItem item={item} handlePressItem={handlePressItem} testID={postItemTestID} />
   ),
 }));
 

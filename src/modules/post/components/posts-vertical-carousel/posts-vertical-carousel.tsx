@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, ReactNode, useCallback } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
 import { FlashList } from '@shopify/flash-list';
@@ -6,16 +6,16 @@ import { router } from 'expo-router';
 
 import { Post } from '@/api/services/post';
 
-import { PostItemCard } from '../post-item-card/post-item-card';
-
+import { PostItemCardProps } from './components/posts-vertical-carousel-item';
+import { PostVerticalCarouselItem } from './components';
 import { stylesheet } from './styles';
 
-interface IPostsVerticalCarousel {
+interface PostsVerticalCarouselProps {
   data: Post[] | undefined;
   isLoading: boolean;
 }
 
-const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarousel) => {
+const PostsVerticalCarousel = ({ data, isLoading }: PostsVerticalCarouselProps) => {
   const { styles } = useStyles(stylesheet);
 
   const handlePressItem = useCallback((id: number | string, userId: number | string) => {
@@ -24,7 +24,7 @@ const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarousel) => {
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <PostItemCard item={item} handlePressItem={() => handlePressItem(item.id, item.userId)} />
+      <PostVerticalCarouselItem item={item} handlePressItem={() => handlePressItem(item.id, item.userId)} />
     ),
     [handlePressItem],
   );
@@ -49,4 +49,14 @@ const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarousel) => {
 
 const MemoizedComponent = memo(PostsVerticalCarousel) as typeof PostsVerticalCarousel;
 
-export { MemoizedComponent as PostsVerticalCarousel };
+// example export compound component
+export interface PostsVerticalCarouselHOCProps {
+  ({ data, isLoading }: PostsVerticalCarouselProps): ReactNode;
+  Item: ({ item, handlePressItem }: PostItemCardProps) => ReactNode;
+}
+
+const PostsVerticalCarouselHOC: PostsVerticalCarouselHOCProps = Object.assign(MemoizedComponent, {
+  Item: PostVerticalCarouselItem,
+});
+
+export { PostsVerticalCarouselHOC as PostsVerticalCarousel };
