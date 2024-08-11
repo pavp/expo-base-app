@@ -2,7 +2,7 @@
 import axios, { AxiosError, CreateAxiosDefaults, InternalAxiosRequestConfig } from 'axios';
 
 import { config } from '@/config';
-import { useUserStore } from '@/store/user-store';
+import { useUserStore } from '@/store';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
