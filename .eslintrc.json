@@ -33,7 +33,7 @@
     "check-file/folder-naming-convention": [
       "error",
       {
-        "src/**/!(__mocks__|app)/": "KEBAB_CASE",
+        "src/**/!(__mocks__)/": "KEBAB_CASE",
         "test/**/!(__mocks__)/": "KEBAB_CASE"
       }
     ],
@@ -79,7 +79,7 @@
       "extends": ["plugin:testing-library/react"]
     },
     {
-      "files": ["src/app/**/*"],
+      "files": ["src/app/**/*", "test/**/*"],
       "rules": {
         "check-file/folder-naming-convention": "off",
         "check-file/filename-naming-convention": "off"
