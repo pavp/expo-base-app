@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
 import { FlashList } from '@shopify/flash-list';
@@ -15,7 +15,7 @@ interface IPostsVerticalCarousel {
   isLoading: boolean;
 }
 
-export const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarousel) => {
+const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarousel) => {
   const { styles } = useStyles(stylesheet);
 
   const handlePressItem = useCallback((id: number | string, userId: number | string) => {
@@ -46,3 +46,7 @@ export const PostsVerticalCarousel = ({ data, isLoading }: IPostsVerticalCarouse
     </View>
   );
 };
+
+const MemoizedComponent = memo(PostsVerticalCarousel) as typeof PostsVerticalCarousel;
+
+export { MemoizedComponent as PostsVerticalCarousel };

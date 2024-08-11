@@ -3,9 +3,9 @@ import type { AxiosError } from 'axios';
 
 import { Post, PostAPI } from '@/api/services/post';
 
-export const useGetPost = createQuery<Post, string, AxiosError>({
+export const useGetPostById = createQuery<Post, string, AxiosError>({
   queryKey: ['post'],
   fetcher: async (variables) => {
-    return PostAPI.getPost(variables).then((response) => response);
+    return PostAPI.getPostById(variables).then((response) => response);
   },
 });

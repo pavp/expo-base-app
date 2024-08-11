@@ -3,13 +3,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStyles } from 'react-native-unistyles';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useDetailView } from './hooks';
+import { useDetailPost } from '../../hooks';
+
 import { stylesheet } from './styles';
 
 export const PostDetailView = () => {
   const { id, userId } = useLocalSearchParams<{ id: string; userId: string }>();
   const { styles } = useStyles(stylesheet);
-  const { post, user, isLoading } = useDetailView({ id, userId });
+  const { post, user, isLoading } = useDetailPost({ id, userId });
 
   const { title, body } = post;
   const { name, username } = user;

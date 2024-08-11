@@ -5,6 +5,7 @@ import 'ts-node/register'; // Add this to import TypeScript files
 const config: ExpoConfig = {
   name: 'rn-app',
   slug: 'rn-app',
+  scheme: 'com.rn-app.yourapp',
   android: {
     package: 'com.app.rnapp',
   },

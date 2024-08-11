@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
 
@@ -5,12 +6,12 @@ import { Post } from '@/api/services/post';
 
 import { stylesheet } from './styles';
 
-interface IPostItemCard {
+interface PostItemCardProps {
   item: Post;
   handlePressItem: () => void;
 }
 
-export const PostItemCard = ({ item, handlePressItem }: IPostItemCard) => {
+const PostItemCard = ({ item, handlePressItem }: PostItemCardProps) => {
   const { title, body } = item;
   const { styles } = useStyles(stylesheet);
 
@@ -23,3 +24,7 @@ export const PostItemCard = ({ item, handlePressItem }: IPostItemCard) => {
     </View>
   );
 };
+
+const MemoizedComponent = memo(PostItemCard) as typeof PostItemCard;
+
+export { MemoizedComponent as PostItemCard };

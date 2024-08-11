@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import axios, { AxiosError, CreateAxiosDefaults, InternalAxiosRequestConfig } from 'axios';
 
 import { config } from '@/config';

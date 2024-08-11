@@ -2,8 +2,8 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStyles } from 'react-native-unistyles';
 
-import { PostsVerticalCarousel } from '@/components';
 import { useGetPosts } from '@/hooks';
+import { PostsVerticalCarousel } from '@/modules/post/components';
 
 import { stylesheet } from './styles';
 
