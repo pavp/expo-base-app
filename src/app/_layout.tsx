@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { ThemeButton } from '@/components';
+import { useChangeNavigationBarColor } from '@/hooks';
 
 import 'react-native-reanimated';
 import '@/localization/i18n';
@@ -19,7 +20,9 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  useChangeNavigationBarColor();
   const { theme } = useStyles();
+
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -30,9 +33,7 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
