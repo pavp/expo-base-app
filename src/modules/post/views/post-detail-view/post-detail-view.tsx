@@ -1,7 +1,9 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStyles } from 'react-native-unistyles';
 import { useLocalSearchParams } from 'expo-router';
+
+import { ActivityIndicator } from '@/ui';
 
 import { useDetailPost } from '../../hooks';
 
@@ -18,7 +20,9 @@ export const PostDetailView = () => {
   return (
     <SafeAreaView edges={['bottom']} testID="detail-container" style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator />
+        </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.userContainer}>

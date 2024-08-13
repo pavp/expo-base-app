@@ -1,4 +1,4 @@
-import { createStyleSheet } from 'react-native-unistyles';
+import { createStyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 export const stylesheet = createStyleSheet(() => ({
   container: {
@@ -6,5 +6,8 @@ export const stylesheet = createStyleSheet(() => ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingContainer: {
+    marginBottom: UnistylesRuntime.statusBar.height,
   },
 }));

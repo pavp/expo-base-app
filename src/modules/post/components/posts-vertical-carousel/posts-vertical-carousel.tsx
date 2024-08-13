@@ -1,13 +1,13 @@
 import { memo, ReactNode, useCallback } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
 import { Post } from '@/api/services/post';
+import { ActivityIndicator } from '@/ui';
 
-import { PostItemCardProps } from './components/posts-vertical-carousel-item';
-import { PostVerticalCarouselItem } from './components';
+import { type PostItemCardProps, PostVerticalCarouselItem } from './components';
 import { stylesheet } from './styles';
 
 interface PostsVerticalCarouselProps {
@@ -32,7 +32,9 @@ const PostsVerticalCarousel = ({ data, isLoading }: PostsVerticalCarouselProps) 
   return (
     <View style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator testID={'indicator'} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator testID={'indicator'} />
+        </View>
       ) : (
         <FlashList
           data={data}
