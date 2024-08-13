@@ -1,23 +1,46 @@
-import { ExpoConfig } from 'expo/config';
+import { ConfigContext, ExpoConfig } from 'expo/config';
 
 import 'ts-node/register'; // Add this to import TypeScript files
 
-const config: ExpoConfig = {
-  name: 'rn-app',
-  slug: 'rn-app',
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  name: 'expo-base-app',
+  slug: 'expo-base-app',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/images/icon.png',
   scheme: 'com.rn-app.yourapp',
-  android: {
-    package: 'com.app.rnapp',
+  userInterfaceStyle: 'automatic',
+  splash: {
+    image: './assets/images/splash.png',
+    resizeMode: 'contain',
+    backgroundColor: '#ffffff',
   },
   ios: {
+    supportsTablet: true,
     bundleIdentifier: 'com.app.rnapp',
   },
-  extra: {
-    eas: {
-      projectId: '206b6326-1f7e-4025-954e-5de8a8a19cfd',
+  android: {
+    package: 'com.app.rnapp',
+    adaptiveIcon: {
+      foregroundImage: './assets/images/adaptive-icon.png',
+      backgroundColor: '#ffffff',
     },
   },
+  web: {
+    bundler: 'metro',
+    output: 'static',
+    favicon: './assets/images/favicon.png',
+  },
   plugins: ['expo-localization', 'expo-font', 'expo-router'],
-};
-
-export default config;
+  experiments: {
+    typedRoutes: true,
+  },
+  extra: {
+    router: {
+      origin: false,
+    },
+    eas: {
+      projectId: 'ec97c2d6-9dcc-4855-a759-285f63a25425',
+    },
+  },
+});

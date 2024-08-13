@@ -1,14 +1,30 @@
 {
-  "extends": "@tsconfig/react-native/tsconfig.json", // replace for "expo/tsconfig.base" when auto imports has been fixed
+  "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
     "baseUrl": "./",
     "strict": false,
     "paths": {
-      "@/*": ["./src/*"],
-      "@/test/*": ["./test/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/test/*": [
+        "./test/*"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "src", "spec"],
-  "exclude": ["node_modules", "**/node_modules/*"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "src",
+    "spec",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*"
+  ]
 }
