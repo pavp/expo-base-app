@@ -2,18 +2,18 @@ import { createStyleSheet } from 'react-native-unistyles';
 
 export const stylesheet = createStyleSheet((theme) => ({
   container: {
-    borderColor: theme.colors.blue,
+    borderColor: theme.colors.secondary,
     borderRadius: theme.radius.lg,
     borderWidth: theme.borderWidth.sm,
     padding: theme.padding.xxl,
   },
   title: {
-    color: theme.colors.white,
+    color: theme.colors.highlight,
     fontWeight: 'bold',
     fontSize: theme.fontSize.md,
   },
   body: {
-    color: theme.colors.lightGray,
+    color: theme.colors.typography,
     marginTop: theme.margins.xxl,
   },
   actionContainer: {

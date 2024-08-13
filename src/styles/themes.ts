@@ -34,24 +34,26 @@ export const commonTheme = {
 
 export const lightTheme = {
   colors: {
-    typography: '#000000',
-    background: '#ffffff',
-    blue: 'lightblue',
+    primary: '#6F53DE',
+    typography: '#0c0b10',
+    background: '#f4f4f7',
+    secondary: '#c9c7cc',
+    highlight: '#000000',
     white: '#ffffff',
-    lightGray: 'lightgray',
-    darkGray: '#191b1e',
+    black: '#000000',
   },
   ...commonTheme,
 } as const;
 
 export const darkTheme = {
   colors: {
-    typography: '#ffffff',
-    background: '#000000',
-    blue: 'lightblue',
+    primary: '#6F53DE',
+    typography: '#e0e0e0',
+    background: '#0c0b10',
+    secondary: '#605f69',
+    highlight: '#ffffff',
     white: '#ffffff',
-    lightGray: 'lightgray',
-    darkGray: '#191b1e',
+    black: '#000000',
   },
   ...commonTheme,
 } as const;

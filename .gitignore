@@ -18,3 +18,6 @@ web-build/
 
 # jest
 /coverage
+
+/ios/
+/android/

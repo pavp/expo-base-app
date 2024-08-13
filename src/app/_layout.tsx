@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useStyles } from 'react-native-unistyles';
+import { UnistylesRuntime, useStyles } from 'react-native-unistyles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+
+import { ThemeButton } from '@/components';
 
 import 'react-native-reanimated';
 import '@/localization/i18n';
@@ -33,30 +36,31 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider style={{ backgroundColor: theme.colors.darkGray }}>
+      <StatusBar style={UnistylesRuntime.themeName === 'light' ? 'dark' : 'light'} />
+      <SafeAreaProvider style={{ backgroundColor: theme.colors.background }}>
         <Stack
           screenOptions={{
             headerBackTitleVisible: false,
             headerTitleStyle: {
-              color: theme.colors.blue,
+              color: theme.colors.primary,
             },
             headerTitleAlign: 'center',
             headerStyle: {
-              backgroundColor: theme.colors.darkGray,
+              backgroundColor: theme.colors.background,
             },
-            headerTintColor: theme.colors.blue,
+            headerTintColor: theme.colors.typography,
             contentStyle: {
-              backgroundColor: theme.colors.darkGray,
+              backgroundColor: theme.colors.background,
             },
             animation: 'fade',
             statusBarTranslucent: true,
           }}
         >
-          <Stack.Screen name="(tabs)" options={{ title: 'PLACEHOLDERS' }} />
+          <Stack.Screen name="(tabs)" options={{ title: 'Placeholders', headerRight: () => <ThemeButton /> }} />
           <Stack.Screen
             name="post/[id]"
             options={{
-              title: 'POST',
+              title: 'Post',
             }}
           />
         </Stack>
