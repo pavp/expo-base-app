@@ -26,6 +26,11 @@
           {
             "group": ["@testing-library/react-native"],
             "message": "Please import from `@/test/test-utils` instead."
+          },
+          {
+            "group": ["react-native"],
+            "importNames": ["ActivityIndicator"],
+            "message": "Please import from `@/ui` instead."
           }
         ]
       }
