@@ -1,8 +1,8 @@
 import React from 'react';
-import { ActivityIndicator } from 'react-native';
 
 import { mockPost, mockUser } from '@/test/entities';
 import { render, screen, waitFor } from '@/test/test-utils';
+import { ActivityIndicator } from '@/ui';
 
 import * as hooks from '../../hooks';
 

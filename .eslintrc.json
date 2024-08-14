@@ -91,7 +91,7 @@
       }
     },
     {
-      "files": ["test/**/*"],
+      "files": ["test/**/*", "src/ui/**/*"],
       "rules": {
         "no-restricted-imports": "off"
       }

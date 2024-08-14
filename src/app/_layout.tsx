@@ -7,7 +7,6 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
-import { ThemeButton } from '@/components';
 import { useChangeNavigationBarColor } from '@/hooks';
 
 import 'react-native-reanimated';
@@ -53,15 +52,27 @@ export default function RootLayout() {
             contentStyle: {
               backgroundColor: theme.colors.background,
             },
+            headerShadowVisible: false,
             animation: 'fade',
             statusBarTranslucent: true,
           }}
         >
-          <Stack.Screen name="(tabs)" options={{ title: 'Placeholders', headerRight: () => <ThemeButton /> }} />
+          <Stack.Screen
+            name="(drawer)"
+            options={{
+              headerShown: false,
+            }}
+          />
           <Stack.Screen
             name="post/[id]"
             options={{
               title: 'Post',
+            }}
+          />
+          <Stack.Screen
+            name="settings/index"
+            options={{
+              title: 'Settings',
             }}
           />
         </Stack>
