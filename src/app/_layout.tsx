@@ -7,7 +7,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
-import { useChangeNavigationBarColor } from '@/hooks';
+import { useChangeNavigationBarColor, useInitTheme } from '@/hooks';
 
 import 'react-native-reanimated';
 import '@/localization/i18n';
@@ -20,6 +20,7 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   useChangeNavigationBarColor();
+  useInitTheme();
   const { theme } = useStyles();
 
   const [loaded] = useFonts({
