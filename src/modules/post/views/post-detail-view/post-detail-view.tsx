@@ -5,6 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 import { ActivityIndicator } from '@/ui';
 
+import { CommentList } from '../../components/comment-list/comment-list';
 import { useDetailPost } from '../../hooks';
 
 import { stylesheet } from './styles';
@@ -32,6 +33,7 @@ export const PostDetailView = () => {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.body}>{body}</Text>
           <View style={styles.separator} />
+          <CommentList postId={post.id.toString()} />
         </ScrollView>
       )}
     </SafeAreaView>

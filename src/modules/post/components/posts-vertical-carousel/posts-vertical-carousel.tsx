@@ -4,7 +4,7 @@ import { useStyles } from 'react-native-unistyles';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
-import { Post } from '@/api/services/post';
+import { Post } from '@/api/post';
 import { ActivityIndicator } from '@/ui';
 
 import { type PostItemCardProps, PostVerticalCarouselItem } from './components';
@@ -43,6 +43,7 @@ const PostsVerticalCarousel = ({ data, isLoading }: PostsVerticalCarouselProps) 
           keyExtractor={(item) => item.id.toString()}
           testID={'data-list'}
           estimatedItemSize={100}
+          ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
         />
       )}
     </View>

@@ -3,8 +3,6 @@ import { createStyleSheet } from 'react-native-unistyles';
 export const stylesheet = createStyleSheet((theme) => ({
   container: {
     borderColor: theme.colors.secondary,
-    borderRadius: theme.radius.lg,
-    borderWidth: theme.borderWidth.sm,
     padding: theme.padding.xxl,
   },
   title: {
@@ -29,8 +27,5 @@ export const stylesheet = createStyleSheet((theme) => ({
   },
   content: {
     height: 'auto',
-    marginVertical: theme.margins.lg,
-    marginHorizontal: theme.margins.xxl,
-    padding: theme.padding.lg,
   },
 }));

@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { Post } from '@/api/services/post';
+import { Post } from '@/api/post';
 
 export const mockPost: Post = {
   id: faker.number.int(),

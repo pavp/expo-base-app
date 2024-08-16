@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
-import { UserAPI } from '@/api/services/user';
+import { UserAPI } from '@/api/user';
 import { mockUser } from '@/test/entities';
 import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
 
-import { Post } from '@/api/services/post';
+import { Post } from '@/api/post';
 
 import { stylesheet } from './styles';
 

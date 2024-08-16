@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { UnistylesRuntime, useStyles } from 'react-native-unistyles';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
+import { APIProvider } from '@/api';
 import { useChangeNavigationBarColor, useInitTheme } from '@/hooks';
 
 import 'react-native-reanimated';
@@ -15,8 +15,6 @@ import '@/styles/unistyles';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-const queryClient = new QueryClient();
 
 export default function RootLayout() {
   useChangeNavigationBarColor();
@@ -28,15 +26,13 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
   if (!loaded) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <APIProvider>
       <StatusBar style={UnistylesRuntime.themeName === 'light' ? 'dark' : 'light'} />
       <SafeAreaProvider style={{ backgroundColor: theme.colors.background }}>
         <Stack
@@ -78,6 +74,6 @@ export default function RootLayout() {
           />
         </Stack>
       </SafeAreaProvider>
-    </QueryClientProvider>
+    </APIProvider>
   );
 }

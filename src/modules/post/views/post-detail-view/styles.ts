@@ -30,8 +30,8 @@ export const stylesheet = createStyleSheet((theme) => ({
   separator: {
     height: 0.5,
     width: '100%',
-    backgroundColor: theme.colors.primary,
-    marginTop: theme.margins.xxxl,
+    backgroundColor: theme.colors.secondary,
+    marginVertical: theme.margins.xxxl,
     alignSelf: 'center',
   },
   loadingContainer: {

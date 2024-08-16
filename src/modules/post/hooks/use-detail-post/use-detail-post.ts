@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 
-import { Post } from '@/api/services/post';
-import { User } from '@/api/services/user';
-import { useGetPostById, useGetUser } from '@/hooks';
+import { Post, useGetPostById } from '@/api/post';
+import { useGetUser, User } from '@/api/user';
 
 interface useDetailPostProps {
   id: string;

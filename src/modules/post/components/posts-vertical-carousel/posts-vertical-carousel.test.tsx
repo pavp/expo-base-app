@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 
-import { Post } from '@/api/services/post';
+import { Post } from '@/api/post';
 import { mockPost } from '@/test/entities';
 import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
 
