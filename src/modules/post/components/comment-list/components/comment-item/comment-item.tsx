@@ -1,20 +1,30 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import { useStyles } from 'react-native-unistyles';
 
 import { Comment } from '@/api/comment';
+import { MaterialIcon } from '@/ui';
+
+import { stylesheet } from './styles';
 
 interface CommentItemProps {
   comment: Comment;
 }
 
 export const CommentItem = ({ comment }: CommentItemProps) => {
+  const { styles, theme } = useStyles(stylesheet);
   const { body, name, email } = comment;
 
   return (
-    <View>
-      <Text>{name}</Text>
-      <Text>{email}</Text>
-      <Text>{body}</Text>
+    <View style={styles.container}>
+      <View style={styles.personContainer}>
+        <MaterialIcon name={'person'} onPress={undefined} color={theme.colors.primary} size={32} />
+        <View style={styles.textContainer}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.email}>{email}</Text>
+        </View>
+      </View>
+      <Text style={styles.body}>{body}</Text>
     </View>
   );
 };

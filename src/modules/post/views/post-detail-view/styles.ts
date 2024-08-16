@@ -31,7 +31,7 @@ export const stylesheet = createStyleSheet((theme) => ({
     height: 0.5,
     width: '100%',
     backgroundColor: theme.colors.secondary,
-    marginVertical: theme.margins.xxxl,
+    marginVertical: theme.margins.xxl,
     alignSelf: 'center',
   },
   loadingContainer: {
