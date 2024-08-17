@@ -1,15 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { UnistylesRuntime, UnistylesThemes } from 'react-native-unistyles';
 
 import { getItem } from '@/lib/async-storage';
 
 export const useInitTheme = () => {
-  const setTheme = async () => {
-    const theme = (await getItem('theme')) as keyof UnistylesThemes;
-    UnistylesRuntime.setTheme(theme);
+  const [themeIsReady, setThemeIsReady] = useState(false);
+
+  const loadSelectedTheme = async () => {
+    try {
+      const theme = (await getItem('theme')) as keyof UnistylesThemes;
+      UnistylesRuntime.setTheme(theme);
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setThemeIsReady(true);
+    }
   };
 
   useEffect(() => {
-    setTheme();
+    loadSelectedTheme();
   }, []);
+
+  return { themeIsReady };
 };

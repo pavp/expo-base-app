@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { UnistylesRuntime, useStyles } from 'react-native-unistyles';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { APIProvider } from '@/components';
-import { useChangeNavigationBarColor, useInitTheme } from '@/hooks';
+import { useInitApp } from '@/hooks';
 
 import 'react-native-reanimated';
 import '@/localization/i18n';
@@ -17,19 +16,14 @@ import '@/styles/unistyles';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  useChangeNavigationBarColor();
-  useInitTheme();
   const { theme } = useStyles();
-
-  const [loaded] = useFonts({
-    SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const { appIsReady } = useInitApp();
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    if (appIsReady) SplashScreen.hideAsync();
+  }, [appIsReady]);
 
-  if (!loaded) return null;
+  if (!appIsReady) return null;
 
   return (
     <APIProvider>
