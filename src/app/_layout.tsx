@@ -16,8 +16,8 @@ import '@/styles/unistyles';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { theme } = useStyles();
   const { appIsReady } = useInitApp();
+  const { theme } = useStyles();
 
   useEffect(() => {
     if (appIsReady) SplashScreen.hideAsync();

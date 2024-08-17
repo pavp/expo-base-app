@@ -28,4 +28,8 @@ export const stylesheet = createStyleSheet((theme) => ({
   content: {
     height: 'auto',
   },
+  itemSeparator: {
+    height: theme.margins.md,
+    backgroundColor: theme.colors.secondary,
+  },
 }));

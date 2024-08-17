@@ -35,12 +35,13 @@ const PostsVerticalCarousel = ({
 
   const renderItem = useCallback(
     ({ item, index }: { item: Post; index: number }) => (
-      <>
-        <PostVerticalCarouselItem item={item} handlePressItem={() => handlePressItem(item.id, item.userId)} />
-        {!isFetchingNextPage && index !== data.length - 1 && <View style={styles.itemSeparator} />}
-      </>
+      <PostVerticalCarouselItem
+        item={item}
+        handlePressItem={() => handlePressItem(item.id, item.userId)}
+        showSeparator={!isFetchingNextPage && index !== data.length - 1}
+      />
     ),
-    [data.length, handlePressItem, isFetchingNextPage, styles.itemSeparator],
+    [data.length, handlePressItem, isFetchingNextPage],
   );
 
   const renderFooter = useCallback(

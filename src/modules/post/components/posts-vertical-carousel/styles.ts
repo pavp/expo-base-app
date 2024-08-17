@@ -10,8 +10,4 @@ export const stylesheet = createStyleSheet((theme) => ({
   loadingContainer: {
     marginBottom: UnistylesRuntime.statusBar.height,
   },
-  itemSeparator: {
-    height: theme.margins.md,
-    backgroundColor: theme.colors.secondary,
-  },
 }));

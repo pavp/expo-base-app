@@ -8,20 +8,24 @@ import { stylesheet } from './styles';
 
 export interface PostItemCardProps {
   item: Post;
+  showSeparator?: boolean;
   handlePressItem: () => void;
 }
 
-const PostVerticalCarouselItem = ({ item, handlePressItem }: PostItemCardProps) => {
+const PostVerticalCarouselItem = ({ item, showSeparator, handlePressItem }: PostItemCardProps) => {
   const { title, body } = item;
   const { styles } = useStyles(stylesheet);
 
   return (
-    <View style={styles.content}>
-      <TouchableOpacity style={styles.container} onPress={() => handlePressItem()} testID={'item-onpress'}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.body}>{body}</Text>
-      </TouchableOpacity>
-    </View>
+    <>
+      <View style={styles.content}>
+        <TouchableOpacity style={styles.container} onPress={() => handlePressItem()} testID={'item-onpress'}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.body}>{body}</Text>
+        </TouchableOpacity>
+      </View>
+      {showSeparator && <View style={styles.itemSeparator} />}
+    </>
   );
 };
 
