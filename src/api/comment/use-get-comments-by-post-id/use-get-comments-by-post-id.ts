@@ -6,10 +6,7 @@ import { API_ENDPOINT } from '@/api/endpoints';
 import { client } from '../../common';
 import { Comment } from '../types';
 
-type Response = Comment[];
-type Variables = string;
-
-export const useGetCommentsByPostId = createQuery<Response, Variables, AxiosError>({
+export const useGetCommentsByPostId = createQuery<Comment[], string, AxiosError>({
   queryKey: ['comments'],
   fetcher: async (variables) => {
     return client.get(API_ENDPOINT.GET_COMMENTS.replace('{postId}', variables)).then((response) => response.data);

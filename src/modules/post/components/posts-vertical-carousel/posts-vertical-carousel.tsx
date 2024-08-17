@@ -13,9 +13,20 @@ import { stylesheet } from './styles';
 interface PostsVerticalCarouselProps {
   data: Post[] | undefined;
   isLoading: boolean;
+  isFetchingNextPage: boolean;
+  isRefetching: boolean;
+  onEndReached: () => void;
+  onRefresh: () => void;
 }
 
-const PostsVerticalCarousel = ({ data, isLoading }: PostsVerticalCarouselProps) => {
+const PostsVerticalCarousel = ({
+  data,
+  isLoading,
+  isFetchingNextPage,
+  isRefetching,
+  onEndReached,
+  onRefresh,
+}: PostsVerticalCarouselProps) => {
   const { styles } = useStyles(stylesheet);
 
   const handlePressItem = useCallback((id: number | string, userId: number | string) => {
@@ -23,10 +34,18 @@ const PostsVerticalCarousel = ({ data, isLoading }: PostsVerticalCarouselProps) 
   }, []);
 
   const renderItem = useCallback(
-    ({ item }: { item: Post }) => (
-      <PostVerticalCarouselItem item={item} handlePressItem={() => handlePressItem(item.id, item.userId)} />
+    ({ item, index }: { item: Post; index: number }) => (
+      <>
+        <PostVerticalCarouselItem item={item} handlePressItem={() => handlePressItem(item.id, item.userId)} />
+        {!isFetchingNextPage && index !== data.length - 1 && <View style={styles.itemSeparator} />}
+      </>
     ),
-    [handlePressItem],
+    [data.length, handlePressItem, isFetchingNextPage, styles.itemSeparator],
+  );
+
+  const renderFooter = useCallback(
+    () => (isFetchingNextPage ? <ActivityIndicator size="small" /> : null),
+    [isFetchingNextPage],
   );
 
   return (
@@ -43,7 +62,11 @@ const PostsVerticalCarousel = ({ data, isLoading }: PostsVerticalCarouselProps) 
           keyExtractor={(item) => item.id.toString()}
           testID={'data-list'}
           estimatedItemSize={100}
-          ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={renderFooter}
+          onRefresh={onRefresh}
+          refreshing={isRefetching}
         />
       )}
     </View>
