@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { mockPost, mockUser } from '@/test/entities';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { renderWithProviders, screen, waitFor } from '@/test/test-utils';
 import { ActivityIndicator } from '@/ui';
 
 import * as hooks from '../../hooks';
@@ -27,7 +27,7 @@ describe('PostDetailView', () => {
       isLoading: true,
     });
 
-    render(<PostDetailView />);
+    renderWithProviders(<PostDetailView />);
 
     expect(screen.getByTestId('detail-container')).toBeTruthy();
 
@@ -43,7 +43,7 @@ describe('PostDetailView', () => {
       isLoading: false,
     });
 
-    render(<PostDetailView />);
+    renderWithProviders(<PostDetailView />);
 
     // Check if the container is rendered
     expect(screen.getByTestId('detail-container')).toBeTruthy();

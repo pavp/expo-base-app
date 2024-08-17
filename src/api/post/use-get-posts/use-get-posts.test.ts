@@ -1,39 +1,42 @@
 import { QueryClient } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 
-import { PostAPI } from '@/api/post';
+import { client } from '@/api';
+import { API_ENDPOINT } from '@/api/endpoints';
 import { mockPost } from '@/test/entities';
 import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useGetPosts } from './use-get-posts';
 
-jest.mock('@/api/services/post');
-
 describe('useGetPosts', () => {
+  const mock = new MockAdapter(client);
   const queryClient = new QueryClient();
-  const posts = [mockPost];
 
   afterEach(() => {
     queryClient.clear();
+    mock.reset();
     jest.clearAllMocks();
   });
 
-  it('fetches and returns post data successfully', async () => {
-    jest.spyOn(PostAPI, 'getPosts').mockResolvedValueOnce(posts);
+  it('should fetches and returns post data successfully', async () => {
+    const posts = [mockPost];
+    mock.onGet(API_ENDPOINT.GET_POSTS).reply(200, posts);
 
     const { result } = renderHookWithProviders(useGetPosts);
 
-    await waitFor(() => expect(result.current.data).toEqual(posts));
-    expect(PostAPI.getPosts).toHaveBeenCalled();
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toEqual(posts);
   });
 
-  it('handles error when fetching post data', async () => {
-    const mockError = new AxiosError('Error fetching post');
-    jest.spyOn(PostAPI, 'getPosts').mockRejectedValueOnce(mockError);
+  it('shouldhandles error when fetching post data', async () => {
+    // Mock a 500 server error
+    mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
 
     const { result } = renderHookWithProviders(useGetPosts);
 
-    await waitFor(() => expect(result.current.error).toEqual(mockError));
-    expect(PostAPI.getPosts).toHaveBeenCalled();
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(result.current.error).toBeDefined();
   });
 });

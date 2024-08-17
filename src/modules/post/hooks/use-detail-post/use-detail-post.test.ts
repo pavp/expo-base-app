@@ -1,10 +1,12 @@
-import * as hooks from '@/hooks';
+import * as postHooks from '@/api/post';
+import * as userHooks from '@/api/user';
 import { mockPost, mockUser } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
 import { useDetailPost } from './use-detail-post';
 
-jest.mock('@/hooks');
+jest.mock('@/api/post');
+jest.mock('@/api/user');
 
 describe('useDetailPost', () => {
   const post = mockPost;
@@ -15,12 +17,12 @@ describe('useDetailPost', () => {
   });
 
   it('should returns post and user data with loading state false when both hooks resolve successfully', () => {
-    jest.spyOn(hooks, 'useGetPostById').mockReturnValue({
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
     } as any);
 
-    jest.spyOn(hooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
       data: user,
       isLoading: false,
     } as any);
@@ -33,12 +35,12 @@ describe('useDetailPost', () => {
   });
 
   it('should returns loading state true when post data is still loading', () => {
-    jest.spyOn(hooks, 'useGetPostById').mockReturnValue({
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: {},
       isLoading: true,
     } as any);
 
-    jest.spyOn(hooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
       data: user,
       isLoading: false,
     } as any);
@@ -51,12 +53,12 @@ describe('useDetailPost', () => {
   });
 
   it('should returns loading state true when user data is still loading', () => {
-    jest.spyOn(hooks, 'useGetPostById').mockReturnValue({
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
     } as any);
 
-    jest.spyOn(hooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
       data: {},
       isLoading: true,
     } as any);
@@ -69,12 +71,12 @@ describe('useDetailPost', () => {
   });
 
   it('should returns loading state true when both post and user data are loading', () => {
-    jest.spyOn(hooks, 'useGetPostById').mockReturnValue({
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: {},
       isLoading: true,
     } as any);
 
-    jest.spyOn(hooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
       data: {},
       isLoading: true,
     } as any);
@@ -87,12 +89,12 @@ describe('useDetailPost', () => {
   });
 
   it('should returns default post value when useGetPostById returns undefined', () => {
-    jest.spyOn(hooks, 'useGetPostById').mockReturnValue({
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: undefined,
       isLoading: false,
     } as any);
 
-    jest.spyOn(hooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
       data: user,
       isLoading: false,
     } as any);
@@ -106,12 +108,12 @@ describe('useDetailPost', () => {
   });
 
   it('should returns default user value when useGetUser returns undefined', () => {
-    jest.spyOn(hooks, 'useGetPostById').mockReturnValue({
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
     } as any);
 
-    jest.spyOn(hooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
       data: undefined,
       isLoading: false,
     } as any);

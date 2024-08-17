@@ -15,8 +15,9 @@ const config: Config = {
     'src/views/**/*.{ts,tsx}',
     'src/hooks/**/*.{ts,tsx}',
     'src/store/**/*.{ts,tsx}',
+    'src/api/**/*.{ts,tsx}',
   ],
-  coveragePathIgnorePatterns: ['node_modules', 'interfaces', '.mock.ts', 'index.ts', 'index.tsx'],
+  coveragePathIgnorePatterns: ['node_modules', 'interfaces', '.mock.ts', 'index.ts', 'index.tsx', 'types.ts'],
   coverageThreshold: {
     global: {
       branches: 85,

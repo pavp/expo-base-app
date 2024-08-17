@@ -1,39 +1,40 @@
 import { QueryClient } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 
-import { PostAPI } from '@/api/post';
+import { client } from '@/api';
+import { API_ENDPOINT } from '@/api/endpoints';
 import { mockPost } from '@/test/entities';
 import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useGetPostById } from './use-get-post-by-id';
 
-jest.mock('@/api/services/post');
-
 describe('useGetPostById', () => {
+  const mock = new MockAdapter(client);
   const queryClient = new QueryClient();
   const post = mockPost;
 
   afterEach(() => {
     queryClient.clear();
+    mock.reset();
     jest.clearAllMocks();
   });
 
-  it('fetches and returns post data successfully', async () => {
-    jest.spyOn(PostAPI, 'getPostById').mockResolvedValueOnce(post);
+  it('should fetches and returns post data successfully', async () => {
+    mock.onGet(API_ENDPOINT.GET_POST + post.id).reply(200, post);
 
     const { result } = renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
 
-    await waitFor(() => expect(result.current.data).toEqual(post));
-    expect(PostAPI.getPostById).toHaveBeenCalledWith(post.id.toString());
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(post);
   });
 
-  it('handles error when fetching post data', async () => {
-    const mockError = new AxiosError('Error fetching post');
-    jest.spyOn(PostAPI, 'getPostById').mockRejectedValueOnce(mockError);
+  it('should handles error when fetching post data', async () => {
+    // Mock a 500 server error
+    mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
 
     const { result } = renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
 
-    await waitFor(() => expect(result.current.error).toEqual(mockError));
-    expect(PostAPI.getPostById).toHaveBeenCalledWith(post.id.toString());
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBeDefined();
   });
 });

@@ -9,3 +9,7 @@ jest.mock('@expo/vector-icons/Ionicons', () => {
     default: jest.fn().mockReturnValue(null),
   };
 });
+
+jest.mock('@dev-plugins/react-query', () => ({
+  createQuery: jest.fn(),
+}));

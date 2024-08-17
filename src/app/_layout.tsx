@@ -6,7 +6,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
-import { APIProvider } from '@/api';
+import { APIProvider } from '@/components';
 import { useChangeNavigationBarColor, useInitTheme } from '@/hooks';
 
 import 'react-native-reanimated';
