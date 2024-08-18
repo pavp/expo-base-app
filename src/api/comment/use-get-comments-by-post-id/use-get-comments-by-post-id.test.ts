@@ -1,17 +1,15 @@
-import { QueryClient } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 
 import { client } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
 import { mockPost } from '@/test/entities';
 import { mockComment } from '@/test/entities/comment.mock';
-import { renderHookWithProviders, waitFor } from '@/test/test-utils';
+import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useGetCommentsByPostId } from './use-get-comments-by-post-id';
 
 describe('useGetCommentsByPostId', () => {
   const mock = new MockAdapter(client);
-  const queryClient = new QueryClient();
   const post = mockPost;
   const comments = [mockComment];
 

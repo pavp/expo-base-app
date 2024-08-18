@@ -1,16 +1,14 @@
-import { QueryClient } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 
 import { client } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
 import { mockUser } from '@/test/entities';
-import { renderHookWithProviders, waitFor } from '@/test/test-utils';
+import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useGetUser } from './use-get-user';
 
 describe('useGetUser', () => {
   const mock = new MockAdapter(client);
-  const queryClient = new QueryClient();
   const user = mockUser;
 
   afterEach(() => {

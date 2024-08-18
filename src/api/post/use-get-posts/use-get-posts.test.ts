@@ -1,39 +1,72 @@
-import { QueryClient } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 
-import { client } from '@/api';
+import { client, DEFAULT_LIMIT, Post } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
-import { mockPost } from '@/test/entities';
-import { renderHookWithProviders, waitFor } from '@/test/test-utils';
+import { generateMockPosts } from '@/test/entities';
+import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useGetPosts } from './use-get-posts';
 
 describe('useGetPosts', () => {
   const mock = new MockAdapter(client);
-  const queryClient = new QueryClient();
 
   afterEach(() => {
     queryClient.clear();
     mock.reset();
+
     jest.clearAllMocks();
   });
 
-  it('should fetches and returns post data successfully', async () => {
-    const posts = [mockPost];
-    mock.onGet(API_ENDPOINT.GET_POSTS).reply(200, posts);
+  it('should fetch the next page when the last page is full', async () => {
+    const initialPageParam = 1;
+    const mockPosts: Post[] = generateMockPosts(DEFAULT_LIMIT);
+    const additionalMockPosts: Post[] = generateMockPosts(DEFAULT_LIMIT);
 
-    const { result } = renderHookWithProviders(useGetPosts);
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=${initialPageParam}&_limit=${DEFAULT_LIMIT}`).reply(200, mockPosts);
+    mock
+      .onGet(`${API_ENDPOINT.GET_POSTS}?_page=${initialPageParam + 1}&_limit=${DEFAULT_LIMIT}`)
+      .reply(200, additionalMockPosts);
+
+    const { result } = renderHookWithProviders(() => useGetPosts());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.pages.flat()).toHaveLength(DEFAULT_LIMIT);
 
-    expect(result.current.data).toEqual(posts);
+    await waitFor(() => result.current.fetchNextPage());
+
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
+    expect(result.current.data?.pages.flat()).toHaveLength(DEFAULT_LIMIT * 2);
+
+    const allPages = result.current.data?.pages.flat();
+    expect(allPages).toHaveLength(DEFAULT_LIMIT * 2);
+    expect(allPages).toEqual([...mockPosts, ...additionalMockPosts]);
+  });
+
+  it('should not fetch the next page when the last page is not full', async () => {
+    mock.reset();
+    const initialPageParam = 1;
+    const mockPosts: Post[] = generateMockPosts(DEFAULT_LIMIT - 5);
+
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=${initialPageParam}&_limit=${DEFAULT_LIMIT}`).reply(200, mockPosts);
+
+    const { result } = renderHookWithProviders(() => useGetPosts());
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.pages.flat()).toHaveLength(DEFAULT_LIMIT - 5);
+
+    await waitFor(() => result.current.fetchNextPage());
+
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
+
+    expect(result.current.data?.pages.flat()).toHaveLength(DEFAULT_LIMIT - 5);
   });
 
   it('shouldhandles error when fetching post data', async () => {
     // Mock a 500 server error
-    mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
+    const pageParam = 1;
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=${pageParam}&_limit=${DEFAULT_LIMIT}`).reply(500);
 
-    const { result } = renderHookWithProviders(useGetPosts);
+    const { result } = renderHookWithProviders(() => useGetPosts());
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 

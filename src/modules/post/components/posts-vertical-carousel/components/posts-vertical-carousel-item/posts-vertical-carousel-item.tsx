@@ -24,7 +24,7 @@ const PostVerticalCarouselItem = ({ item, showSeparator, handlePressItem }: Post
           <Text style={styles.body}>{body}</Text>
         </TouchableOpacity>
       </View>
-      {showSeparator && <View style={styles.itemSeparator} />}
+      {showSeparator && <View style={styles.itemSeparator} testID="item-separator" />}
     </>
   );
 };

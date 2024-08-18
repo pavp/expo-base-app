@@ -45,7 +45,7 @@ const PostsVerticalCarousel = ({
   );
 
   const renderFooter = useCallback(
-    () => (isFetchingNextPage ? <ActivityIndicator size="small" /> : null),
+    () => (isFetchingNextPage ? <ActivityIndicator size="small" testID={'activity-indicator-footer'} /> : null),
     [isFetchingNextPage],
   );
 

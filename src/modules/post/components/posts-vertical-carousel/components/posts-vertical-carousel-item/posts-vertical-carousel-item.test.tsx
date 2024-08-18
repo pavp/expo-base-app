@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { mockPost } from '@/test/entities';
 import { fireEvent, render, screen } from '@/test/test-utils';
 
@@ -18,6 +16,12 @@ describe('PostVerticalCarouselItem', () => {
     // Check if title and body are rendered correctly
     expect(screen.getByText(mockPost.title)).toBeTruthy();
     expect(screen.getByText(mockPost.body)).toBeTruthy();
+  });
+
+  it('should render correctly separator when showSeparator is true', () => {
+    render(<PostVerticalCarouselItem item={mockPost} handlePressItem={mockHandlePressItem} showSeparator />);
+
+    expect(screen.getByTestId('item-separator')).toBeTruthy();
   });
 
   it('should call handlePressItem when TouchableOpacity is pressed', () => {
