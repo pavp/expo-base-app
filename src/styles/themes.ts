@@ -42,6 +42,11 @@ export const lightTheme = {
     typography: '#0c0b10',
     typographyMuted: '#6b6a73',
     background: '#f4f4f7',
+    // Matches `surface`, so cards draw no visible edge here. A white card on a
+    // grey page already separates on its own; a hairline on top of that reads
+    // as noise rather than definition. Dark, where the two surfaces sit close
+    // together, is the theme that needs one.
+    border: '#ffffff',
     highlight: '#000000',
     surface: '#ffffff',
     surfaceSelected: '#e8e3fa',
@@ -67,6 +72,9 @@ export const darkTheme = {
     // towards the primary's hue so the page and the accent belong to the same
     // palette; the lean stays under the threshold where it reads as a colour.
     background: '#131218',
+    // Hairline defining a card's edge. Decorative, so it is not held to the 3:1
+    // UI-component bar — it only has to be visible from both sides.
+    border: '#2f2c3c',
     highlight: '#ffffff',
     surface: '#1f1d27',
     surfaceSelected: '#2a2340',

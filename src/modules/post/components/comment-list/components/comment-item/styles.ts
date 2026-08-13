@@ -4,6 +4,8 @@ export const styles = StyleSheet.create((theme) => ({
   container: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
+    borderWidth: theme.borderWidth.sm,
+    borderColor: theme.colors.border,
     padding: theme.padding.xxl,
     gap: theme.margins.lg,
     marginBottom: theme.margins.xl,
