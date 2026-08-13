@@ -34,16 +34,19 @@ export const PostDetailView = () => {
 
     return (
       <ScrollView showsVerticalScrollIndicator={false}>
-        {!!user && (
-          <View style={styles.userContainer}>
-            <Text style={styles.name}>{user.name}</Text>
-            <Text style={styles.username}>{`@${user.username}`}</Text>
-          </View>
-        )}
-        <Text style={styles.title}>{post.title}</Text>
-        <Text style={styles.body}>{post.body}</Text>
-        <View style={styles.separator} />
-        <CommentList postId={post.id.toString()} />
+        <View style={styles.postCard}>
+          {!!user && (
+            <View>
+              <Text style={styles.name}>{user.name}</Text>
+              <Text style={styles.username}>{`@${user.username}`}</Text>
+            </View>
+          )}
+          <Text style={styles.title}>{post.title}</Text>
+          <Text style={styles.body}>{post.body}</Text>
+        </View>
+        <View style={styles.commentsSection}>
+          <CommentList postId={post.id.toString()} />
+        </View>
       </ScrollView>
     );
   };
