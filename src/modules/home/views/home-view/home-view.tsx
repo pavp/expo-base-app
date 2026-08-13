@@ -2,8 +2,8 @@ import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useGetPosts } from '@/api/post';
-import { useGetUsers } from '@/api/user';
 import { PostsVerticalCarousel } from '@/modules/post/components';
+import { usePostAuthors } from '@/modules/post/hooks';
 import { EmptyState, SafeAreaView } from '@/ui';
 
 import { styles } from './styles';
@@ -13,18 +13,13 @@ export const HomeView = () => {
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, refetch, fetchNextPage, isRefetching } =
     useGetPosts();
 
-  // The demo API returns posts without any author data, so the author name is joined client-side from the
-  // users list. A production API should embed the author in the post payload instead: this join only stays
-  // cheap because the dataset is a fixed set of 10 users fetched in a single request.
-  const { data: users } = useGetUsers();
+  const authorsById = usePostAuthors();
 
   const onEndReached = useCallback(() => {
     if (hasNextPage) fetchNextPage();
   }, [fetchNextPage, hasNextPage]);
 
   const postsData = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
-
-  const authorsById = useMemo(() => new Map(users?.map((user) => [user.id, user.name])), [users]);
 
   const renderContent = () => {
     if (isError)

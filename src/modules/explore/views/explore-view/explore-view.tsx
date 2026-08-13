@@ -8,6 +8,7 @@ import { useGetUsers } from '@/api/user';
 // init hooks, and with them AsyncStorage, which tests would have to mock.
 import { useDebouncedValue } from '@/hooks/common/use-debounced-value/use-debounced-value';
 import { PostsVerticalCarousel } from '@/modules/post/components';
+import { usePostAuthors } from '@/modules/post/hooks';
 import { EmptyState, FilterChip, FilterChips, SafeAreaView, SearchInput } from '@/ui';
 
 import { styles } from './styles';
@@ -19,6 +20,7 @@ export const ExploreView = () => {
   const debouncedSearchTerm = useDebouncedValue(searchTerm.trim());
 
   const { data: users } = useGetUsers();
+  const authorsById = usePostAuthors();
 
   const hasFilter = debouncedSearchTerm.length > 0 || authorId !== null;
 
@@ -83,6 +85,7 @@ export const ExploreView = () => {
     return (
       <PostsVerticalCarousel
         data={postsData}
+        authorsById={authorsById}
         isLoading={isLoading}
         isFetchingNextPage={isFetchingNextPage}
         isRefetching={isRefetching}
