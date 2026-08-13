@@ -8,3 +8,11 @@ export const mockUser: User = {
   email: faker.internet.email(),
   username: faker.lorem.word(),
 };
+
+export const generateMockUsers = (count: number): User[] =>
+  Array.from({ length: count }, () => ({
+    id: faker.number.int(),
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    username: faker.internet.username(),
+  }));

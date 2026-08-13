@@ -72,4 +72,57 @@ describe('useGetPosts', () => {
 
     expect(result.current.error).toBeDefined();
   });
+
+  it('should send the search term as a query parameter', async () => {
+    const mockPosts: Post[] = generateMockPosts(3);
+
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&q=lorem`).reply(200, mockPosts);
+
+    const { result } = await renderHookWithProviders(() => useGetPosts({ variables: { q: 'lorem' } }));
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data?.pages.flat()).toEqual(mockPosts);
+  });
+
+  it('should send the author as a query parameter', async () => {
+    const mockPosts: Post[] = generateMockPosts(3);
+
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&userId=7`).reply(200, mockPosts);
+
+    const { result } = await renderHookWithProviders(() => useGetPosts({ variables: { userId: 7 } }));
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data?.pages.flat()).toEqual(mockPosts);
+  });
+
+  it('should combine the search term and the author', async () => {
+    const mockPosts: Post[] = generateMockPosts(2);
+
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&q=lorem&userId=7`).reply(200, mockPosts);
+
+    const { result } = await renderHookWithProviders(() => useGetPosts({ variables: { q: 'lorem', userId: 7 } }));
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data?.pages.flat()).toEqual(mockPosts);
+  });
+
+  it('should cache separately per filter', async () => {
+    const leannePosts: Post[] = generateMockPosts(2);
+    const ervinPosts: Post[] = generateMockPosts(4);
+
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&userId=1`).reply(200, leannePosts);
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&userId=2`).reply(200, ervinPosts);
+
+    const { result: first } = await renderHookWithProviders(() => useGetPosts({ variables: { userId: 1 } }));
+    await waitFor(() => expect(first.current.isSuccess).toBe(true));
+
+    const { result: second } = await renderHookWithProviders(() => useGetPosts({ variables: { userId: 2 } }));
+    await waitFor(() => expect(second.current.isSuccess).toBe(true));
+
+    expect(first.current.data?.pages.flat()).toEqual(leannePosts);
+    expect(second.current.data?.pages.flat()).toEqual(ervinPosts);
+  });
 });
