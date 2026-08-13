@@ -1,6 +1,7 @@
-import { memo, useCallback } from 'react';
+import { ComponentType, memo, useCallback } from 'react';
 import { View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { withUnistyles } from 'react-native-unistyles';
+import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
 import { Post } from '@/api/post';
@@ -8,6 +9,19 @@ import { ActivityIndicator } from '@/ui';
 
 import { PostVerticalCarouselItem } from './components';
 import { styles } from './styles';
+
+/**
+ * See the note in src/ui/safe-area-view/safe-area-view.tsx: Unistyles only
+ * rewrites components it resolves from `react-native` itself, so `FlashList`
+ * keeps the `contentContainerStyle` it resolved on mount and its background
+ * stays on the previous theme until the list remounts. `withUnistyles`
+ * processes `style` and `contentContainerStyle` for us.
+ *
+ * The cast restores the generic the HOC erases: it types its result through
+ * `ComponentProps<typeof FlashList>`, which collapses the class generic to
+ * `FlashListProps<unknown>` and costs `renderItem` its item type.
+ */
+const ThemedFlashList = withUnistyles(FlashList) as ComponentType<FlashListProps<Post>>;
 
 interface PostsVerticalCarouselProps {
   data: Post[] | undefined;
@@ -56,7 +70,7 @@ const PostsVerticalCarousel = ({
           <ActivityIndicator testID={'indicator'} />
         </View>
       ) : (
-        <FlashList
+        <ThemedFlashList
           data={data}
           renderItem={renderItem}
           contentContainerStyle={styles.listContentContainer}
