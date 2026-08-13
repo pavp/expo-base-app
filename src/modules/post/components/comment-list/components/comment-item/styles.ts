@@ -2,8 +2,11 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create((theme) => ({
   container: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    padding: theme.padding.xxl,
     gap: theme.margins.lg,
-    marginBottom: theme.margins.xxxl,
+    marginBottom: theme.margins.xl,
   },
   personContainer: { flexDirection: 'row', gap: theme.margins.lg, alignItems: 'center' },
   textContainer: {

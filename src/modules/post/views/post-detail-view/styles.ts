@@ -5,34 +5,42 @@ export const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
     flex: 1,
     paddingHorizontal: theme.padding.xxl,
-    paddingTop: theme.padding.xxl,
   },
-  userContainer: {
-    height: 'auto',
+  postCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    padding: theme.padding.xxl,
+    marginTop: theme.margins.xxl,
   },
+  // Matches the author line on the feed cards, so the same person reads the
+  // same way on both screens.
   name: {
-    color: theme.colors.typography,
-    fontWeight: 'bold',
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   username: {
     color: theme.colors.typographyMuted,
+    fontSize: theme.fontSize.sm,
+    marginTop: theme.margins.sm,
   },
   title: {
-    color: theme.colors.typography,
+    color: theme.colors.highlight,
     fontWeight: 'bold',
-    fontSize: theme.fontSize.md,
-    marginTop: theme.margins.xxl,
+    fontSize: theme.fontSize.lg,
+    lineHeight: 30,
+    marginTop: theme.margins.xl,
   },
   body: {
     color: theme.colors.typography,
-    marginTop: theme.margins.xxl,
+    fontSize: theme.fontSize.md,
+    lineHeight: 24,
+    marginTop: theme.margins.xl,
   },
-  separator: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: theme.colors.secondary,
-    marginVertical: theme.margins.xxl,
-    alignSelf: 'center',
+  commentsSection: {
+    marginTop: theme.margins.xxxl,
+    marginBottom: theme.margins.xxxl,
   },
   loadingContainer: {
     flex: 1,
