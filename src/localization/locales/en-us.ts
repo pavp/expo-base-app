@@ -8,6 +8,12 @@ export default {
       posts: 'Placeholders',
       settings: 'Settings',
     },
+    home: {
+      errorTitle: 'Something went wrong',
+      errorDescription: 'The posts could not be loaded. Pull down to try again.',
+      emptyTitle: 'No posts yet',
+      emptyDescription: 'There is nothing to read here right now.',
+    },
     explore: {
       searchPlaceholder: 'Search posts',
       clearSearch: 'Clear search',
