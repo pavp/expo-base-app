@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- kept for the commented auth interceptors below */
 import axios, { AxiosError, CreateAxiosDefaults, InternalAxiosRequestConfig } from 'axios';
 
 import { config } from '@/config';
@@ -6,6 +7,7 @@ import { useUserStore } from '@/store';
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 const baseConfig: CreateAxiosDefaults = {
   baseURL: config.apiURL,

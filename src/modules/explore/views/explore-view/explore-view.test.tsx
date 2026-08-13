@@ -4,7 +4,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { client, DEFAULT_LIMIT, Post, User } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
 import { generateMockPosts, generateMockUsers } from '@/test/entities';
-import { fireEvent, queryClient, renderWithProviders, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, queryClient, renderWithProviders, screen } from '@/test/test-utils';
 
 import { ExploreView } from './explore-view';
 
@@ -42,7 +42,7 @@ describe('ExploreView', () => {
 
     fireEvent.changeText(screen.getByTestId('explore-search-input'), 'lorem');
 
-    await waitFor(() => expect(screen.getByTestId('data-list')).toBeTruthy());
+    expect(await screen.findByTestId('data-list')).toBeTruthy();
     expect(screen.queryByTestId('explore-empty')).toBeNull();
   });
 
@@ -53,7 +53,7 @@ describe('ExploreView', () => {
 
     fireEvent.changeText(screen.getByTestId('explore-search-input'), 'zzz');
 
-    await waitFor(() => expect(screen.getByTestId('explore-no-results')).toBeTruthy());
+    expect(await screen.findByTestId('explore-no-results')).toBeTruthy();
   });
 
   it('should report a failed search', async () => {
@@ -63,13 +63,13 @@ describe('ExploreView', () => {
 
     fireEvent.changeText(screen.getByTestId('explore-search-input'), 'lorem');
 
-    await waitFor(() => expect(screen.getByTestId('explore-error')).toBeTruthy());
+    expect(await screen.findByTestId('explore-error')).toBeTruthy();
   });
 
   it('should offer a chip per author plus an unfiltered option', async () => {
     await renderWithProviders(<ExploreView />);
 
-    await waitFor(() => expect(screen.getByTestId('explore-author-chips-all')).toBeTruthy());
+    expect(await screen.findByTestId('explore-author-chips-all')).toBeTruthy();
 
     mockUsers.forEach(({ id }) => expect(screen.getByTestId(`explore-author-chips-${id}`)).toBeTruthy());
   });
@@ -82,10 +82,10 @@ describe('ExploreView', () => {
 
     await renderWithProviders(<ExploreView />);
 
-    await waitFor(() => expect(screen.getByTestId(`explore-author-chips-${author.id}`)).toBeTruthy());
+    expect(await screen.findByTestId(`explore-author-chips-${author.id}`)).toBeTruthy();
     fireEvent.press(screen.getByTestId(`explore-author-chips-${author.id}`));
 
-    await waitFor(() => expect(screen.getByTestId('data-list')).toBeTruthy());
+    expect(await screen.findByTestId('data-list')).toBeTruthy();
   });
 
   it('should combine the search term with the author filter', async () => {
@@ -98,12 +98,12 @@ describe('ExploreView', () => {
 
     await renderWithProviders(<ExploreView />);
 
-    await waitFor(() => expect(screen.getByTestId(`explore-author-chips-${author.id}`)).toBeTruthy());
+    expect(await screen.findByTestId(`explore-author-chips-${author.id}`)).toBeTruthy();
 
     fireEvent.changeText(screen.getByTestId('explore-search-input'), 'lorem');
     fireEvent.press(screen.getByTestId(`explore-author-chips-${author.id}`));
 
-    await waitFor(() => expect(screen.getByTestId('data-list')).toBeTruthy());
+    expect(await screen.findByTestId('data-list')).toBeTruthy();
   });
 
 });
