@@ -1,6 +1,5 @@
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useStyles } from 'react-native-unistyles';
 import { useLocalSearchParams } from 'expo-router';
 
 import { ActivityIndicator } from '@/ui';
@@ -8,11 +7,10 @@ import { ActivityIndicator } from '@/ui';
 import { CommentList } from '../../components/comment-list/comment-list';
 import { useDetailPost } from '../../hooks';
 
-import { stylesheet } from './styles';
+import { styles } from './styles';
 
 export const PostDetailView = () => {
   const { id, userId } = useLocalSearchParams<{ id: string; userId: string }>();
-  const { styles } = useStyles(stylesheet);
   const { post, user, isLoading } = useDetailPost({ id, userId });
 
   const { title, body } = post;

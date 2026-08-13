@@ -1,6 +1,6 @@
-import { createStyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
-export const stylesheet = createStyleSheet((theme) => ({
+export const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     flexDirection: 'row',

@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFonts } from 'expo-font';
 
-import { useChangeNavigationBarColor } from '../use-change-navigation-bar-color/use-change-navigation-bar-color';
 import { useInitTheme } from '../use-init-theme/use-init-theme';
 
 export const useInitApp = () => {
-  useChangeNavigationBarColor();
   const [prepareIsready, setPrepareIsready] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../../../../assets/fonts/SpaceMono-Regular.ttf'),

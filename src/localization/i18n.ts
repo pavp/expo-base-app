@@ -15,7 +15,6 @@ const locale = getLocales()[0].languageCode;
 
 i18n.use(initReactI18next).init({
   resources,
-  compatibilityJSON: 'v3',
   lng: config.translation.defaultLocale, // Default language
   interpolation: {
     escapeValue: false, // React already escapes values

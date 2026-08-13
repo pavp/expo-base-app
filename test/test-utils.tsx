@@ -22,14 +22,12 @@ const Wrapper = ({ children }: PropsWithChildren): React.ReactElement => (
 const renderHookWithProviders = <Result, Props>(
   render: (initialProps: Props) => Result,
   { ...renderOptions }: Omit<RenderHookOptions<Props>, 'wrapper'> = {},
-): RenderHookResult<Result, Props> => {
-  return {
-    ...renderHook(render, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions }),
-  };
+): Promise<RenderHookResult<Result, Props>> => {
+  return renderHook(render, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions });
 };
 
-const renderWithProviders = (ui: React.ReactElement, { ...renderOptions }: Omit<RenderOptions, 'wrapper'> = {}) => {
-  return { ...render(ui, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions }) };
+const renderWithProviders = async (ui: React.ReactElement, { ...renderOptions }: Omit<RenderOptions, 'wrapper'> = {}) => {
+  return { ...(await render(ui, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions })) };
 };
 export * from '@testing-library/react-native';
 export { renderHookWithProviders, renderWithProviders };

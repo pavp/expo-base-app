@@ -1,15 +1,15 @@
 import { View } from 'react-native';
-import { useStyles } from 'react-native-unistyles';
-import { DrawerContentComponentProps, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
+import { useUnistyles } from 'react-native-unistyles';
 import { router, usePathname } from 'expo-router';
+import { DrawerContentComponentProps, DrawerContentScrollView, DrawerItem } from 'expo-router/drawer';
 
 import { TabBarIcon } from '../tab-bar-icon/tab-bar-icon';
 
-import { stylesheet } from './styles';
+import { styles } from './styles';
 
 export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
   const pathname = usePathname();
-  const { theme, styles } = useStyles(stylesheet);
+  const { theme } = useUnistyles();
 
   return (
     <DrawerContentScrollView {...props} style={styles.container} contentContainerStyle={styles.contentContainer}>

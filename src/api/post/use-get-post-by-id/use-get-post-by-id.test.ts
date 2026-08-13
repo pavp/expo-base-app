@@ -21,7 +21,7 @@ describe('useGetPostById', () => {
   it('should fetches and returns post data successfully', async () => {
     mock.onGet(API_ENDPOINT.GET_POST + post.id).reply(200, post);
 
-    const { result } = renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(post);
@@ -31,7 +31,7 @@ describe('useGetPostById', () => {
     // Mock a 500 server error
     mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
 
-    const { result } = renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBeDefined();

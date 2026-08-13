@@ -1,7 +1,6 @@
 import axios, { AxiosError, CreateAxiosDefaults, InternalAxiosRequestConfig } from 'axios';
 
 import { config } from '@/config';
-import { instance } from '@/lib/axios';
 import { useUserStore } from '@/store';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {

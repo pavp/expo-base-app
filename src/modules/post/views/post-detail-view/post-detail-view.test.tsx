@@ -2,7 +2,6 @@ import React from 'react';
 
 import { mockPost, mockUser } from '@/test/entities';
 import { renderWithProviders, screen, waitFor } from '@/test/test-utils';
-import { ActivityIndicator } from '@/ui';
 
 import * as hooks from '../../hooks';
 
@@ -27,23 +26,25 @@ describe('PostDetailView', () => {
       isLoading: true,
     });
 
-    renderWithProviders(<PostDetailView />);
+    await renderWithProviders(<PostDetailView />);
 
     expect(screen.getByTestId('detail-container')).toBeTruthy();
 
-    const activityIndicator = await waitFor(() => screen.getByTestId('detail-container').findByType(ActivityIndicator));
+    const activityIndicators = await waitFor(() =>
+      screen.getByTestId('detail-container').queryAll((instance) => instance.type === 'ActivityIndicator'),
+    );
 
-    expect(activityIndicator).toBeTruthy();
+    expect(activityIndicators).toHaveLength(1);
   });
 
-  it('should render post details correctly when data is loaded', () => {
+  it('should render post details correctly when data is loaded', async () => {
     jest.spyOn(hooks, 'useDetailPost').mockReturnValueOnce({
       post,
       user,
       isLoading: false,
     });
 
-    renderWithProviders(<PostDetailView />);
+    await renderWithProviders(<PostDetailView />);
 
     // Check if the container is rendered
     expect(screen.getByTestId('detail-container')).toBeTruthy();

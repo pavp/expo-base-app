@@ -22,8 +22,8 @@ describe('PostsVerticalCarousel', () => {
     jest.clearAllMocks();
   });
 
-  it('should render data list when isLoading is false', () => {
-    renderWithProviders(
+  it('should render data list when isLoading is false', async () => {
+    await renderWithProviders(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={false}
@@ -37,8 +37,8 @@ describe('PostsVerticalCarousel', () => {
     expect(screen.getAllByTestId('data-list')).toHaveLength(1);
   });
 
-  it('should display ActivityIndicator when loading', () => {
-    renderWithProviders(
+  it('should display ActivityIndicator when loading', async () => {
+    await renderWithProviders(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={true}
@@ -51,7 +51,7 @@ describe('PostsVerticalCarousel', () => {
 
     expect(screen.getByTestId('indicator')).toBeTruthy();
 
-    screen.rerender(
+    await screen.rerender(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={false}
@@ -65,8 +65,8 @@ describe('PostsVerticalCarousel', () => {
     expect(screen.queryByTestId('indicator')).toBeNull();
   });
 
-  it('should show ActivityIndicator in footer when isFetchingNextPage is true', () => {
-    renderWithProviders(
+  it('should show ActivityIndicator in footer when isFetchingNextPage is true', async () => {
+    await renderWithProviders(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={false}
@@ -80,10 +80,10 @@ describe('PostsVerticalCarousel', () => {
     expect(screen.getByTestId('activity-indicator-footer')).toBeTruthy();
   });
 
-  it('should navigate to the correct post when an item is pressed', () => {
+  it('should navigate to the correct post when an item is pressed', async () => {
     router.navigate = jest.fn();
 
-    renderWithProviders(
+    await renderWithProviders(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={false}
@@ -94,7 +94,7 @@ describe('PostsVerticalCarousel', () => {
       />,
     );
 
-    fireEvent.press(screen.getByTestId(postItemTestID));
+    await fireEvent.press(screen.getByTestId(postItemTestID));
 
     expect(router.navigate).toHaveBeenCalledWith({
       pathname: '/post/[id]',
@@ -102,10 +102,10 @@ describe('PostsVerticalCarousel', () => {
     });
   });
 
-  it('should trigger onRefresh when refresh is called', () => {
+  it('should trigger onRefresh when refresh is called', async () => {
     const onRefresh = jest.fn();
 
-    renderWithProviders(
+    await renderWithProviders(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={false}
@@ -116,15 +116,15 @@ describe('PostsVerticalCarousel', () => {
       />,
     );
 
-    fireEvent(screen.getByTestId('data-list'), 'refresh');
+    await fireEvent(screen.getByTestId('data-list'), 'refresh');
 
     expect(onRefresh).toHaveBeenCalled();
   });
 
-  it('should trigger onEndReached when end of the list is reached', () => {
+  it('should trigger onEndReached when end of the list is reached', async () => {
     const onEndReached = jest.fn();
 
-    renderWithProviders(
+    await renderWithProviders(
       <PostsVerticalCarousel
         data={mockPosts}
         isLoading={false}
@@ -154,7 +154,7 @@ describe('PostsVerticalCarousel', () => {
     };
 
     // Simulate reaching end of the list
-    fireEvent.scroll(screen.getByTestId('data-list'), eventData);
+    await fireEvent.scroll(screen.getByTestId('data-list'), eventData);
 
     expect(onEndReached).toHaveBeenCalled();
   });

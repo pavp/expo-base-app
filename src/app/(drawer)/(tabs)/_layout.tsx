@@ -1,10 +1,10 @@
-import { useStyles } from 'react-native-unistyles';
+import { useUnistyles } from 'react-native-unistyles';
 import { Tabs } from 'expo-router';
 
 import { TabBarIcon } from '@/components';
 
 export default function TabLayout() {
-  const { theme } = useStyles();
+  const { theme } = useUnistyles();
 
   return (
     <Tabs

@@ -1,12 +1,11 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useStyles } from 'react-native-unistyles';
-import { DrawerToggleButton } from '@react-navigation/drawer';
-import { Drawer } from 'expo-router/drawer';
+import { useUnistyles } from 'react-native-unistyles';
+import { Drawer, DrawerToggleButton } from 'expo-router/drawer';
 
 import { CustomDrawerContent, ThemeButton } from '@/components';
 
 export default function Layout() {
-  const { theme } = useStyles();
+  const { theme } = useUnistyles();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

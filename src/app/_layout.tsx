@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { UnistylesRuntime, useStyles } from 'react-native-unistyles';
+import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -17,7 +17,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { appIsReady } = useInitApp();
-  const { theme } = useStyles();
+  const { theme } = useUnistyles();
 
   useEffect(() => {
     if (appIsReady) SplashScreen.hideAsync();
@@ -31,7 +31,7 @@ export default function RootLayout() {
       <SafeAreaProvider style={{ backgroundColor: theme.colors.background }}>
         <Stack
           screenOptions={{
-            headerBackTitleVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
             headerTitleStyle: {
               color: theme.colors.primary,
             },
@@ -45,7 +45,6 @@ export default function RootLayout() {
             },
             headerShadowVisible: false,
             animation: 'fade',
-            statusBarTranslucent: true,
           }}
         >
           <Stack.Screen

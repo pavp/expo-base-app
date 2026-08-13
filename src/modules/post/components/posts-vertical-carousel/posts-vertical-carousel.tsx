@@ -1,6 +1,5 @@
 import { memo, ReactNode, useCallback } from 'react';
 import { View } from 'react-native';
-import { useStyles } from 'react-native-unistyles';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
@@ -8,7 +7,7 @@ import { Post } from '@/api/post';
 import { ActivityIndicator } from '@/ui';
 
 import { type PostItemCardProps, PostVerticalCarouselItem } from './components';
-import { stylesheet } from './styles';
+import { styles } from './styles';
 
 interface PostsVerticalCarouselProps {
   data: Post[] | undefined;
@@ -27,7 +26,6 @@ const PostsVerticalCarousel = ({
   onEndReached,
   onRefresh,
 }: PostsVerticalCarouselProps) => {
-  const { styles } = useStyles(stylesheet);
 
   const handlePressItem = useCallback((id: number | string, userId: number | string) => {
     router.navigate({ pathname: '/post/[id]', params: { id, userId } });
@@ -62,7 +60,6 @@ const PostsVerticalCarousel = ({
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           testID={'data-list'}
-          estimatedItemSize={100}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.2}
           ListFooterComponent={renderFooter}
