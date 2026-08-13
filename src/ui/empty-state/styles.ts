@@ -15,7 +15,7 @@ export const styles = StyleSheet.create((theme) => ({
     textAlign: 'center',
   },
   description: {
-    color: theme.colors.secondary,
+    color: theme.colors.typographyMuted,
     fontSize: theme.fontSize.md,
     textAlign: 'center',
   },

@@ -40,10 +40,8 @@ export const lightTheme = {
     // end of its own scale clears the contrast bar against its own primary.
     onPrimary: '#ffffff',
     typography: '#0c0b10',
-    // `secondary` is a border grey, too faint to read against `background`.
     typographyMuted: '#6b6a73',
     background: '#f4f4f7',
-    secondary: '#c9c7cc',
     highlight: '#000000',
     surface: '#ffffff',
     surfaceSelected: '#e8e3fa',
@@ -67,7 +65,6 @@ export const darkTheme = {
     // are harsh against light text on OLED. Both steps are lifted, and the gap
     // between them widened from ΔL* 4.4 to 7.1 so cards separate from the page.
     background: '#121118',
-    secondary: '#605f69',
     highlight: '#ffffff',
     surface: '#211f2b',
     surfaceSelected: '#2a2340',

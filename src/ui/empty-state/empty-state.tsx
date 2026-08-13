@@ -16,7 +16,7 @@ export const EmptyState = ({ icon, title, description, testID }: EmptyStateProps
 
   return (
     <View style={styles.container} testID={testID}>
-      <MaterialIcons name={icon} size={48} color={theme.colors.secondary} />
+      <MaterialIcons name={icon} size={48} color={theme.colors.typographyMuted} />
       <Text style={styles.title}>{title}</Text>
       {description ? <Text style={styles.description}>{description}</Text> : null}
     </View>
