@@ -10,8 +10,7 @@ export const styles = StyleSheet.create((theme) => ({
   },
   author: {
     color: theme.colors.primary,
-    // `theme.fontSize.sm` is 8, unreadable for metadata: the scale jumps straight to 16 (md).
-    fontSize: 12,
+    fontSize: theme.fontSize.sm,
     fontWeight: '600',
     marginBottom: theme.margins.md,
     textTransform: 'uppercase',

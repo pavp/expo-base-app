@@ -26,7 +26,8 @@ export const commonTheme = {
     xxxl: 32,
   },
   fontSize: {
-    sm: 8,
+    xs: 8,
+    sm: 12,
     md: 16,
     lg: 24,
   },
