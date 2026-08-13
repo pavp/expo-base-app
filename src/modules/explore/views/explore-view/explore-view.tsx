@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useGetPosts } from '@/api/post';
 import { useGetUsers } from '@/api/user';
@@ -9,7 +8,7 @@ import { useGetUsers } from '@/api/user';
 // init hooks, and with them AsyncStorage, which tests would have to mock.
 import { useDebouncedValue } from '@/hooks/common/use-debounced-value/use-debounced-value';
 import { PostsVerticalCarousel } from '@/modules/post/components';
-import { EmptyState, FilterChip, FilterChips, SearchInput } from '@/ui';
+import { EmptyState, FilterChip, FilterChips, SafeAreaView, SearchInput } from '@/ui';
 
 import { styles } from './styles';
 

@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useGetPosts } from '@/api/post';
 import { PostsVerticalCarousel } from '@/modules/post/components';
+import { SafeAreaView } from '@/ui';
 
 import { styles } from './styles';
 
