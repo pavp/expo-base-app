@@ -1,8 +1,7 @@
 import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 
-import { ActivityIndicator } from '@/ui';
+import { ActivityIndicator, SafeAreaView } from '@/ui';
 
 import { CommentList } from '../../components/comment-list/comment-list';
 import { useDetailPost } from '../../hooks';
