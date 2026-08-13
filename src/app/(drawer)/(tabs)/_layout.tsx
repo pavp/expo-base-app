@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import { Tabs } from 'expo-router';
 
 import { TabBarIcon } from '@/components';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
   // See the note in src/app/_layout.tsx: read the palette from the runtime so
   // tab bar options never render with a stale theme.
   const { rt } = useUnistyles();
@@ -24,14 +26,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('screens.home'),
           tabBarIcon: ({ color, focused }) => <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
+          title: t('screens.explore'),
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
           ),

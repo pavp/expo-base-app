@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import { router, usePathname } from 'expo-router';
@@ -9,13 +10,14 @@ import { styles } from './styles';
 
 export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { theme } = useUnistyles();
 
   return (
     <DrawerContentScrollView {...props} style={styles.container} contentContainerStyle={styles.contentContainer}>
       <>
         <DrawerItem
-          label="Home"
+          label={t('screens.home')}
           labelStyle={styles.drawerItemLabel(pathname === '/')}
           style={styles.drawerItemContainer(pathname === '/')}
           icon={({ size }) => (
@@ -28,7 +30,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
           onPress={() => router.navigate('/')}
         />
         <DrawerItem
-          label="Explore"
+          label={t('screens.explore')}
           labelStyle={styles.drawerItemLabel(pathname === '/explore')}
           style={styles.drawerItemContainer(pathname === '/explore')}
           icon={({ size }) => (
@@ -44,7 +46,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
 
       <View style={styles.bottomContainer}>
         <DrawerItem
-          label="Settings"
+          label={t('screens.settings')}
           labelStyle={styles.drawerItemLabel(pathname === '/settings')}
           style={styles.drawerItemContainer(pathname === '/settings')}
           icon={({ size }) => (

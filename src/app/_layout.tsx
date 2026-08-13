@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
@@ -17,6 +18,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { appIsReady } = useInitApp();
+  const { t } = useTranslation();
   // Subscribe to theme changes via `rt`, but read the palette from the runtime.
   // The hook's own `theme` object can lag behind `themeName`, which paints the
   // native header options with the previous theme's colors.
@@ -64,13 +66,13 @@ export default function RootLayout() {
             <Stack.Screen
               name="post/[id]"
               options={{
-                title: 'Post',
+                title: t('screens.post'),
               }}
             />
             <Stack.Screen
               name="settings/index"
               options={{
-                title: 'Settings',
+                title: t('screens.settings'),
               }}
             />
           </Stack>
