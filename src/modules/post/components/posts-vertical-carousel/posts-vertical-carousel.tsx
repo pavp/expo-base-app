@@ -57,6 +57,7 @@ const PostsVerticalCarousel = ({
         <FlashList
           data={data}
           renderItem={renderItem}
+          contentContainerStyle={styles.listContentContainer}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           testID={'data-list'}

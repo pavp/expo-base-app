@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create((theme) => ({
   container: {
+    backgroundColor: theme.colors.background,
     borderColor: theme.colors.secondary,
     padding: theme.padding.xxl,
   },

@@ -16,7 +16,6 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
       <>
         <DrawerItem
           label="Home"
-          activeTintColor="red"
           labelStyle={styles.drawerItemLabel(pathname === '/')}
           style={styles.drawerItemContainer(pathname === '/')}
           icon={({ size }) => (
@@ -26,7 +25,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
               size={size}
             />
           )}
-          onPress={() => router.push('/(drawer)/(tabs)/')}
+          onPress={() => router.navigate('/')}
         />
         <DrawerItem
           label="Explore"
@@ -39,7 +38,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
               size={size}
             />
           )}
-          onPress={() => router.push('/(drawer)/(tabs)/explore')}
+          onPress={() => router.navigate('/explore')}
         />
       </>
 
