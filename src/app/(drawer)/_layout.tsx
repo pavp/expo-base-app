@@ -1,19 +1,23 @@
+import { useTranslation } from 'react-i18next';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useStyles } from 'react-native-unistyles';
-import { DrawerToggleButton } from '@react-navigation/drawer';
-import { Drawer } from 'expo-router/drawer';
+import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
+import { Drawer, DrawerToggleButton } from 'expo-router/drawer';
 
 import { CustomDrawerContent, ThemeButton } from '@/components';
 
 export default function Layout() {
-  const { theme } = useStyles();
+  const { t } = useTranslation();
+  // See the note in src/app/_layout.tsx: read the palette from the runtime so
+  // header options never render with a stale theme.
+  const { rt } = useUnistyles();
+  const theme = UnistylesRuntime.getTheme(rt.themeName);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
         drawerContent={(props) => <CustomDrawerContent {...props} />}
         screenOptions={{
-          title: 'Placeholders',
+          title: t('screens.posts'),
           headerLeft: () => <DrawerToggleButton tintColor={theme.colors.primary} />,
           headerRight: () => <ThemeButton />,
           headerRightContainerStyle: { paddingRight: theme.margins.xxl },

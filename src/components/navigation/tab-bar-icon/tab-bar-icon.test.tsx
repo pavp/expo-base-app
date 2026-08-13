@@ -6,12 +6,12 @@ import { render } from '@/test/test-utils';
 import { TabBarIcon } from './tab-bar-icon';
 
 describe('TabBarIcon', () => {
-  it('should render Ionicons with correct props', () => {
+  it('should render Ionicons with correct props', async () => {
     const mockName = 'analytics';
     const mockColor = 'blue';
     const mockStyle = { marginBottom: -5 };
 
-    render(<TabBarIcon name={mockName} color={mockColor} style={mockStyle} />);
+    await render(<TabBarIcon name={mockName} color={mockColor} style={mockStyle} />);
 
     // Assert that Ionicons was called with correct props
     expect(Ionicons).toHaveBeenCalledWith(
@@ -21,7 +21,7 @@ describe('TabBarIcon', () => {
         size: 28,
         style: [{ marginBottom: -3 }, mockStyle],
       }),
-      {},
+      undefined,
     );
   });
 });

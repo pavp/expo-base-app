@@ -1,7 +1,8 @@
-import { createStyleSheet } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 
-export const stylesheet = createStyleSheet((theme) => ({
+export const styles = StyleSheet.create((theme) => ({
   container: {
+    backgroundColor: theme.colors.background,
     borderColor: theme.colors.secondary,
     padding: theme.padding.xxl,
   },

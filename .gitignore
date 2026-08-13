@@ -28,3 +28,13 @@ web-build/
 
 expo-env.d.ts
 # @end expo-cli
+
+# Metro
+.metro-health-check*
+
+# Native
+.kotlin/
+
+# generated native folders
+/ios
+/android

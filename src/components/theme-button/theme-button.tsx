@@ -1,10 +1,10 @@
-import { UnistylesRuntime, UnistylesThemes, useStyles } from 'react-native-unistyles';
+import { UnistylesRuntime, UnistylesThemes, useUnistyles } from 'react-native-unistyles';
 
 import { setItem } from '@/lib/async-storage';
 import { MaterialIcon } from '@/ui';
 
 export const ThemeButton = () => {
-  const { theme } = useStyles();
+  const { theme } = useUnistyles();
 
   const color = UnistylesRuntime.themeName === 'dark' ? theme.colors.white : theme.colors.black;
   const name = UnistylesRuntime.themeName === 'dark' ? 'light-mode' : 'dark-mode';

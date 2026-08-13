@@ -1,18 +1,18 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { useStyles } from 'react-native-unistyles';
+import { useUnistyles } from 'react-native-unistyles';
 
 import { Comment } from '@/api/comment';
 import { MaterialIcon } from '@/ui';
 
-import { stylesheet } from './styles';
+import { styles } from './styles';
 
 interface CommentItemProps {
   comment: Comment;
 }
 
 export const CommentItem = ({ comment }: CommentItemProps) => {
-  const { styles, theme } = useStyles(stylesheet);
+  const { theme } = useUnistyles();
   const { body, name, email } = comment;
 
   return (

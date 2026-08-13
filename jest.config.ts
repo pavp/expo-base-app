@@ -1,4 +1,5 @@
 import type { Config } from 'jest';
+import expoPreset from 'jest-expo/jest-preset';
 
 const config: Config = {
   preset: 'jest-expo',
@@ -31,12 +32,12 @@ const config: Config = {
     '^@/test/(.*)$': '<rootDir>/test/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  setupFiles: ['./test/jest.polyfills.ts', 'react-native-unistyles/mocks', './src/styles/unistyles.ts'],
   setupFilesAfterEnv: ['./test/jest.setup.ts'],
   testPathIgnorePatterns: ['./node_modules/', './.expo/', '/test/', '/public/'],
-  transformIgnorePatterns: [
-    // eslint-disable-next-line max-len
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
-  ],
+  transformIgnorePatterns: expoPreset.transformIgnorePatterns.map((pattern: string) =>
+    pattern.startsWith('/node_modules/(?!(') ? pattern.replace('))', '|@faker-js))') : pattern,
+  ),
 };
 
 export default config;

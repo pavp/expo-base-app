@@ -27,7 +27,7 @@ describe('useGetPosts', () => {
       .onGet(`${API_ENDPOINT.GET_POSTS}?_page=${initialPageParam + 1}&_limit=${DEFAULT_LIMIT}`)
       .reply(200, additionalMockPosts);
 
-    const { result } = renderHookWithProviders(() => useGetPosts());
+    const { result } = await renderHookWithProviders(() => useGetPosts());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.pages.flat()).toHaveLength(DEFAULT_LIMIT);
@@ -49,7 +49,7 @@ describe('useGetPosts', () => {
 
     mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=${initialPageParam}&_limit=${DEFAULT_LIMIT}`).reply(200, mockPosts);
 
-    const { result } = renderHookWithProviders(() => useGetPosts());
+    const { result } = await renderHookWithProviders(() => useGetPosts());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.pages.flat()).toHaveLength(DEFAULT_LIMIT - 5);
@@ -66,7 +66,7 @@ describe('useGetPosts', () => {
     const pageParam = 1;
     mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=${pageParam}&_limit=${DEFAULT_LIMIT}`).reply(500);
 
-    const { result } = renderHookWithProviders(() => useGetPosts());
+    const { result } = await renderHookWithProviders(() => useGetPosts());
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 

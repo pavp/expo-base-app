@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { UnistylesRuntime, useStyles } from 'react-native-unistyles';
-import { Stack } from 'expo-router';
+import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
@@ -17,7 +18,12 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { appIsReady } = useInitApp();
-  const { theme } = useStyles();
+  const { t } = useTranslation();
+  // Subscribe to theme changes via `rt`, but read the palette from the runtime.
+  // The hook's own `theme` object can lag behind `themeName`, which paints the
+  // native header options with the previous theme's colors.
+  const { rt } = useUnistyles();
+  const theme = UnistylesRuntime.getTheme(rt.themeName);
 
   useEffect(() => {
     if (appIsReady) SplashScreen.hideAsync();
@@ -29,44 +35,48 @@ export default function RootLayout() {
     <APIProvider>
       <StatusBar style={UnistylesRuntime.themeName === 'light' ? 'dark' : 'light'} />
       <SafeAreaProvider style={{ backgroundColor: theme.colors.background }}>
-        <Stack
-          screenOptions={{
-            headerBackTitleVisible: false,
-            headerTitleStyle: {
-              color: theme.colors.primary,
-            },
-            headerTitleAlign: 'center',
-            headerStyle: {
-              backgroundColor: theme.colors.background,
-            },
-            headerTintColor: theme.colors.typography,
-            contentStyle: {
-              backgroundColor: theme.colors.background,
-            },
-            headerShadowVisible: false,
-            animation: 'fade',
-            statusBarTranslucent: true,
-          }}
-        >
-          <Stack.Screen
-            name="(drawer)"
-            options={{
-              headerShown: false,
+        {/* React Navigation needs its own theme to match the app's: on iOS 26 the
+            Liquid Glass header buttons derive their material from it, and a
+            mismatch makes them flash their background during transitions. */}
+        <ThemeProvider value={rt.themeName === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack
+            screenOptions={{
+              headerBackButtonDisplayMode: 'minimal',
+              headerTitleStyle: {
+                color: theme.colors.primary,
+              },
+              headerTitleAlign: 'center',
+              headerStyle: {
+                backgroundColor: theme.colors.background,
+              },
+              headerTintColor: theme.colors.primary,
+              contentStyle: {
+                backgroundColor: theme.colors.background,
+              },
+              headerShadowVisible: false,
+              animation: 'fade',
             }}
-          />
-          <Stack.Screen
-            name="post/[id]"
-            options={{
-              title: 'Post',
-            }}
-          />
-          <Stack.Screen
-            name="settings/index"
-            options={{
-              title: 'Settings',
-            }}
-          />
-        </Stack>
+          >
+            <Stack.Screen
+              name="(drawer)"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="post/[id]"
+              options={{
+                title: t('screens.post'),
+              }}
+            />
+            <Stack.Screen
+              name="settings/index"
+              options={{
+                title: t('screens.settings'),
+              }}
+            />
+          </Stack>
+        </ThemeProvider>
       </SafeAreaProvider>
     </APIProvider>
   );

@@ -20,7 +20,7 @@ describe('useGetUser', () => {
   it('should fetches and returns post data successfully', async () => {
     mock.onGet(API_ENDPOINT.GET_USER + user.id).reply(200, user);
 
-    const { result } = renderHookWithProviders(() => useGetUser({ variables: user.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetUser({ variables: user.id.toString() }));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -31,7 +31,7 @@ describe('useGetUser', () => {
     // Mock a 500 server error
     mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
 
-    const { result } = renderHookWithProviders(() => useGetUser({ variables: user.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetUser({ variables: user.id.toString() }));
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 

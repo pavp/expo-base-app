@@ -16,7 +16,7 @@ describe('useDetailPost', () => {
     jest.clearAllMocks();
   });
 
-  it('should returns post and user data with loading state false when both hooks resolve successfully', () => {
+  it('should returns post and user data with loading state false when both hooks resolve successfully', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
@@ -27,14 +27,14 @@ describe('useDetailPost', () => {
       isLoading: false,
     } as any);
 
-    const { result } = renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
     expect(result.current.post).toEqual(post);
     expect(result.current.user).toEqual(user);
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('should returns loading state true when post data is still loading', () => {
+  it('should returns loading state true when post data is still loading', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: {},
       isLoading: true,
@@ -45,14 +45,14 @@ describe('useDetailPost', () => {
       isLoading: false,
     } as any);
 
-    const { result } = renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
     expect(result.current.post).toEqual({});
     expect(result.current.user).toEqual(user);
     expect(result.current.isLoading).toBe(true);
   });
 
-  it('should returns loading state true when user data is still loading', () => {
+  it('should returns loading state true when user data is still loading', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
@@ -63,14 +63,14 @@ describe('useDetailPost', () => {
       isLoading: true,
     } as any);
 
-    const { result } = renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
     expect(result.current.post).toEqual(post);
     expect(result.current.user).toEqual({});
     expect(result.current.isLoading).toBe(true);
   });
 
-  it('should returns loading state true when both post and user data are loading', () => {
+  it('should returns loading state true when both post and user data are loading', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: {},
       isLoading: true,
@@ -81,14 +81,14 @@ describe('useDetailPost', () => {
       isLoading: true,
     } as any);
 
-    const { result } = renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
     expect(result.current.post).toEqual({});
     expect(result.current.user).toEqual({});
     expect(result.current.isLoading).toBe(true);
   });
 
-  it('should returns default post value when useGetPostById returns undefined', () => {
+  it('should returns default post value when useGetPostById returns undefined', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -99,7 +99,7 @@ describe('useDetailPost', () => {
       isLoading: false,
     } as any);
 
-    const { result } = renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
     // Expect the post to be the default value (empty object cast as Post)
     expect(result.current.post).toEqual({});
@@ -107,7 +107,7 @@ describe('useDetailPost', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('should returns default user value when useGetUser returns undefined', () => {
+  it('should returns default user value when useGetUser returns undefined', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
@@ -118,7 +118,7 @@ describe('useDetailPost', () => {
       isLoading: false,
     } as any);
 
-    const { result } = renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
     // Expect the user to be the default value (empty object cast as User)
     expect(result.current.post).toEqual(post);

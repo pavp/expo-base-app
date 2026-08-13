@@ -14,8 +14,8 @@ describe('APIProvider', () => {
     jest.clearAllMocks();
   });
 
-  it('should render children correctly', () => {
-    render(
+  it('should render children correctly', async () => {
+    await render(
       <APIProvider>
         <Text>Test Child</Text>
       </APIProvider>,
@@ -24,10 +24,10 @@ describe('APIProvider', () => {
     expect(screen.getByText('Test Child')).toBeTruthy();
   });
 
-  it('should call useReactQueryDevTools', () => {
+  it('should call useReactQueryDevTools', async () => {
     const { useReactQueryDevTools } = require('@dev-plugins/react-query');
 
-    render(
+    await render(
       <APIProvider>
         <Text>Test Child</Text>
       </APIProvider>,

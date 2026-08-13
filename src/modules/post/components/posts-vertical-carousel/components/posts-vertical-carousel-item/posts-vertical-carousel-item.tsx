@@ -1,10 +1,9 @@
 import { memo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { useStyles } from 'react-native-unistyles';
 
 import { Post } from '@/api/post';
 
-import { stylesheet } from './styles';
+import { styles } from './styles';
 
 export interface PostItemCardProps {
   item: Post;
@@ -14,7 +13,6 @@ export interface PostItemCardProps {
 
 const PostVerticalCarouselItem = ({ item, showSeparator, handlePressItem }: PostItemCardProps) => {
   const { title, body } = item;
-  const { styles } = useStyles(stylesheet);
 
   return (
     <>

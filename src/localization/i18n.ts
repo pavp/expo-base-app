@@ -11,17 +11,23 @@ const resources = {
   es: es_ES,
 };
 
-const locale = getLocales()[0].languageCode;
+export const supportedLanguages = ['en', 'es'] as const;
+
+export type SupportedLanguage = (typeof supportedLanguages)[number];
+
+const isSupported = (value: string | null | undefined): value is SupportedLanguage =>
+  supportedLanguages.includes(value as SupportedLanguage);
+
+// Fall back to the device locale, then to the configured default. A stored
+// preference is applied later by `useInitLanguage`, so it is not read here.
+const deviceLocale = getLocales()[0]?.languageCode;
 
 i18n.use(initReactI18next).init({
   resources,
-  compatibilityJSON: 'v3',
-  lng: config.translation.defaultLocale, // Default language
+  lng: isSupported(deviceLocale) ? deviceLocale : config.translation.defaultLocale,
   interpolation: {
     escapeValue: false, // React already escapes values
   },
 });
-
-i18n.changeLanguage(locale);
 
 export default i18n;

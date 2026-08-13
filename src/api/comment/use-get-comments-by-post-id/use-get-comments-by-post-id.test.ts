@@ -22,7 +22,7 @@ describe('useGetCommentsByPostId', () => {
   it('should fetches and returns comments data successfully', async () => {
     mock.onGet(API_ENDPOINT.GET_COMMENTS.replace('{postId}', post.id.toString())).reply(200, comments);
 
-    const { result } = renderHookWithProviders(() => useGetCommentsByPostId({ variables: post.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetCommentsByPostId({ variables: post.id.toString() }));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(comments);
@@ -32,7 +32,7 @@ describe('useGetCommentsByPostId', () => {
     // Mock a 500 server error
     mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
 
-    const { result } = renderHookWithProviders(() => useGetCommentsByPostId({ variables: post.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetCommentsByPostId({ variables: post.id.toString() }));
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBeDefined();

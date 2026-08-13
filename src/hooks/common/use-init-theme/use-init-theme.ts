@@ -9,7 +9,8 @@ export const useInitTheme = () => {
   const loadSelectedTheme = async () => {
     try {
       const theme = (await getItem('theme')) as keyof UnistylesThemes;
-      UnistylesRuntime.setTheme(theme);
+
+      if (theme) UnistylesRuntime.setTheme(theme);
     } catch (e) {
       console.warn(e);
     } finally {
