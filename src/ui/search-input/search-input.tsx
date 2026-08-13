@@ -24,13 +24,13 @@ export const SearchInput = ({
 
   return (
     <View style={styles.container}>
-      <MaterialIcon name="search" color={theme.colors.secondary} />
+      <MaterialIcon name="search" color={theme.colors.typographyMuted} />
       <TextInput
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={theme.colors.secondary}
+        placeholderTextColor={theme.colors.typographyMuted}
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
@@ -39,7 +39,7 @@ export const SearchInput = ({
       {value.length > 0 ? (
         <MaterialIcon
           name="close"
-          color={theme.colors.secondary}
+          color={theme.colors.typographyMuted}
           onPress={() => onChangeText('')}
           accessibilityLabel={clearAccessibilityLabel}
         />

@@ -14,7 +14,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
     marginBottom: theme.margins.xxxl,
   },
   sectionTitle: {
-    color: theme.colors.secondary,
+    color: theme.colors.typographyMuted,
     fontSize: theme.fontSize.md,
     fontWeight: 'bold',
     marginBottom: theme.margins.lg,
@@ -32,7 +32,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
     fontSize: theme.fontSize.md,
   },
   rowValue: {
-    color: theme.colors.secondary,
+    color: theme.colors.typographyMuted,
     fontSize: theme.fontSize.md,
   },
 }));
