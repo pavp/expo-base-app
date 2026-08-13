@@ -11,6 +11,10 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
+      // Drop cache entries as soon as they go unused. Without this, a query
+      // outlives the test that mounted it and the next one can refetch against
+      // a mock adapter that has already been reset.
+      gcTime: 0,
     },
   },
 });

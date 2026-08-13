@@ -4,26 +4,41 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useGetPosts } from '@/api/post';
+import { useGetUsers } from '@/api/user';
 // Imported directly rather than through `@/hooks`: that barrel pulls in the app
 // init hooks, and with them AsyncStorage, which tests would have to mock.
 import { useDebouncedValue } from '@/hooks/common/use-debounced-value/use-debounced-value';
 import { PostsVerticalCarousel } from '@/modules/post/components';
-import { EmptyState, SearchInput } from '@/ui';
+import { EmptyState, FilterChip, FilterChips, SearchInput } from '@/ui';
 
 import { styles } from './styles';
 
 export const ExploreView = () => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
+  const [authorId, setAuthorId] = useState<number | null>(null);
   const debouncedSearchTerm = useDebouncedValue(searchTerm.trim());
 
-  const hasSearch = debouncedSearchTerm.length > 0;
+  const { data: users } = useGetUsers();
+
+  const hasFilter = debouncedSearchTerm.length > 0 || authorId !== null;
 
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, refetch, fetchNextPage, isRefetching } =
     useGetPosts({
-      variables: { q: debouncedSearchTerm },
-      enabled: hasSearch,
+      variables: {
+        q: debouncedSearchTerm || undefined,
+        userId: authorId ?? undefined,
+      },
+      enabled: hasFilter,
     });
+
+  const authorOptions = useMemo<FilterChip[]>(
+    () => [
+      { value: null, label: t('explore.allAuthors') },
+      ...(users ?? []).map(({ id, name }) => ({ value: id, label: name })),
+    ],
+    [t, users],
+  );
 
   const onEndReached = useCallback(() => {
     if (hasNextPage) fetchNextPage();
@@ -32,7 +47,7 @@ export const ExploreView = () => {
   const postsData = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
 
   const renderResults = () => {
-    if (!hasSearch)
+    if (!hasFilter)
       return (
         <EmptyState
           icon="search"
@@ -57,7 +72,11 @@ export const ExploreView = () => {
         <EmptyState
           icon="search-off"
           title={t('explore.noResultsTitle')}
-          description={t('explore.noResultsDescription', { term: debouncedSearchTerm })}
+          description={
+            debouncedSearchTerm
+              ? t('explore.noResultsDescription', { term: debouncedSearchTerm })
+              : t('explore.noResultsForAuthorDescription')
+          }
           testID="explore-no-results"
         />
       );
@@ -83,6 +102,14 @@ export const ExploreView = () => {
         clearAccessibilityLabel={t('explore.clearSearch')}
         testID="explore-search-input"
       />
+      <View style={styles.chips}>
+        <FilterChips
+          options={authorOptions}
+          selectedValue={authorId}
+          onSelect={setAuthorId}
+          testID="explore-author-chips"
+        />
+      </View>
       <View style={styles.results}>{renderResults()}</View>
     </SafeAreaView>
   );

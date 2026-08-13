@@ -1,15 +1,23 @@
 import React from 'react';
 import MockAdapter from 'axios-mock-adapter';
 
-import { client, DEFAULT_LIMIT, Post } from '@/api';
+import { client, DEFAULT_LIMIT, Post, User } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
-import { generateMockPosts } from '@/test/entities';
+import { generateMockPosts, generateMockUsers } from '@/test/entities';
 import { fireEvent, queryClient, renderWithProviders, screen, waitFor } from '@/test/test-utils';
 
 import { ExploreView } from './explore-view';
 
 describe('ExploreView', () => {
   const mock = new MockAdapter(client);
+  // Stable across tests: react-query caches the author list, so regenerating it
+  // per test would leave a stale set on screen with different ids.
+  const mockUsers: User[] = generateMockUsers(3);
+
+  beforeEach(() => {
+    // Re-registered per test because `reset()` below clears every handler.
+    mock.onGet(API_ENDPOINT.USERS).reply(200, mockUsers);
+  });
 
   afterEach(() => {
     queryClient.clear();
@@ -57,4 +65,45 @@ describe('ExploreView', () => {
 
     await waitFor(() => expect(screen.getByTestId('explore-error')).toBeTruthy());
   });
+
+  it('should offer a chip per author plus an unfiltered option', async () => {
+    await renderWithProviders(<ExploreView />);
+
+    await waitFor(() => expect(screen.getByTestId('explore-author-chips-all')).toBeTruthy());
+
+    mockUsers.forEach(({ id }) => expect(screen.getByTestId(`explore-author-chips-${id}`)).toBeTruthy());
+  });
+
+  it('should filter by author without a search term', async () => {
+    const [author] = mockUsers;
+    const mockPosts: Post[] = generateMockPosts(2);
+
+    mock.onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&userId=${author.id}`).reply(200, mockPosts);
+
+    await renderWithProviders(<ExploreView />);
+
+    await waitFor(() => expect(screen.getByTestId(`explore-author-chips-${author.id}`)).toBeTruthy());
+    fireEvent.press(screen.getByTestId(`explore-author-chips-${author.id}`));
+
+    await waitFor(() => expect(screen.getByTestId('data-list')).toBeTruthy());
+  });
+
+  it('should combine the search term with the author filter', async () => {
+    const [author] = mockUsers;
+    const mockPosts: Post[] = generateMockPosts(1);
+
+    mock
+      .onGet(`${API_ENDPOINT.GET_POSTS}?_page=1&_limit=${DEFAULT_LIMIT}&q=lorem&userId=${author.id}`)
+      .reply(200, mockPosts);
+
+    await renderWithProviders(<ExploreView />);
+
+    await waitFor(() => expect(screen.getByTestId(`explore-author-chips-${author.id}`)).toBeTruthy());
+
+    fireEvent.changeText(screen.getByTestId('explore-search-input'), 'lorem');
+    fireEvent.press(screen.getByTestId(`explore-author-chips-${author.id}`));
+
+    await waitFor(() => expect(screen.getByTestId('data-list')).toBeTruthy());
+  });
+
 });
