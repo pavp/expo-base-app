@@ -16,6 +16,11 @@ const es_ES: typeof en_US = {
       emptyTitle: 'Todavía no hay publicaciones',
       emptyDescription: 'Por ahora no hay nada que leer aquí.',
     },
+    postDetail: {
+      errorTitle: 'Publicación no disponible',
+      errorDescription: 'No se pudo cargar esta publicación. Vuelve atrás e inténtalo de nuevo.',
+      comments: 'Comentarios',
+    },
     explore: {
       searchPlaceholder: 'Buscar publicaciones',
       clearSearch: 'Borrar búsqueda',

@@ -88,7 +88,7 @@ describe('useDetailPost', () => {
     expect(result.current.isLoading).toBe(true);
   });
 
-  it('should returns default post value when useGetPostById returns undefined', async () => {
+  it('should report an error when the settled post request yields no post', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -101,13 +101,33 @@ describe('useDetailPost', () => {
 
     const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
-    // Expect the post to be the default value (empty object cast as Post)
-    expect(result.current.post).toEqual({});
+    // Reporting `undefined` rather than an empty object is what stops the view
+    // from reaching for `post.id` on a post that never arrived.
+    expect(result.current.post).toBeUndefined();
     expect(result.current.user).toEqual(user);
     expect(result.current.isLoading).toBe(false);
+    expect(result.current.isError).toBe(true);
   });
 
-  it('should returns default user value when useGetUser returns undefined', async () => {
+  it('should not report an error when only the user request fails', async () => {
+    jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
+      data: post,
+      isLoading: false,
+    } as any);
+
+    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+    } as any);
+
+    const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
+
+    expect(result.current.post).toEqual(post);
+    expect(result.current.isError).toBe(false);
+  });
+
+  it('should report no user when useGetUser returns undefined', async () => {
     jest.spyOn(postHooks, 'useGetPostById').mockReturnValue({
       data: post,
       isLoading: false,
@@ -120,9 +140,8 @@ describe('useDetailPost', () => {
 
     const { result } = await renderHookWithProviders(() => useDetailPost({ id: '1', userId: '1' }));
 
-    // Expect the user to be the default value (empty object cast as User)
     expect(result.current.post).toEqual(post);
-    expect(result.current.user).toEqual({});
+    expect(result.current.user).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
   });
 });

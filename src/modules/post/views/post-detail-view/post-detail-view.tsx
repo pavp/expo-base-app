@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
-import { ActivityIndicator, SafeAreaView } from '@/ui';
+import { ActivityIndicator, EmptyState, SafeAreaView } from '@/ui';
 
 import { CommentList } from '../../components/comment-list/comment-list';
 import { useDetailPost } from '../../hooks';
@@ -9,30 +10,47 @@ import { useDetailPost } from '../../hooks';
 import { styles } from './styles';
 
 export const PostDetailView = () => {
+  const { t } = useTranslation();
   const { id, userId } = useLocalSearchParams<{ id: string; userId: string }>();
-  const { post, user, isLoading } = useDetailPost({ id, userId });
+  const { post, user, isLoading, isError } = useDetailPost({ id, userId });
 
-  const { title, body } = post;
-  const { name, username } = user;
-
-  return (
-    <SafeAreaView edges={['bottom']} testID="detail-container" style={styles.container}>
-      {isLoading ? (
+  const renderContent = () => {
+    if (isLoading)
+      return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator />
         </View>
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+      );
+
+    if (isError || !post)
+      return (
+        <EmptyState
+          icon="error-outline"
+          title={t('postDetail.errorTitle')}
+          description={t('postDetail.errorDescription')}
+          testID="detail-error"
+        />
+      );
+
+    return (
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {!!user && (
           <View style={styles.userContainer}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.username}>{`@${username}`}</Text>
+            <Text style={styles.name}>{user.name}</Text>
+            <Text style={styles.username}>{`@${user.username}`}</Text>
           </View>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.body}>{body}</Text>
-          <View style={styles.separator} />
-          <CommentList postId={post.id.toString()} />
-        </ScrollView>
-      )}
+        )}
+        <Text style={styles.title}>{post.title}</Text>
+        <Text style={styles.body}>{post.body}</Text>
+        <View style={styles.separator} />
+        <CommentList postId={post.id.toString()} />
+      </ScrollView>
+    );
+  };
+
+  return (
+    <SafeAreaView edges={['bottom']} testID="detail-container" style={styles.container}>
+      {renderContent()}
     </SafeAreaView>
   );
 };
