@@ -24,6 +24,7 @@ describe('PostDetailView', () => {
       post,
       user,
       isLoading: true,
+      isError: false,
     });
 
     await renderWithProviders(<PostDetailView />);
@@ -42,6 +43,7 @@ describe('PostDetailView', () => {
       post,
       user,
       isLoading: false,
+      isError: false,
     });
 
     await renderWithProviders(<PostDetailView />);
@@ -54,5 +56,32 @@ describe('PostDetailView', () => {
     expect(screen.getByText(`@${user.username}`)).toBeTruthy();
     expect(screen.getByText(post.title)).toBeTruthy();
     expect(screen.getByText(post.body)).toBeTruthy();
+  });
+
+  it('should report a failed post request instead of crashing', async () => {
+    jest.spyOn(hooks, 'useDetailPost').mockReturnValue({
+      post: undefined,
+      user: undefined,
+      isLoading: false,
+      isError: true,
+    });
+
+    await renderWithProviders(<PostDetailView />);
+
+    expect(screen.getByTestId('detail-error')).toBeTruthy();
+  });
+
+  it('should still render the post when only the author is missing', async () => {
+    jest.spyOn(hooks, 'useDetailPost').mockReturnValue({
+      post,
+      user: undefined,
+      isLoading: false,
+      isError: false,
+    });
+
+    await renderWithProviders(<PostDetailView />);
+
+    expect(screen.getByText(post.title)).toBeTruthy();
+    expect(screen.queryByTestId('detail-error')).toBeNull();
   });
 });

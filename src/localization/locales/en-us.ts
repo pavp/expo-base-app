@@ -14,6 +14,11 @@ export default {
       emptyTitle: 'No posts yet',
       emptyDescription: 'There is nothing to read here right now.',
     },
+    postDetail: {
+      errorTitle: 'Post unavailable',
+      errorDescription: 'This post could not be loaded. Go back and try again.',
+      comments: 'Comments',
+    },
     explore: {
       searchPlaceholder: 'Search posts',
       clearSearch: 'Clear search',

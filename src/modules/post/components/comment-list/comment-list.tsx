@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
 import { useGetCommentsByPostId } from '@/api/comment';
@@ -10,11 +11,12 @@ interface CommentListProps {
 }
 
 export const CommentList = ({ postId }: CommentListProps) => {
+  const { t } = useTranslation();
   const { data: comments = [] } = useGetCommentsByPostId({ variables: postId });
 
   return (
     <View>
-      <Text style={styles.title}>Comments</Text>
+      <Text style={styles.title}>{t('postDetail.comments')}</Text>
       {comments?.map((comment) => {
         return <CommentItem comment={comment} key={comment.id} />;
       })}
