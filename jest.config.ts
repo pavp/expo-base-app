@@ -31,6 +31,7 @@ const config: Config = {
     '^@/test/(.*)$': '<rootDir>/test/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  setupFiles: ['react-native-unistyles/mocks', './src/styles/unistyles.ts'],
   setupFilesAfterEnv: ['./test/jest.setup.ts'],
   testPathIgnorePatterns: ['./node_modules/', './.expo/', '/test/', '/public/'],
   transformIgnorePatterns: [
