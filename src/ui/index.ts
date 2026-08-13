@@ -1,4 +1,5 @@
 export { ActivityIndicator } from './activity-indicator/activity-indicator';
+export { Avatar } from './avatar/avatar';
 export { EmptyState } from './empty-state/empty-state';
 export type { FilterChip } from './filter-chips/filter-chips';
 export { FilterChips } from './filter-chips/filter-chips';
