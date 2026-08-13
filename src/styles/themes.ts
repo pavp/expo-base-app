@@ -37,6 +37,8 @@ export const lightTheme = {
   colors: {
     primary: '#6F53DE',
     typography: '#0c0b10',
+    // `secondary` is a border grey, too faint to read against `background`.
+    typographyMuted: '#6b6a73',
     background: '#f4f4f7',
     secondary: '#c9c7cc',
     highlight: '#000000',
@@ -52,6 +54,7 @@ export const darkTheme = {
   colors: {
     primary: '#6F53DE',
     typography: '#e0e0e0',
+    typographyMuted: '#9b99a3',
     background: '#0c0b10',
     secondary: '#605f69',
     highlight: '#ffffff',

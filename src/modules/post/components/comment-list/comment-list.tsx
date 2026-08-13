@@ -16,7 +16,7 @@ export const CommentList = ({ postId }: CommentListProps) => {
 
   return (
     <View>
-      <Text style={styles.title}>{t('postDetail.comments')}</Text>
+      <Text style={styles.title}>{`${t('postDetail.comments')} (${comments.length})`}</Text>
       {comments?.map((comment) => {
         return <CommentItem comment={comment} key={comment.id} />;
       })}
