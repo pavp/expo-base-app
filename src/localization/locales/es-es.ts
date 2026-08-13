@@ -10,6 +10,12 @@ const es_ES: typeof en_US = {
       posts: 'Placeholders',
       settings: 'Ajustes',
     },
+    home: {
+      errorTitle: 'Algo salió mal',
+      errorDescription: 'No se pudieron cargar las publicaciones. Desliza hacia abajo para reintentar.',
+      emptyTitle: 'Todavía no hay publicaciones',
+      emptyDescription: 'Por ahora no hay nada que leer aquí.',
+    },
     explore: {
       searchPlaceholder: 'Buscar publicaciones',
       clearSearch: 'Borrar búsqueda',
