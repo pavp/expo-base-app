@@ -6,6 +6,9 @@ export const styles = StyleSheet.create((theme) => ({
     flex: 1,
     width: '100%',
   },
+  chips: {
+    paddingBottom: theme.padding.xl,
+  },
   results: {
     flex: 1,
   },
