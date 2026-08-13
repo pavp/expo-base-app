@@ -1,5 +1,5 @@
-import { HomeView } from '@/modules/home';
+import { ExploreView } from '@/modules/explore';
 
 export default function ExploreScreen() {
-  return <HomeView />;
+  return <ExploreView />;
 }

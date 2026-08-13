@@ -10,6 +10,16 @@ const es_ES: typeof en_US = {
       posts: 'Placeholders',
       settings: 'Ajustes',
     },
+    explore: {
+      searchPlaceholder: 'Buscar publicaciones',
+      clearSearch: 'Borrar búsqueda',
+      emptyTitle: 'Busca una publicación',
+      emptyDescription: 'Escribe una palabra para buscar en el título y el cuerpo de cada publicación.',
+      noResultsTitle: 'Sin coincidencias',
+      noResultsDescription: 'No se encontró nada para «{{term}}». Prueba con otra palabra.',
+      errorTitle: 'Algo salió mal',
+      errorDescription: 'No se pudo completar la búsqueda. Desliza hacia abajo para reintentar.',
+    },
     settings: {
       appearance: 'Apariencia',
       theme: 'Tema',
