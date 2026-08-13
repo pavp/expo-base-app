@@ -8,6 +8,16 @@ export default {
       posts: 'Placeholders',
       settings: 'Settings',
     },
+    explore: {
+      searchPlaceholder: 'Search posts',
+      clearSearch: 'Clear search',
+      emptyTitle: 'Search for a post',
+      emptyDescription: 'Type a word to search across every post title and body.',
+      noResultsTitle: 'No matches',
+      noResultsDescription: 'Nothing came back for “{{term}}”. Try another word.',
+      errorTitle: 'Something went wrong',
+      errorDescription: 'The search could not be completed. Pull down to try again.',
+    },
     settings: {
       appearance: 'Appearance',
       theme: 'Theme',
