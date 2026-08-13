@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+
 import { useGetPosts } from '@/api/post';
 import { PostsVerticalCarousel } from '@/modules/post/components';
 import { SafeAreaView } from '@/ui';

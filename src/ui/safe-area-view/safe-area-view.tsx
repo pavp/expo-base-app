@@ -1,5 +1,5 @@
-import { withUnistyles } from 'react-native-unistyles';
 import { SafeAreaView as SafeAreaContextView } from 'react-native-safe-area-context';
+import { withUnistyles } from 'react-native-unistyles';
 
 /**
  * Unistyles rewrites whitelisted components so they repaint when the theme

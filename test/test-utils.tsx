@@ -30,8 +30,12 @@ const renderHookWithProviders = <Result, Props>(
   return renderHook(render, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions });
 };
 
-const renderWithProviders = async (ui: React.ReactElement, { ...renderOptions }: Omit<RenderOptions, 'wrapper'> = {}) => {
+const renderWithProviders = async (
+  ui: React.ReactElement,
+  { ...renderOptions }: Omit<RenderOptions, 'wrapper'> = {},
+) => {
   return { ...(await render(ui, { wrapper: (props) => <Wrapper {...props} />, ...renderOptions })) };
 };
+
 export * from '@testing-library/react-native';
 export { renderHookWithProviders, renderWithProviders };

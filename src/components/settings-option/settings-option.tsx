@@ -16,7 +16,12 @@ export const SettingsOption = ({ label, isSelected, onPress, testID }: SettingsO
   const { theme } = useUnistyles();
 
   return (
-    <Pressable accessibilityRole="radio" accessibilityState={{ selected: isSelected }} onPress={onPress} testID={testID}>
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected: isSelected }}
+      onPress={onPress}
+      testID={testID}
+    >
       <View style={styles.container(isSelected)}>
         <Text style={styles.label(isSelected)}>{label}</Text>
         {isSelected ? <MaterialIcon name="check" color={theme.colors.primary} onPress={onPress} /> : null}

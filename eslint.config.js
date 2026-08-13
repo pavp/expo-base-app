@@ -43,7 +43,6 @@ module.exports = defineConfig([
       'import/first': 'error',
       'import/newline-after-import': 'error',
       'import/no-duplicates': 'error',
-      '@typescript-eslint/no-unused-vars': 2,
       'max-params': ['error', 3],
       'no-restricted-imports': [
         'error',
@@ -77,9 +76,19 @@ module.exports = defineConfig([
         {
           ignoreMiddleExtensions: true,
           errorMessage:
-            'The file "{{ target }}" does not match file naming convention defined("{{ pattern }}") for this project, see rules-conventions.md for details',
+            'The file "{{ target }}" does not match file naming convention defined("{{ pattern }}") ' +
+            'for this project, see rules-conventions.md for details',
         },
       ],
+    },
+  },
+  {
+    // `eslint-config-expo` only registers the @typescript-eslint plugin for TS
+    // files, so a rule from it must be scoped the same way — applying it to
+    // every file makes ESLint fail on the JS configs at the repo root.
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'error',
     },
   },
   {
