@@ -36,6 +36,9 @@ export const commonTheme = {
 export const lightTheme = {
   colors: {
     primary: '#6F53DE',
+    // Text and icons placed on top of `primary`. Each theme picks whichever
+    // end of its own scale clears the contrast bar against its own primary.
+    onPrimary: '#ffffff',
     typography: '#0c0b10',
     // `secondary` is a border grey, too faint to read against `background`.
     typographyMuted: '#6b6a73',
@@ -52,13 +55,21 @@ export const lightTheme = {
 
 export const darkTheme = {
   colors: {
-    primary: '#6F53DE',
+    // Lifted from the light theme's #6F53DE, which only reached 3.4:1 against
+    // this background. Same hue, enough lightness to clear AA as body text.
+    primary: '#9583EC',
+    // Dark's primary is light enough that white on top of it drops to 3.1:1;
+    // the page colour reads at 6:1 against it instead.
+    onPrimary: '#121118',
     typography: '#e0e0e0',
     typographyMuted: '#9b99a3',
-    background: '#0c0b10',
+    // Near-black backgrounds make every dark surface above them read flat, and
+    // are harsh against light text on OLED. Both steps are lifted, and the gap
+    // between them widened from ΔL* 4.4 to 7.1 so cards separate from the page.
+    background: '#121118',
     secondary: '#605f69',
     highlight: '#ffffff',
-    surface: '#17161d',
+    surface: '#211f2b',
     surfaceSelected: '#2a2340',
     white: '#ffffff',
     black: '#000000',

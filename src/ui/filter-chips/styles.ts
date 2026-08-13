@@ -12,7 +12,7 @@ export const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.padding.lg,
   }),
   label: (isSelected: boolean) => ({
-    color: isSelected ? theme.colors.white : theme.colors.typography,
+    color: isSelected ? theme.colors.onPrimary : theme.colors.typography,
     fontSize: theme.fontSize.md,
   }),
 }));
