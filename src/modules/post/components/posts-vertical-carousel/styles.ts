@@ -10,6 +10,7 @@ export const styles = StyleSheet.create((theme) => ({
   },
   listContentContainer: {
     backgroundColor: theme.colors.background,
+    paddingBottom: theme.padding.xxxl,
   },
   loadingContainer: {
     marginBottom: UnistylesRuntime.statusBar.height,

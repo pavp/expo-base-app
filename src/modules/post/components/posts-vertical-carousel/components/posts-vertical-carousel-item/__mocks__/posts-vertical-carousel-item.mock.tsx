@@ -5,7 +5,7 @@ import { Post } from '@/api/post';
 interface MockPostItemCardProps {
   item: Post;
   testID?: string;
-  handlePressItem: () => void;
+  handlePressItem: (post: Post) => void;
 }
 
 // Mock component to use within the test
@@ -13,7 +13,7 @@ export const MockPostVerticalCarouselItem = ({ item, testID, handlePressItem }: 
   return (
     <View>
       <Text>{item.title}</Text>
-      <TouchableOpacity onPress={handlePressItem} testID={testID}>
+      <TouchableOpacity onPress={() => handlePressItem(item)} testID={testID}>
         <Text>Press me</Text>
       </TouchableOpacity>
     </View>

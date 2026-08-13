@@ -18,10 +18,18 @@ describe('PostVerticalCarouselItem', () => {
     expect(screen.getByText(mockPost.body)).toBeTruthy();
   });
 
-  it('should render correctly separator when showSeparator is true', async () => {
-    await render(<PostVerticalCarouselItem item={mockPost} handlePressItem={mockHandlePressItem} showSeparator />);
+  it('should render the author only when authorName is provided', async () => {
+    const authorName = 'Leanne Graham';
 
-    expect(screen.getByTestId('item-separator')).toBeTruthy();
+    await render(
+      <PostVerticalCarouselItem item={mockPost} authorName={authorName} handlePressItem={mockHandlePressItem} />,
+    );
+
+    expect(screen.getByText(authorName)).toBeTruthy();
+
+    await screen.rerender(<PostVerticalCarouselItem item={mockPost} handlePressItem={mockHandlePressItem} />);
+
+    expect(screen.queryByText(authorName)).toBeNull();
   });
 
   it('should call handlePressItem when TouchableOpacity is pressed', async () => {
