@@ -1,4 +1,4 @@
-import { memo, ReactNode, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { Post } from '@/api/post';
 import { ActivityIndicator } from '@/ui';
 
-import { type PostItemCardProps, PostVerticalCarouselItem } from './components';
+import { PostVerticalCarouselItem } from './components';
 import { styles } from './styles';
 
 interface PostsVerticalCarouselProps {
@@ -76,14 +76,4 @@ const PostsVerticalCarousel = ({
 
 const MemoizedComponent = memo(PostsVerticalCarousel) as typeof PostsVerticalCarousel;
 
-// example export compound component
-export interface PostsVerticalCarouselHOCProps {
-  ({ data, isLoading }: PostsVerticalCarouselProps): ReactNode;
-  Item: ({ item, handlePressItem }: PostItemCardProps) => ReactNode;
-}
-
-const PostsVerticalCarouselHOC: PostsVerticalCarouselHOCProps = Object.assign(MemoizedComponent, {
-  Item: PostVerticalCarouselItem,
-});
-
-export { PostsVerticalCarouselHOC as PostsVerticalCarousel };
+export { MemoizedComponent as PostsVerticalCarousel };
