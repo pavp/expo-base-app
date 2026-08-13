@@ -1,11 +1,14 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useUnistyles } from 'react-native-unistyles';
+import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import { Drawer, DrawerToggleButton } from 'expo-router/drawer';
 
 import { CustomDrawerContent, ThemeButton } from '@/components';
 
 export default function Layout() {
-  const { theme } = useUnistyles();
+  // See the note in src/app/_layout.tsx: read the palette from the runtime so
+  // header options never render with a stale theme.
+  const { rt } = useUnistyles();
+  const theme = UnistylesRuntime.getTheme(rt.themeName);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
