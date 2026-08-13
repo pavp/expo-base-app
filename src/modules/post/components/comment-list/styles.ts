@@ -5,6 +5,6 @@ export const styles = StyleSheet.create((theme) => ({
     color: theme.colors.typography,
     fontWeight: 'bold',
     fontSize: theme.fontSize.md,
-    marginBottom: theme.margins.xl,
+    marginBottom: theme.margins.xxl,
   },
 }));

@@ -7,7 +7,8 @@ interface MaterialIconProps {
   backgroundColor?: string | OpaqueColorValue;
   color?: string | OpaqueColorValue;
   size?: number;
-  onPress: (event: GestureResponderEvent) => void;
+  /** Omit for decorative icons: without it the icon is not interactive. */
+  onPress?: (event: GestureResponderEvent) => void;
 }
 
 export const MaterialIcon = ({

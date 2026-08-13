@@ -15,7 +15,7 @@ export const styles = StyleSheet.create((theme) => ({
     fontWeight: 'bold',
   },
   username: {
-    color: theme.colors.typography,
+    color: theme.colors.typographyMuted,
   },
   title: {
     color: theme.colors.typography,

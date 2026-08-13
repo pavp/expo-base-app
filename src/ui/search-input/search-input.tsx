@@ -24,7 +24,7 @@ export const SearchInput = ({
 
   return (
     <View style={styles.container}>
-      <MaterialIcon name="search" color={theme.colors.secondary} onPress={() => {}} />
+      <MaterialIcon name="search" color={theme.colors.secondary} />
       <TextInput
         style={styles.input}
         value={value}

@@ -18,7 +18,7 @@ export const CommentItem = ({ comment }: CommentItemProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.personContainer}>
-        <MaterialIcon name={'person'} onPress={undefined} color={theme.colors.primary} size={32} />
+        <MaterialIcon name={'person'} color={theme.colors.primary} size={32} />
         <View style={styles.textContainer}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.email}>{email}</Text>
