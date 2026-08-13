@@ -11,6 +11,7 @@ import { styles } from './styles';
 
 interface PostsVerticalCarouselProps {
   data: Post[] | undefined;
+  authorsById?: Map<number, string>;
   isLoading: boolean;
   isFetchingNextPage: boolean;
   isRefetching: boolean;
@@ -20,6 +21,7 @@ interface PostsVerticalCarouselProps {
 
 const PostsVerticalCarousel = ({
   data,
+  authorsById,
   isLoading,
   isFetchingNextPage,
   isRefetching,
@@ -27,19 +29,19 @@ const PostsVerticalCarousel = ({
   onRefresh,
 }: PostsVerticalCarouselProps) => {
 
-  const handlePressItem = useCallback((id: number | string, userId: number | string) => {
+  const handlePressItem = useCallback(({ id, userId }: Post) => {
     router.navigate({ pathname: '/post/[id]', params: { id, userId } });
   }, []);
 
   const renderItem = useCallback(
-    ({ item, index }: { item: Post; index: number }) => (
+    ({ item }: { item: Post }) => (
       <PostVerticalCarouselItem
         item={item}
-        handlePressItem={() => handlePressItem(item.id, item.userId)}
-        showSeparator={!isFetchingNextPage && index !== data.length - 1}
+        authorName={authorsById?.get(item.userId)}
+        handlePressItem={handlePressItem}
       />
     ),
-    [data.length, handlePressItem, isFetchingNextPage],
+    [authorsById, handlePressItem],
   );
 
   const renderFooter = useCallback(
