@@ -1,7 +1,3 @@
 #!/usr/bin/env sh
 
-# Validates the commit message against commitlint.config.js.
-# `$1` is the path to the file holding the message git is about to use, which is
-# what `--edit` expects — this reads the real message, including its body and
-# footers, not just the subject line.
 pnpm exec commitlint --edit "$1"

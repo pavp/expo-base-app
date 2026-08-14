@@ -1,16 +1,9 @@
 #!/usr/bin/env sh
 
-# Last gate before the branch leaves the machine: the same typecheck and test
-# suite that pr-validation.yml runs, so a red PR is caught locally first.
-#
-# Skipped in CI: the `typecheck` and `test` jobs already run there, and a hook
-# firing during an automated push would just duplicate them. GITHUB_ACTIONS is
-# checked alongside CI because some actions set only one of the two.
+# GITHUB_ACTIONS is checked alongside CI because some actions set only one.
 if [ "$CI" = "true" ] || [ "$GITHUB_ACTIONS" = "true" ]; then
   echo "pre-push: skipped (CI already runs typecheck and test)."
   exit 0
 fi
 
-# Cheap check first: tsc finishes in ~3s, so a type error fails fast without
-# paying for the ~9s test run.
 pnpm typecheck && pnpm test

@@ -45,12 +45,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      # No dependency install needed: the script is plain Node with zero deps.
+      # No pnpm install: the script has zero dependencies.
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      # `github.head_ref` is the source branch name. HEAD is a detached merge
-      # commit on pull_request events, so the name cannot be read from git.
+      # Passed in, not read from git: HEAD is a detached merge commit here.
       - name: Validate branch name
         run: node scripts/validate-branch-name.js "$BRANCH_NAME"
         env:
@@ -60,21 +59,13 @@ jobs:
     name: Validate commits
     runs-on: ubuntu-latest
     steps:
-      # `fetch-depth: 0` is required: commitlint walks the commit range, and the
-      # default shallow clone (depth 1) has no ancestry to walk.
+      # commitlint walks the range, which the default shallow clone cannot do.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-node-pnpm
-      # `--from`/`--to` reads each commit through git, so bodies and footers are
-      # validated too — piping `git log --format=%s` would check subjects only.
-      #
-      # On pull_request events HEAD is a detached merge commit that belongs to
-      # neither branch, so `origin/main..HEAD` would include that synthetic
-      # commit. The two event SHAs are the real endpoints: `base.sha` is the tip
-      # of the target branch the PR was compared against, and `head.sha` is the
-      # tip of the source branch — so the range covers exactly the PR's own
-      # commits and no merge commit.
+      # The event SHAs, not `origin/main..HEAD`: on pull_request events HEAD is a
+      # synthetic merge commit that would itself get linted.
       - name: Run commitlint
         run: pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
         env:
