@@ -4,30 +4,40 @@ The title becomes the squash-merge commit, so write it as a conventional commit:
 Subject <= 72 chars. The validate-commits job checks your commits, never this title.
 -->
 
-## Why
+## 📝 Description
 
-<!-- The problem, not the diff. What was wrong or missing, and what a reader cannot infer from the code. -->
+Please include relevant motivation, information, context and which issue is fixed. List any dependencies that are
+required for this change.
 
-## What changed
+🎫 (issue)
 
-<!-- Only what a reviewer needs in order to read the diff. Skip if the title already says it. -->
+## 🔄 Changes
 
-## Verification
+- Change 1
+- Change 2
 
-<!--
-What you actually ran, with real output or numbers. "Tests pass" is not verification.
-CI runs lint, typecheck and test — say what you checked beyond that, especially anything CI cannot:
-behaviour on a device, a native build, a migration, a manual flow.
--->
+## 🏷️ Type of change
 
-- [ ] Verified on iOS
-- [ ] Verified on Android
-- [ ] Not applicable — no runtime change
+Please delete options that are not relevant.
 
-## Anything a reviewer should push back on
+- 🐛 Bug fix (non-breaking change which fixes an issue)
+- ✨ New feature (non-breaking change which adds functionality)
+- 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- 🧰 Tooling or configuration change
+- 📚 This change requires a documentation update
 
-<!--
-Trade-offs you made, alternatives you rejected, scope you left out on purpose, and known gaps.
-Say so here rather than letting a reviewer find it. If you left a defect documented instead of
-fixed, name it.
--->
+## 💡 More information
+
+Explain, if needed, why you did things in a certain way or provide more context to help reviewers to understand what's
+going on.
+
+## 📸 Screenshots
+
+📹 (prefer video)
+
+## ✅ Checklist
+
+- [ ] 🧪 The main changes are verified by automated tests
+- [ ] 🍎 Changes manually tested on iOS
+- [ ] 🤖 Changes manually tested on Android
+- [ ] 👀 I have performed a self-review of my own code
