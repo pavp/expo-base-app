@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFonts } from 'expo-font';
 
-import { useInitLanguage } from '../use-init-language/use-init-language';
-import { useInitTheme } from '../use-init-theme/use-init-theme';
+import { useInitLanguage } from '../use-init-language/use-init-language.hook';
+import { useInitTheme } from '../use-init-theme/use-init-theme.hook';
 
 export const useInitApp = () => {
   const [prepareIsready, setPrepareIsready] = useState(false);

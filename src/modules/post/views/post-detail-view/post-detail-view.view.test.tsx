@@ -5,7 +5,7 @@ import { renderWithProviders, screen, waitFor } from '@/test/test-utils';
 
 import * as hooks from '../../hooks';
 
-import { PostDetailView } from './post-detail-view';
+import { PostDetailView } from './post-detail-view.view';
 
 jest.mock('../../hooks', () => ({
   useDetailPost: jest.fn(),

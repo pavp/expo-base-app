@@ -6,7 +6,7 @@ import { useGetPosts } from '@/api/post';
 import { useGetUsers } from '@/api/user';
 // Imported directly rather than through `@/hooks`: that barrel pulls in the app
 // init hooks, and with them AsyncStorage, which tests would have to mock.
-import { useDebouncedValue } from '@/hooks/common/use-debounced-value/use-debounced-value';
+import { useDebouncedValue } from '@/core/hooks';
 import { PostsVerticalCarousel } from '@/modules/post/components';
 import { usePostAuthors } from '@/modules/post/hooks';
 import { EmptyState, FilterChip, FilterChips, SafeAreaView, SearchInput } from '@/ui';

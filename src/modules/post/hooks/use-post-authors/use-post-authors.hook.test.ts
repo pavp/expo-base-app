@@ -2,7 +2,7 @@ import * as userHooks from '@/api/user';
 import { generateMockUsers } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
-import { usePostAuthors } from './use-post-authors';
+import { usePostAuthors } from './use-post-authors.hook';
 
 jest.mock('@/api/user');
 

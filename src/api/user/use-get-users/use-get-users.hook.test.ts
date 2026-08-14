@@ -5,7 +5,7 @@ import { API_ENDPOINT } from '@/api/endpoints';
 import { generateMockUsers } from '@/test/entities';
 import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
-import { useGetUsers } from './use-get-users';
+import { useGetUsers } from './use-get-users.hook';
 
 describe('useGetUsers', () => {
   const mock = new MockAdapter(client);

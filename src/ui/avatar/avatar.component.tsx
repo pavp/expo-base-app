@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { MaterialIcon } from '../material-icon/material-icon';
+import { MaterialIcon } from '../material-icon/material-icon.component';
 
 import { AVATAR_ICON_SIZE, styles } from './styles';
 
