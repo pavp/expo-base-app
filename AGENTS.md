@@ -35,8 +35,7 @@ Anything not listed above is stable enough to build on.
 4. **Commits are conventional commits** — enforced by `commitlint.config.js` via `.husky/commit-msg`. `type-enum` is
    closed to `feat|fix|chore|refactor|docs|test|perf|ci|style|build|revert`. `subject-max-length` is 72. Scope is
    optional and unrestricted by design (no `scope-enum`) — scopes are feature-module names.
-5. **`pnpm lint` must report 0 errors.** It currently reports 5 warnings; those are expected and not defects (see
-   "Expected lint warnings").
+5. **`pnpm lint` must be clean.** It runs with `--max-warnings 0`, so a warning fails the build like an error.
 6. **TypeScript is strict** (`tsconfig.json`). `pnpm typecheck` must pass.
 
 ## Commands
@@ -65,7 +64,7 @@ with `ERR_PNPM_IGNORED_BUILDS`, which breaks every install and every CI job.
 ## Before you finish a change
 
 ```bash
-pnpm lint       # must be 0 errors (5 warnings are expected — see "Expected lint warnings")
+pnpm lint       # --max-warnings 0: a warning fails like an error
 pnpm typecheck
 pnpm test
 ```
@@ -313,19 +312,21 @@ From `eslint.config.js`, on top of `eslint-config-expo/flat`:
 - `eslint-plugin-testing-library`'s `flat/react` config applies to test files, with `no-await-sync-events` off because
   RNTL 14 made `fireEvent` async.
 
-### Expected lint warnings
+### Warnings are errors
 
-`pnpm lint` reports **5 warnings, 0 errors**. All five are correct code, none is auto-fixable. Do not "fix" them:
+`pnpm lint` runs with `--max-warnings 0`, so **any** warning fails the build — locally, in `.husky/pre-commit` via
+`.lintstagedrc.js`, and in the CI `lint` job. There is no tolerated-warning budget to hide a new finding in.
 
-| Location                                               | Warning                                               | Why it stays                                      |
-| ------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------- |
-| `src/styles/unistyles.ts:13`, `:14`                    | `@typescript-eslint/no-empty-object-type` (x2)        | The declaration-merging idiom unistyles requires. |
-| `src/api/common/client.ts:17`                          | `import/no-named-as-default-member` on `axios.create` | False positive.                                   |
-| `src/localization/i18n.ts:25`                          | `import/no-named-as-default-member` on `i18n.use`     | False positive.                                   |
-| `src/components/api-provider/api-provider.test.tsx:28` | `@typescript-eslint/no-require-imports`               | Deliberate `require()` in a test.                 |
+Three sites carry an `eslint-disable` because the rule is wrong about them, each with the reason inline:
 
-`.lintstagedrc.js` runs `eslint --fix --max-warnings 1000` for exactly this reason — errors still fail, warnings do not
-block commits.
+| Location                   | Rule                                | Why it is disabled                                      |
+| -------------------------- | ----------------------------------- | ------------------------------------------------------- |
+| `src/styles/unistyles.ts`  | `no-empty-object-type`              | Empty bodies **are** the declaration-merging mechanism. |
+| `src/api/common/client.ts` | `import/no-named-as-default-member` | `axios.create` is the documented factory.               |
+| `src/localization/i18n.ts` | `import/no-named-as-default-member` | `i18n.use` is the singleton's own method.               |
+
+Add a disable only when the rule is provably wrong about the code, and always with the reason. Everything else gets
+fixed.
 
 ## Git hooks and CI
 
@@ -500,5 +501,3 @@ resolved and removed.
 | TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth.                                                                                                                                                                                                         |
 | TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                    |
 | TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                        |
-
-Not defects, do not fix: the 5 lint warnings above.

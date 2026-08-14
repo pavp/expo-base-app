@@ -14,6 +14,8 @@ const baseConfig: CreateAxiosDefaults = {
   withCredentials: true,
 };
 
+// axios.create is the documented factory, not the named export.
+// eslint-disable-next-line import/no-named-as-default-member
 export const client = axios.create(baseConfig);
 
 // client.interceptors.request.use(
