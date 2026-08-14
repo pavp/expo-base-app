@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+# Runs eslint --fix / prettier --write over staged files and a whole-project
+# typecheck. See .lintstagedrc.js for the per-glob commands.
+#
+# Note on warnings: eslint runs with a warning-tolerant threshold here, not
+# `--max-warnings 0`. The repo carries 5 pre-existing warnings that are neither
+# auto-fixable nor defects (react-native-unistyles' declaration-merging idiom
+# requires empty interfaces; import/no-named-as-default-member fires falsely on
+# correct `axios.create` and `i18n.use` calls). A zero threshold would block any
+# commit touching those files until someone disabled correct code. ESLint errors
+# still block the commit.
+pnpm exec lint-staged
