@@ -57,6 +57,13 @@ module.exports = defineConfig([
               importNames: ['ActivityIndicator'],
               message: 'Please import from `@/ui` instead.',
             },
+            {
+              // Leading slashes anchor these to the start of the import specifier
+              // (`no-restricted-imports` matches `group` with gitignore semantics),
+              // so this cannot also match the `@/core/lib/zustand` alias path itself.
+              group: ['/zustand', '/zustand/*'],
+              message: 'Please import from `@/core/lib/zustand` instead.',
+            },
           ],
         },
       ],
@@ -134,6 +141,27 @@ module.exports = defineConfig([
     files: ['test/**/*', 'src/ui/**/*'],
     rules: {
       'no-restricted-imports': 'off',
+    },
+  },
+  {
+    files: ['src/core/lib/zustand/**/*'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@testing-library/react-native'],
+              message: 'Please import from `@/test/test-utils` instead.',
+            },
+            {
+              group: ['react-native'],
+              importNames: ['ActivityIndicator'],
+              message: 'Please import from `@/ui` instead.',
+            },
+          ],
+        },
+      ],
     },
   },
 ]);

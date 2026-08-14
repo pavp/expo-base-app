@@ -1,5 +1,4 @@
-import { create, StateCreator } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createStoreWithMiddleware } from '@/core/lib/zustand';
 
 interface User {
   accessToken: string;
@@ -7,18 +6,27 @@ interface User {
 
 interface UserState {
   user: User | null;
+  hasHydrated: boolean;
   setCredentials: (user: User) => void;
   removeCredentials: () => void;
 }
 
-const userStoreSlice: StateCreator<UserState> = (set) => ({
-  user: null,
-  setCredentials: (user) => set({ user }),
-  removeCredentials: () => set({ user: null }),
-});
-
-const persistedUserStore = persist<UserState>(userStoreSlice, {
-  name: 'user',
-});
-
-export const useUserStore = create(persistedUserStore);
+export const useUserStore = createStoreWithMiddleware<UserState>(
+  (set) => ({
+    user: null,
+    hasHydrated: false,
+    setCredentials: (user) =>
+      set((state) => {
+        state.user = user;
+      }),
+    removeCredentials: () =>
+      set((state) => {
+        state.user = null;
+      }),
+  }),
+  'user',
+  {
+    persist: true,
+    exclude: ['hasHydrated'],
+  },
+);
