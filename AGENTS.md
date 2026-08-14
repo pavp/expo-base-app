@@ -11,17 +11,28 @@ Expo SDK 57 / React Native 0.86.2 / React 19 / TypeScript strict. Package manage
 This repository is mid-refactor. A phased architecture overhaul is underway, and this document describes **what exists
 today**, not the target state.
 
-- **Phase 0 (in progress):** tooling foundation — pnpm migration, TypeScript strict, CI at
-  `.github/workflows/pr-validation.yml`, git hooks in `.husky/`. Mostly landed; this document is part of it.
-- **Phases 1 and 2 (not started):** a domain layer, repository and gateway patterns, a business/controller hook split,
-  and enforced architectural boundaries between modules.
+The target is the structure used by the sibling `create-scaffold-nextjs-app` repository, adapted to React Native.
+
+- **Phase 0 (done):** tooling foundation — pnpm, TypeScript strict, CI at `.github/workflows/pr-validation.yml`, git
+  hooks in `.husky/`.
+- **Phase A (done):** conventions and cross-cutting infrastructure — type suffixes on filenames, the `src/core/` layer,
+  derived environment flags, a Zod-validating http client, gateway type contracts, and the Zustand store factory.
+- **Phase B (not started):** a `src/modules/feed/` module carrying posts and comments end to end — api → gateway →
+  repository → selectors → store → hooks → views. It absorbs today's `src/api/post/`, `src/api/comment/`, and the
+  `home`, `explore` and `post` modules.
+- **Phase C (not started):** `src/modules/settings/` and `src/shared/user/`, following the pattern Phase B establishes.
+- **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
+  React error boundary, schema-validated env, and a module generator.
 
 Practical consequences for an agent working here now:
 
-- Do **not** invent domain/repository/gateway layers. They do not exist. Follow the patterns in this document.
-- Expect these to change: the `src/api/` data-access shape, the single-hook-per-view pattern inside `src/modules/*`, and
-  the currently unenforced module boundaries (see "Known issues", TD-6).
-- Do not entrench new code into `src/api/common/utils.ts` — that file is already partly dead (TD-4).
+- `src/api/{post,user,comment}/` are temporary. They move into modules in Phases B and C — do not build on their current
+  shape, and do not add a fourth entity beside them.
+- `src/modules/{home,explore}/` are views, not modules: neither has its own components or hooks, and both reach into
+  `@/modules/post` for everything (TD-6). Phase B folds all three into `feed`.
+- `src/store/` is a holdover (TD-12). New stores belong beside their owner, not there.
+- Every store goes through `createStoreWithMiddleware`; importing `zustand` directly is a lint error outside
+  `src/core/lib/zustand/**`.
 
 Anything not listed above is stable enough to build on.
 
