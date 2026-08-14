@@ -3,12 +3,16 @@
   "main": "index.ts",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "android:prebuild": "LOCAL_ANDROID_BUILD=1 expo prebuild --platform android --clean",
-    "android:build": "npm run android:prebuild && cd android && ./gradlew assembleDebug --no-daemon",
+    "android:build": "pnpm run android:prebuild && cd android && ./gradlew assembleDebug --no-daemon",
     "android:install": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -16,7 +20,7 @@
     "lint": "expo lint",
     "build-android": "eas build -p android --profile preview",
     "doctor": "expo install --check",
-    "prebuild": "npx expo prebuild"
+    "prebuild": "expo prebuild"
   },
   "dependencies": {
     "@expo/log-box": "^57.0.2",

@@ -1,0 +1,10 @@
+# pnpm 11 reads its settings from this file. The "pnpm" field in package.json is
+# no longer read, and `onlyBuiltDependencies` in .npmrc is not read either.
+#
+# pnpm blocks dependency build scripts by default. unrs-resolver (pulled in by
+# eslint-config-expo -> eslint-plugin-import-x) ships a postinstall that links its
+# platform-native resolver binary. Without this allowlist `pnpm install` exits 1
+# with ERR_PNPM_IGNORED_BUILDS, which breaks any install and any CI step.
+# Approving it also lets the resolver use its native binary instead of a fallback.
+allowBuilds:
+  unrs-resolver: true
