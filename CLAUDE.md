@@ -60,14 +60,14 @@ Do not commit or push unless the user asks.
 ### Add a UI primitive
 
 `src/ui/<name>/<name>.tsx` + `styles.ts`, exported from `src/ui/index.ts`. No data fetching, no `useTranslation` — take
-strings as props. Note that 6 of 7 existing primitives have no test and `src/ui` is outside the coverage globs (AGENTS.md
-TD-1); write the test anyway.
+strings as props. `src/ui` is inside the coverage globs but most existing primitives still have no test, so write the
+test anyway.
 
 ### Add a theme token
 
 Edit `src/styles/themes.ts`. A colour goes in **both** `lightTheme` and `darkTheme`; a scale value goes in `commonTheme`.
-Types flow automatically through the module augmentation in `src/styles/unistyles.ts`. Never touch
-`src/constants/colors.ts` (orphaned — TD-3).
+Types flow automatically through the module augmentation in `src/styles/unistyles.ts`. `themes.ts` is the only palette —
+do not add a second one.
 
 ### Add a string
 

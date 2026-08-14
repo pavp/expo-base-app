@@ -73,7 +73,6 @@ src/
   api/                       -> server data access: axios client + react-query-kit hooks
   components/                -> app-level shared components (not primitives)
   config.ts                  -> env-derived config (`EXPO_PUBLIC_API_URL`)
-  constants/colors.ts        -> ORPHANED, do not use (TD-3)
   hooks/                     -> cross-cutting hooks (`hooks/common/*`)
   lib/async-storage/         -> thin AsyncStorage get/set wrapper
   localization/              -> i18next setup + TS translation modules
@@ -191,7 +190,7 @@ Tests reset stores through `test/__mocks__/zustand/index.ts`, which wraps `creat
 - Root `index.ts` imports `./src/styles/unistyles` so configuration runs before any component.
 - Styles go in a sibling `styles.ts` using `StyleSheet.create((theme) => ({ ... }))` and read tokens from `theme`.
 
-Never hardcode a hex value in a component. Never import from `src/constants/colors.ts` (TD-3).
+Never hardcode a hex value in a component. `src/styles/themes.ts` is the only palette; do not reintroduce a second one.
 
 ## i18n — `src/localization/`
 
@@ -310,10 +309,10 @@ export default function HomeScreen() {
 
 ---
 
-❌ Hardcoded colours or spacing in a component, or importing the orphaned palette.
+❌ Hardcoded colours or spacing in a component, or a second palette alongside the theme.
 
 ```ts
-import { colors } from '@/constants/colors';
+const colors = { background: '#f4f4f7' };
 container: { backgroundColor: '#f4f4f7', padding: 16 },
 ```
 
@@ -414,18 +413,16 @@ import { PostsVerticalCarousel, usePostAuthors } from '@/modules/post';
 
 ## Known issues
 
-Verified against the code at the time of writing. Ranked by severity.
+Verified against the code at the time of writing. Ranked by severity. IDs are stable and are never reused or renumbered
+when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3 and TD-8 have been
+resolved and removed.
 
 | ID    | Severity | Issue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TD-1  | High     | **Coverage is measured over the wrong file set.** `jest.config.ts` `collectCoverageFrom` globs `src/helpers/**` and `src/views/**` — neither directory exists — and omits `src/ui/**`, where 6 of 7 primitives have no test (only `filter-chips` does). The reported ~60% therefore describes a file set that is not the codebase.                                                                                                                                                       |
-| TD-2  | High     | **Coverage thresholds are 0.** `jest.config.ts` sets `branches/functions/lines/statements` to `0`, documented in-file as a temporary floor. Nothing currently stops coverage regressing. Raise these after TD-1 is fixed.                                                                                                                                                                                                                                                                |
-| TD-3  | Medium   | **`src/constants/colors.ts` is an orphaned duplicate palette.** Nothing imports it; it competes with `src/styles/themes.ts`. It is Expo-template residue. Delete on sight, do not extend.                                                                                                                                                                                                                                                                                                |
 | TD-4  | Medium   | **`src/api/common/utils.ts` is typed against an API shape that does not exist.** `normalizePages`, `getPreviousPageParam`, `getNextPageParam` all assume the `PaginateQuery<T>` envelope from `src/api/types.ts` (`{ results, count, next, previous }`), but the upstream API returns bare arrays. Nothing outside that file imports any of them; `use-get-posts` reimplements pagination inline. The file also contains `[key: string]: any` and a `//@ts-ignore`. Dead and mismatched. |
 | TD-5  | Medium   | **`user-store` persists to the wrong storage on native.** `src/store/user-store/user-store.ts` wraps the slice in `persist` with no `storage`/`getStorage` adapter, so Zustand's default (`localStorage`) is used. On native that is not AsyncStorage. `src/lib/async-storage/` exists but is not wired in.                                                                                                                                                                              |
 | TD-6  | Medium   | **No module boundary enforcement.** `home-view.tsx` and `explore-view.tsx` import `@/modules/post/components` and `@/modules/post/hooks`, bypassing `src/modules/post/index.ts`. Nothing prevents this today. Phase 2 is expected to enforce boundaries.                                                                                                                                                                                                                                 |
 | TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth.                                                                                                                                                                                                         |
-| TD-8  | Low      | **`app.config.ts` identifiers are inconsistent.** `scheme: 'com.rn-app.yourapp'` versus `ios.bundleIdentifier` / `android.package` both `'com.app.rnapp'`.                                                                                                                                                                                                                                                                                                                               |
 | TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                    |
 | TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                        |
 

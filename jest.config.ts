@@ -13,21 +13,20 @@ const config: Config = {
     'src/components/**/*.{ts,tsx}',
     'src/modules/**/*.{ts,tsx}',
     'src/lib/**/*.{ts,tsx}',
-    'src/helpers/**/*.{ts,tsx}',
-    'src/views/**/*.{ts,tsx}',
     'src/hooks/**/*.{ts,tsx}',
     'src/store/**/*.{ts,tsx}',
     'src/api/**/*.{ts,tsx}',
+    'src/ui/**/*.{ts,tsx}',
   ],
   coveragePathIgnorePatterns: ['node_modules', 'interfaces', '.mock.ts', 'index.ts', 'index.tsx', 'types.ts'],
-  // Temporary floor, not a target. Set to 0 so CI is green from day one while
-  // real coverage (~60%) catches up. Raise these numbers as tests are added.
+  // Regression floor set below measured coverage, so a real drop fails while an
+  // ordinary refactor that shifts a few lines does not.
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 50,
+      functions: 55,
+      lines: 55,
+      statements: 55,
     },
   },
   moduleNameMapper: {

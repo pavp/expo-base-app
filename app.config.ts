@@ -8,7 +8,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'com.rn-app.yourapp',
+  scheme: 'expobaseapp',
   userInterfaceStyle: 'automatic',
   ios: {
     supportsTablet: true,
