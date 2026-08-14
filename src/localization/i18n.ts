@@ -22,6 +22,8 @@ const isSupported = (value: string | null | undefined): value is SupportedLangua
 // preference is applied later by `useInitLanguage`, so it is not read here.
 const deviceLocale = getLocales()[0]?.languageCode;
 
+// i18n.use is the singleton's own method, not the named export.
+// eslint-disable-next-line import/no-named-as-default-member
 i18n.use(initReactI18next).init({
   resources,
   lng: isSupported(deviceLocale) ? deviceLocale : config.translation.defaultLocale,

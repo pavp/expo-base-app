@@ -1,4 +1,5 @@
 import { Text } from 'react-native';
+import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { QueryClient } from '@tanstack/react-query';
 
 import { render, screen } from '@/test/test-utils';
@@ -25,8 +26,6 @@ describe('APIProvider', () => {
   });
 
   it('should call useReactQueryDevTools', async () => {
-    const { useReactQueryDevTools } = require('@dev-plugins/react-query');
-
     await render(
       <APIProvider>
         <Text>Test Child</Text>
