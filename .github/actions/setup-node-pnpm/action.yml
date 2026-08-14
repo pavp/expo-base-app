@@ -1,0 +1,38 @@
+name: Setup Node and pnpm
+description: Sets up Node.js and pnpm, restores the pnpm store cache, and installs dependencies from the lockfile.
+
+inputs:
+  node-version:
+    description: Node.js version to install.
+    required: false
+    default: '22'
+
+runs:
+  using: composite
+  steps:
+    # No `version` input on purpose: pnpm/action-setup reads the `packageManager`
+    # field from package.json, so the pinned version has exactly one source of truth.
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v6
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Resolve pnpm store path
+      id: pnpm-store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache pnpm store
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
