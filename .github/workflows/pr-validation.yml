@@ -45,21 +45,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      # No dependency install needed: the script is plain Node with zero deps.
+      # No pnpm install: the script has zero dependencies.
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      # `github.head_ref` is the source branch name. HEAD is a detached merge
-      # commit on pull_request events, so the name cannot be read from git.
+      # Passed in, not read from git: HEAD is a detached merge commit here.
       - name: Validate branch name
         run: node scripts/validate-branch-name.js "$BRANCH_NAME"
         env:
           BRANCH_NAME: ${{ github.head_ref }}
 
+  validate-commits:
+    name: Validate commits
+    runs-on: ubuntu-latest
+    steps:
+      # commitlint walks the range, which the default shallow clone cannot do.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-node-pnpm
+      # The event SHAs, not `origin/main..HEAD`: on pull_request events HEAD is a
+      # synthetic merge commit that would itself get linted.
+      - name: Run commitlint
+        run: pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
   ready-to-merge:
     name: Ready to merge
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, validate-branch-name]
+    needs: [lint, typecheck, test, validate-branch-name, validate-commits]
     if: always()
     steps:
       # Single required status check for branch protection. Each dependency is
@@ -71,7 +87,8 @@ jobs:
             "lint:${{ needs.lint.result }}" \
             "typecheck:${{ needs.typecheck.result }}" \
             "test:${{ needs.test.result }}" \
-            "validate-branch-name:${{ needs.validate-branch-name.result }}"; do
+            "validate-branch-name:${{ needs.validate-branch-name.result }}" \
+            "validate-commits:${{ needs.validate-commits.result }}"; do
             job="${entry%%:*}"
             result="${entry##*:}"
             if [ "$result" != "success" ]; then

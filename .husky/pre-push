@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+# GITHUB_ACTIONS is checked alongside CI because some actions set only one.
+if [ "$CI" = "true" ] || [ "$GITHUB_ACTIONS" = "true" ]; then
+  echo "pre-push: skipped (CI already runs typecheck and test)."
+  exit 0
+fi
+
+pnpm typecheck && pnpm test

@@ -21,7 +21,8 @@
     "typecheck": "tsc --noEmit",
     "build-android": "eas build -p android --profile preview",
     "doctor": "expo install --check",
-    "prebuild": "expo prebuild"
+    "prebuild": "expo prebuild",
+    "prepare": "node -e \"if(process.env.CI !== 'true') require('child_process').execSync('husky', {stdio: 'inherit'})\""
   },
   "dependencies": {
     "@expo/log-box": "^57.0.2",
@@ -60,6 +61,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@dev-plugins/react-query": "^0.4.0",
     "@faker-js/faker": "^10.5.0",
     "@react-native/jest-preset": "^0.86.2",
@@ -75,8 +78,10 @@
     "eslint-plugin-check-file": "^3.3.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-testing-library": "^7.16.2",
+    "husky": "^9.1.7",
     "jest": "~29.7.0",
     "jest-expo": "~57.0.4",
+    "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
     "test-renderer": "^1.2.0",
     "ts-node": "^10.9.2",
