@@ -44,7 +44,8 @@ Anything not listed above is stable enough to build on.
 | ----------------------- | ----------------------------------------------------------------------------- |
 | `pnpm install`          | Installs from `pnpm-lock.yaml`.                                               |
 | `pnpm start`            | `expo start` — Metro dev server.                                              |
-| `pnpm lint`             | `expo lint` — ESLint over the repo.                                           |
+| `pnpm lint`             | `eslint . --max-warnings 0` — a warning fails like an error.                  |
+| `pnpm lint:fix`         | Same, with `--fix`.                                                           |
 | `pnpm typecheck`        | `tsc --noEmit`.                                                               |
 | `pnpm test`             | `jest`. Coverage is collected on every run (`collectCoverage: true`).         |
 | `pnpm web`              | `expo start --web`.                                                           |
