@@ -1,3 +1,4 @@
+/// <reference path="./types/jest-expo.d.ts" />
 import type { Config } from 'jest';
 import expoPreset from 'jest-expo/jest-preset';
 
