@@ -11,17 +11,28 @@ Expo SDK 57 / React Native 0.86.2 / React 19 / TypeScript strict. Package manage
 This repository is mid-refactor. A phased architecture overhaul is underway, and this document describes **what exists
 today**, not the target state.
 
-- **Phase 0 (in progress):** tooling foundation — pnpm migration, TypeScript strict, CI at
-  `.github/workflows/pr-validation.yml`, git hooks in `.husky/`. Mostly landed; this document is part of it.
-- **Phases 1 and 2 (not started):** a domain layer, repository and gateway patterns, a business/controller hook split,
-  and enforced architectural boundaries between modules.
+The target is the structure used by the sibling `create-scaffold-nextjs-app` repository, adapted to React Native.
+
+- **Phase 0 (done):** tooling foundation — pnpm, TypeScript strict, CI at `.github/workflows/pr-validation.yml`, git
+  hooks in `.husky/`.
+- **Phase A (done):** conventions and cross-cutting infrastructure — type suffixes on filenames, the `src/core/` layer,
+  derived environment flags, a Zod-validating http client, gateway type contracts, and the Zustand store factory.
+- **Phase B (not started):** a `src/modules/feed/` module carrying posts and comments end to end — api → gateway →
+  repository → selectors → store → hooks → views. It absorbs today's `src/api/post/`, `src/api/comment/`, and the
+  `home`, `explore` and `post` modules.
+- **Phase C (not started):** `src/modules/settings/` and `src/shared/user/`, following the pattern Phase B establishes.
+- **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
+  React error boundary, schema-validated env, and a module generator.
 
 Practical consequences for an agent working here now:
 
-- Do **not** invent domain/repository/gateway layers. They do not exist. Follow the patterns in this document.
-- Expect these to change: the `src/api/` data-access shape, the single-hook-per-view pattern inside `src/modules/*`, and
-  the currently unenforced module boundaries (see "Known issues", TD-6).
-- Do not entrench new code into `src/api/common/utils.ts` — that file is already partly dead (TD-4).
+- `src/api/{post,user,comment}/` are temporary. They move into modules in Phases B and C — do not build on their current
+  shape, and do not add a fourth entity beside them.
+- `src/modules/{home,explore}/` are views, not modules: neither has its own components or hooks, and both reach into
+  `@/modules/post` for everything (TD-6). Phase B folds all three into `feed`.
+- `src/store/` is a holdover (TD-12). New stores belong beside their owner, not there.
+- Every store goes through `createStoreWithMiddleware`; importing `zustand` directly is a lint error outside
+  `src/core/lib/zustand/**`.
 
 Anything not listed above is stable enough to build on.
 
@@ -248,12 +259,20 @@ The upstream API is jsonplaceholder-shaped: endpoints return bare arrays, not a 
 `use-get-posts` is derived from page length (`lastPage.length === DEFAULT_LIMIT`). See TD-4 before touching
 `src/api/common/utils.ts`.
 
-## Client state — `src/store/`
+## Client state — Zustand
 
-Zustand v5, **one store**: `src/store/user-store/user-store.ts`. It holds `user: { accessToken } | null` with
-`setCredentials` / `removeCredentials`, wrapped in `persist`. See TD-5 — the persist config has no storage adapter.
+**Every store is built with `createStoreWithMiddleware` from `@/core/lib/zustand`** — importing `zustand` directly is a
+lint error outside `src/core/lib/zustand/**` and `test/**`. The factory composes immer, `persist` (AsyncStorage) and
+devtools, and drops `actions` and `hasHydrated` from the persisted payload. Pass `exclude` for anything else that must
+stay out, and `storage` to persist somewhere other than AsyncStorage.
 
-Tests reset stores through `test/__mocks__/zustand/index.ts`, which wraps `create` and registers reset functions.
+One store exists today: `src/store/user-store/user-store.store.ts`, holding `user: { accessToken } | null` with
+`setCredentials` / `removeCredentials`. Its actions are flat rather than nested under `state.actions`; Phase C rewrites
+this store, and nesting them now would only churn `src/api/common/client.ts`. See TD-11 for the token's storage and
+TD-12 for where stores are meant to live.
+
+Tests reset stores through `test/__mocks__/zustand/index.ts`, which wraps `create` and registers reset functions — the
+reason the factory funnels every store through a single `create` call.
 
 ## Styling — `react-native-unistyles` v3
 
@@ -494,11 +513,11 @@ Verified against the code at the time of writing. Ranked by severity. IDs are st
 when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3 and TD-8 have been
 resolved and removed.
 
-| ID    | Severity | Issue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TD-4  | Medium   | **`src/api/common/utils.ts` is typed against an API shape that does not exist.** `normalizePages`, `getPreviousPageParam`, `getNextPageParam` all assume the `PaginateQuery<T>` envelope from `src/api/types.ts` (`{ results, count, next, previous }`), but the upstream API returns bare arrays. Nothing outside that file imports any of them; `use-get-posts` reimplements pagination inline. The file also contains `[key: string]: any` and a `//@ts-ignore`. Dead and mismatched. |
-| TD-5  | Medium   | **`user-store` persists to the wrong storage on native.** `src/store/user-store/user-store.ts` wraps the slice in `persist` with no `storage`/`getStorage` adapter, so Zustand's default (`localStorage`) is used. On native that is not AsyncStorage. `src/lib/async-storage/` exists but is not wired in.                                                                                                                                                                              |
-| TD-6  | Medium   | **No module boundary enforcement.** `home-view.tsx` and `explore-view.tsx` import `@/modules/post/components` and `@/modules/post/hooks`, bypassing `src/modules/post/index.ts`. Nothing prevents this today. Phase 2 is expected to enforce boundaries.                                                                                                                                                                                                                                 |
-| TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth.                                                                                                                                                                                                         |
-| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                    |
-| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                        |
+| ID    | Severity | Issue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TD-6  | Medium   | **No module boundary enforcement.** `home-view.tsx` and `explore-view.tsx` import `@/modules/post/components` and `@/modules/post/hooks`, bypassing `src/modules/post/index.ts`. Nothing prevents this today. Phase 2 is expected to enforce boundaries.                                                                                                                                                                                                                                                                                                                                                                                      |
+| TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth.                                                                                                                                                                                                                                                                                                                                                              |
+| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                                                                                                                                                                         |
+| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| TD-11 | High     | **The access token is persisted unencrypted.** Fixing TD-5 wired `user-store` to AsyncStorage, which stores plaintext — an SQLite database on Android, a file in the app container on iOS, both readable from an unencrypted device backup or a rooted/jailbroken device. Before TD-5 the token never reached disk on native, so this is new exposure, not a pre-existing one. `app.config.ts` sets neither `android:allowBackup="false"` nor an `NSFileProtection` class. The fix is `expo-secure-store` (Keychain / Keystore) behind the `storage` option `createStoreWithMiddleware` already accepts; the dependency is not installed yet. |
+| TD-12 | Low      | **`src/store/` is a holdover.** Stores belong beside their owner (`modules/<x>/stores/`, `shared/<x>/stores/`), not in a top-level folder — `src/store/user-store/` moves to `src/shared/user/` in Phase C. The `no-restricted-imports` rule on `zustand` governs how stores are built, not where they live, so nothing stops a new store landing here in the meantime. Do not add one.                                                                                                                                                                                                                                                       |
