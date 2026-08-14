@@ -1,0 +1,88 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+# Supersede in-flight runs for the same ref instead of queueing them.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-pnpm
+      - name: Run ESLint
+        run: pnpm lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-pnpm
+      - name: Run TypeScript
+        run: pnpm typecheck
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-pnpm
+      - name: Run Jest
+        run: pnpm test
+
+  validate-branch-name:
+    name: Validate branch name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # No dependency install needed: the script is plain Node with zero deps.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      # `github.head_ref` is the source branch name. HEAD is a detached merge
+      # commit on pull_request events, so the name cannot be read from git.
+      - name: Validate branch name
+        run: node scripts/validate-branch-name.js "$BRANCH_NAME"
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+
+  ready-to-merge:
+    name: Ready to merge
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test, validate-branch-name]
+    if: always()
+    steps:
+      # Single required status check for branch protection. Each dependency is
+      # checked explicitly so a skipped or cancelled job cannot pass as success.
+      - name: Verify all checks passed
+        run: |
+          failed=0
+          for entry in \
+            "lint:${{ needs.lint.result }}" \
+            "typecheck:${{ needs.typecheck.result }}" \
+            "test:${{ needs.test.result }}" \
+            "validate-branch-name:${{ needs.validate-branch-name.result }}"; do
+            job="${entry%%:*}"
+            result="${entry##*:}"
+            if [ "$result" != "success" ]; then
+              echo "Job '$job' did not succeed (result: $result)."
+              failed=1
+            else
+              echo "Job '$job' succeeded."
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more required checks failed."
+            exit 1
+          fi
+          echo "All required checks passed."
