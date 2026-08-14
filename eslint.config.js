@@ -77,7 +77,7 @@ module.exports = defineConfig([
           ignoreMiddleExtensions: true,
           errorMessage:
             'The file "{{ target }}" does not match file naming convention defined("{{ pattern }}") ' +
-            'for this project, see rules-conventions.md for details',
+            'for this project, see AGENTS.md for details',
         },
       ],
     },

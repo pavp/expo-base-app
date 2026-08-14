@@ -48,6 +48,7 @@ function upsert(properties, key, value) {
 
   if (existing) {
     existing.value = value;
+
     return properties;
   }
 

@@ -68,6 +68,7 @@ function main() {
 
   if (isExempt(branchName)) {
     console.log(`Branch name "${branchName}" is exempt from validation.`);
+
     return;
   }
 
