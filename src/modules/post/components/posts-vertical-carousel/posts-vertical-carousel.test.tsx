@@ -5,12 +5,13 @@ import { mockPost } from '@/test/entities';
 import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
 
 import { MockPostVerticalCarouselItem } from './components/posts-vertical-carousel-item/__mocks__';
+import type { PostItemCardProps } from './components/posts-vertical-carousel-item/posts-vertical-carousel-item';
 import { PostsVerticalCarousel } from './posts-vertical-carousel';
 
 const postItemTestID = 'post-item-onpress';
 
 jest.mock('./components/posts-vertical-carousel-item/posts-vertical-carousel-item', () => ({
-  PostVerticalCarouselItem: ({ item, handlePressItem }) => (
+  PostVerticalCarouselItem: ({ item, handlePressItem }: PostItemCardProps) => (
     <MockPostVerticalCarouselItem item={item} handlePressItem={handlePressItem} testID={postItemTestID} />
   ),
 }));
