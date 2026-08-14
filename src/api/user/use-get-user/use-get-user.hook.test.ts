@@ -2,15 +2,14 @@ import MockAdapter from 'axios-mock-adapter';
 
 import { client } from '@/api';
 import { API_ENDPOINT } from '@/api/endpoints';
-import { mockPost } from '@/test/entities';
+import { mockUser } from '@/test/entities';
 import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
-import { useGetPostById } from './use-get-post-by-id';
+import { useGetUser } from './use-get-user.hook';
 
-describe('useGetPostById', () => {
+describe('useGetUser', () => {
   const mock = new MockAdapter(client);
-
-  const post = mockPost;
+  const user = mockUser;
 
   afterEach(() => {
     queryClient.clear();
@@ -19,21 +18,23 @@ describe('useGetPostById', () => {
   });
 
   it('should fetches and returns post data successfully', async () => {
-    mock.onGet(API_ENDPOINT.GET_POST + post.id).reply(200, post);
+    mock.onGet(API_ENDPOINT.GET_USER + user.id).reply(200, user);
 
-    const { result } = await renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetUser({ variables: user.id.toString() }));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(post);
+
+    expect(result.current.data).toEqual(user);
   });
 
   it('should handles error when fetching post data', async () => {
     // Mock a 500 server error
     mock.onGet(API_ENDPOINT.GET_POSTS).reply(500);
 
-    const { result } = await renderHookWithProviders(() => useGetPostById({ variables: post.id.toString() }));
+    const { result } = await renderHookWithProviders(() => useGetUser({ variables: user.id.toString() }));
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+
     expect(result.current.error).toBeDefined();
   });
 });

@@ -1,6 +1,6 @@
 import { UnistylesRuntime, UnistylesThemes, useUnistyles } from 'react-native-unistyles';
 
-import { setItem } from '@/lib/async-storage';
+import { setItem } from '@/core/lib/async-storage';
 import { MaterialIcon } from '@/ui';
 
 export const ThemeButton = () => {

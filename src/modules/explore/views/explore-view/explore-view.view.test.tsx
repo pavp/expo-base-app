@@ -6,7 +6,7 @@ import { API_ENDPOINT } from '@/api/endpoints';
 import { generateMockPosts, generateMockUsers } from '@/test/entities';
 import { fireEvent, queryClient, renderWithProviders, screen } from '@/test/test-utils';
 
-import { ExploreView } from './explore-view';
+import { ExploreView } from './explore-view.view';
 
 describe('ExploreView', () => {
   const mock = new MockAdapter(client);

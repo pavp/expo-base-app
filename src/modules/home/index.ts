@@ -1,1 +1,1 @@
-export { HomeView } from './views/home-view/home-view';
+export { HomeView } from './views/home-view/home-view.view';

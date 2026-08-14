@@ -6,7 +6,7 @@ import { mockPost } from '@/test/entities';
 import { mockComment } from '@/test/entities/comment.mock';
 import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
-import { useGetCommentsByPostId } from './use-get-comments-by-post-id';
+import { useGetCommentsByPostId } from './use-get-comments-by-post-id.hook';
 
 describe('useGetCommentsByPostId', () => {
   const mock = new MockAdapter(client);

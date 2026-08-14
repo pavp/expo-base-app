@@ -2,7 +2,7 @@ import { ScrollView } from 'react-native';
 
 import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
 
-import { centreOffset, FilterChips } from './filter-chips';
+import { centreOffset, FilterChips } from './filter-chips.component';
 
 const VIEWPORT_WIDTH = 400;
 const CHIP_WIDTH = 120;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UnistylesRuntime, UnistylesThemes } from 'react-native-unistyles';
 
-import { getItem } from '@/lib/async-storage';
+import { getItem } from '@/core/lib/async-storage';
 
 export const useInitTheme = () => {
   const [themeIsReady, setThemeIsReady] = useState(false);

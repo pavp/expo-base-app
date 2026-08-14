@@ -4,7 +4,7 @@ import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import Constants from 'expo-constants';
 
 import { SettingsOption } from '@/components';
-import { setItem } from '@/lib/async-storage';
+import { setItem } from '@/core/lib/async-storage';
 import i18n, { SupportedLanguage } from '@/localization/i18n';
 
 import { styles } from './styles';

@@ -1,6 +1,6 @@
 import { act, renderHook } from '@/test/test-utils';
 
-import { useUserStore } from './user-store';
+import { useUserStore } from './user-store.store';
 
 describe('useUserStore', () => {
   it('should initialize with null user state', async () => {

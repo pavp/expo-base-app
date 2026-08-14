@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getItem } from '@/lib/async-storage';
+import { getItem } from '@/core/lib/async-storage';
 import i18n, { SupportedLanguage, supportedLanguages } from '@/localization/i18n';
 
 export const useInitLanguage = () => {

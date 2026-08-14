@@ -3,7 +3,7 @@ import * as userHooks from '@/api/user';
 import { mockPost, mockUser } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
-import { useDetailPost } from './use-detail-post';
+import { useDetailPost } from './use-detail-post.hook';
 
 jest.mock('@/api/post');
 jest.mock('@/api/user');
