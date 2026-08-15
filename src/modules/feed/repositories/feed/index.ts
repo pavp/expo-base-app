@@ -14,9 +14,9 @@ export interface FeedRepository extends BaseRepository {
   queryOptions: typeof feedQueryOptions;
 }
 
-// Query-only repository (no mutations) — see spec scenario "No mutation export exists".
-// `cancel` takes the app's `QueryClient` as its first parameter (design D3), so this module
-// never imports the app-layer singleton and `@/core/lib` stays free of an app-layer dependency.
+// `cancel` receives the app's `QueryClient` as its first parameter instead of reaching for it, so
+// this module never imports the app-layer singleton and `@/core/lib` stays free of an app-layer
+// dependency.
 // `BaseRepository.cancel`'s value type is `(queryClient, ...args: unknown[]) => Promise<void>`, so
 // the filters/dataSource read from `args` here rather than being typed positional parameters —
 // a more specific parameter type is not assignable to a `...args: unknown[]` target.
