@@ -17,19 +17,22 @@ The target is the structure used by the sibling `create-scaffold-nextjs-app` rep
   hooks in `.husky/`.
 - **Phase A (done):** conventions and cross-cutting infrastructure — type suffixes on filenames, the `src/core/` layer,
   derived environment flags, a Zod-validating http client, gateway type contracts, and the Zustand store factory.
-- **Phase B (not started):** a `src/modules/feed/` module carrying posts and comments end to end — api → gateway →
-  repository → selectors → store → hooks → views. It absorbs today's `src/api/post/`, `src/api/comment/`, and the
-  `home`, `explore` and `post` modules.
-- **Phase C (not started):** `src/modules/settings/` and `src/shared/user/`, following the pattern Phase B establishes.
+- **Phase B (done):** `src/modules/feed/` — one module carrying posts and comments end to end: Zod schemas → dual
+  gateway (`http`/`asyncStorage`) → query-only repository (keys, query-options, queries) → views. It absorbed
+  `src/api/post/`, `src/api/comment/`, and the former `home`, `explore` and `post` modules; none of those four
+  locations exist anymore. `react-query-kit` is no longer used inside `feed` — see "Server state" below.
+- **Phase C (not started):** `src/modules/settings/` and `src/shared/user/`, following the pattern Phase B established.
+  `@/api/user` deliberately stays at the api layer, on `react-query-kit`, until Phase C moves it.
 - **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
   React error boundary, schema-validated env, and a module generator.
 
 Practical consequences for an agent working here now:
 
-- `src/api/{post,user,comment}/` are temporary. They move into modules in Phases B and C — do not build on their current
-  shape, and do not add a fourth entity beside them.
-- `src/modules/{home,explore}/` are views, not modules: neither has its own components or hooks, and both reach into
-  `@/modules/post` for everything (TD-6). Phase B folds all three into `feed`.
+- `@/api/user` is temporary. It moves into `src/shared/user/` in Phase C — do not build on its current shape, and do
+  not add a fourth entity beside it at the api layer (posts and comments are gone from `src/api/`; feed logic belongs
+  in `src/modules/feed/`, not back in `src/api/`).
+- `src/modules/feed/` is the only module today. Views/components never call `feedRepository` directly — data access
+  lives in a `use-*-business` hook beside the view or component that needs it (see "Feature modules" below).
 - `src/store/` is a holdover (TD-12). New stores belong beside their owner, not there.
 - Every store goes through `createStoreWithMiddleware`; importing `zustand` directly is a lint error outside
   `src/core/lib/zustand/**`.
@@ -112,12 +115,24 @@ Do not commit or push unless the user asks.
 
 ### Add an API call
 
-1. Add the path to `API_ENDPOINT` in `src/api/endpoints.ts`.
-2. Create `src/api/<entity>/use-<verb>-<thing>/use-<verb>-<thing>.ts` using `createQuery` / `createInfiniteQuery` from
-   `react-query-kit`, typed `<Data, Variables, AxiosError>`.
-3. Add entity types to `src/api/<entity>/types.ts`; re-export the hook from `src/api/<entity>/index.ts`.
-4. Add `use-<verb>-<thing>.test.ts` beside it, mocking HTTP with `axios-mock-adapter` and rendering via
-   `@/test/test-utils`.
+Only `@/api/user` still uses the old `react-query-kit` flow, and it is Phase C scope — do not extend it. Every other
+entity follows `feed`'s module/gateway/repository shape:
+
+1. Add the Zod schema and its inferred type to the module's `<module>.types.ts`. Add or extend the endpoint path in
+   `src/api/endpoints.ts` (or a module-local constants file, if the module has its own).
+2. Add the call to the module's `api/<module>-api.ts` — a thin `httpClient` call with `responseSchema` wired to the
+   Zod schema. No `createQuery`/`createInfiniteQuery`.
+3. Add or extend the gateway(s) behind `repositories/<module>/gateways/` (`http-gateway`, plus `async-storage-gateway`
+   if the module needs an offline/local `DataSource`), each implementing the module's `*Gateway` contract.
+4. Add the query key to `<module>.repository.keys.ts`, the `queryOptions`/`infiniteQueryOptions` builder to
+   `<module>.query-options.ts`, and the exported hook to `<module>.repository.queries.ts` — positional
+   `(filters, dataSource, options)` signature, exactly `max-params: 3`.
+5. Test at the layer that owns the behavior: `axios-mock-adapter` for the api/gateway layers, pure function calls for
+   the query-options builder (no rendering, no network), `renderHookWithProviders` + `axios-mock-adapter` for the
+   repository hook. Do not add a dedicated test for the Zod schema itself — schemas are exercised through the
+   consumer that actually parses a payload (e.g. `<module>-api.test.ts`), not in isolation.
+6. Views/components never call the repository directly — add a `use-<owner>-business` hook that does, per "Layering
+   rules" under "Feature modules" above.
 
 ### Add a UI primitive
 
@@ -156,13 +171,13 @@ app.config.ts                -> Expo config (dynamic, TS)
 plugins/with-local-gradle-tuning.js -> config plugin, applied in app.config.ts
 src/
   app/                       -> expo-router file-based routes (NON-default location)
-  api/                       -> server data access: axios client + react-query-kit hooks
+  api/                       -> axios client + the one remaining react-query-kit entity (user)
   components/                -> app-level shared components (not primitives)
   config.ts                  -> env-derived config (`EXPO_PUBLIC_API_URL`)
   hooks/                     -> cross-cutting hooks (`hooks/common/*`)
   lib/async-storage/         -> thin AsyncStorage get/set wrapper
   localization/              -> i18next setup + TS translation modules
-  modules/                   -> feature modules: home, explore, post
+  modules/                   -> feature modules: feed (posts + comments end to end; see "Feature modules" below)
   store/                     -> Zustand client state (one store)
   styles/                    -> unistyles config, themes, breakpoints
   ui/                        -> presentational primitives
@@ -189,9 +204,9 @@ Route tree as it exists:
 src/app/_layout.tsx                  -> Stack: APIProvider > SafeAreaProvider > ThemeProvider
 src/app/(drawer)/_layout.tsx         -> Drawer, custom content via components/navigation/custom-drawer-content
 src/app/(drawer)/(tabs)/_layout.tsx  -> Tabs (home, explore)
-src/app/(drawer)/(tabs)/index.tsx    -> renders <HomeView /> from @/modules/home
-src/app/(drawer)/(tabs)/explore.tsx  -> renders <ExploreView />
-src/app/post/[id].tsx                -> renders <PostDetailView /> from @/modules/post
+src/app/(drawer)/(tabs)/index.tsx    -> renders <HomeView /> from @/modules/feed
+src/app/(drawer)/(tabs)/explore.tsx  -> renders <ExploreView /> from @/modules/feed
+src/app/post/[id].tsx                -> renders <PostDetailView /> from @/modules/feed
 src/app/settings/index.tsx           -> settings screen (+ local styles.ts)
 ```
 
@@ -205,23 +220,78 @@ in `src/app/_layout.tsx`; navigator `screenOptions` otherwise render with a stal
 
 ## Feature modules (`src/modules/`)
 
-Three modules exist and they are **not uniform**:
+One module exists: `feed` (posts + comments end to end). It carries every layer the target architecture defines:
 
-| Module    | Contents                                      |
-| --------- | --------------------------------------------- |
-| `home`    | `index.ts`, `views/`                          |
-| `explore` | `index.ts`, `views/`                          |
-| `post`    | `index.ts`, `views/`, `components/`, `hooks/` |
+```
+src/modules/feed/
+├── index.ts                       -> public barrel — the ONLY import surface from outside the module
+├── feed.types.ts                  -> Zod schemas + z.infer'd types (Post, Comment, FeedFilters)
+├── api/
+│   ├── feed-api.ts                -> thin httpClient calls, Zod responseSchema wiring
+│   └── helpers/<name>/             -> one folder per helper, colocated with its consumer
+├── components/
+│   ├── index.ts                   -> named exports only, never `export *`
+│   └── <component>/                -> <component>.tsx + styles.ts + .test.tsx; hooks/ only if it fetches its own data
+├── hooks/                          -> module-level hooks: consumed by 2+ views (e.g. use-post-authors)
+├── repositories/feed/
+│   ├── feed.repository.keys.ts    -> query key factory
+│   ├── feed.query-options.ts      -> queryOptions/infiniteQueryOptions builders — pagination lives here
+│   ├── feed.repository.queries.ts -> the exported hooks (useFeedPosts, useFeedPost, useFeedComments)
+│   ├── feed.repository.types.ts   -> the repository's own interface
+│   ├── index.ts                   -> feedRepository singleton
+│   └── gateways/
+│       ├── feed.gateway.types.ts  -> FeedGateway contract
+│       ├── http-gateway/          -> DataSource: 'http'
+│       ├── async-storage-gateway/ -> DataSource: 'asyncStorage'
+│       └── index.ts               -> createFeedGateway(dataSource) factory
+└── views/
+    └── <name>-view/
+        ├── <name>-view.view.tsx
+        ├── styles.ts
+        ├── <name>-view.view.test.tsx
+        ├── index.ts
+        └── hooks/                  -> view-private hooks: consumed by exactly this one view
+```
 
 Conventions in force:
 
-- Each module has an `index.ts` barrel that names its public exports explicitly (`export { HomeView } from
-'./views/home-view/home-view';`). Add subfolders (`components/`, `hooks/`) only when the module actually needs them —
-  do not scaffold empty ones.
-- A view lives in its own folder: `views/<name>-view/<name>-view.tsx` plus a sibling `styles.ts` and
-  `<name>-view.test.tsx`.
+- The module has one `index.ts` barrel that names its public exports explicitly (never `export *` from the module
+  root). It exports **only** components, types, module-level hooks, the repository singleton, and views — never a
+  gateway, query-options builder, or key factory. That is the module-boundary contract (TD-6, resolved): nothing
+  outside `src/modules/feed/` may import `@/modules/feed/{components,hooks}` directly, and nothing inside the module
+  reaches into a sibling module's internals, because there is no sibling module to reach into.
+- Add subfolders (`components/`, `hooks/`) only when the module actually needs them — do not scaffold empty ones.
+- A view lives in its own folder: `views/<name>-view/<name>-view.view.tsx` plus a sibling `styles.ts` and
+  `<name>-view.view.test.tsx`.
 - Nested components repeat the same shape one level down — see
-  `src/modules/post/components/posts-vertical-carousel/components/posts-vertical-carousel-item/`.
+  `src/modules/feed/components/posts-vertical-carousel/components/posts-vertical-carousel-item/`.
+
+### Layering rules — where data access lives
+
+- **Views and components never call the repository directly.** Data access lives in a `use-<owner>-business` hook
+  colocated with the view or component that needs it — see
+  `src/modules/feed/components/comment-list/hooks/use-comment-list-business/` for a component that fetches its own
+  data, and `src/modules/feed/views/home-view/hooks/use-home-business/` for a view.
+- **Consumer count decides where a hook lives**: a hook consumed by exactly one view is that view's own hook, under
+  `views/<view>/hooks/` (e.g. `use-post-detail-business`). A hook consumed by 2+ views is module-level, under
+  `src/modules/feed/hooks/` (e.g. `use-post-authors`, shared by `home-view` and `explore-view`).
+- **A controller hook is added only when a view has genuine UI-only state** — local state/handlers that are not data
+  fetching (e.g. a search term, a selected filter). `use-<view>-business` owns data; `use-<view>-controller` owns
+  that UI state and composes with the business hook. `home-view` and `post-detail-view` have no UI-only state, so
+  neither has a controller hook; `explore-view` does (`searchTerm`, `authorId`), so it has both
+  `use-explore-business` and `use-explore-controller`. Do not add an empty controller hook "for symmetry."
+
+### File-name suffixes
+
+On top of Phase A's `.hook.ts`, `.view.tsx`, `.component.tsx` and `.store.ts`, Phase B added four more, all under
+`kebab-case.suffix.ts` and subject to the same `check-file` kebab-case rule:
+
+| Suffix                 | Meaning                                                           | Example                                                                |
+| ---------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `*.gateway.ts`         | A gateway implementation behind a `DataSource` switch             | `http-gateway.ts`, `async-storage-gateway.ts`                          |
+| `*.repository.ts`      | A repository object (aggregates keys + query-options + queries)   | not yet a standalone file in `feed` — see `repositories/feed/index.ts` |
+| `*.query-options.ts`   | `queryOptions`/`infiniteQueryOptions` builders for one repository | `feed.query-options.ts`                                                |
+| `*.repository.keys.ts` | A query key factory for one repository                            | `feed.repository.keys.ts`                                              |
 
 ## `src/ui/` — primitives
 
@@ -236,28 +306,46 @@ Seven primitives, each a folder with the component and (where it styles anything
 `src/components/` is for app-level shared components that are not primitives: `api-provider`, `navigation/*`,
 `settings-option`, `theme-button`.
 
-## Server state — `src/api/`
+## Server state
 
-Stack: axios + TanStack React Query v5 + `react-query-kit`.
+Two shapes coexist, by design, not by inconsistency: the api layer (`src/api/`, one entity left) for what Phase C
+hasn't absorbed yet, and the module/gateway/repository layer (`src/modules/feed/`) for what Phase B already moved.
+
+### `src/api/` — `react-query-kit` hooks (Phase C scope)
 
 - `src/api/common/client.ts` — the single axios instance, `baseURL: config.apiURL` from `src/config.ts`
   (`EXPO_PUBLIC_API_URL`).
 - `src/api/endpoints.ts` — `API_ENDPOINT` string map. Add new paths here, not inline.
 - One hook per operation, in its own folder, colocated with its test:
-  `src/api/post/use-get-posts/use-get-posts.ts` + `.test.ts`.
-- Hooks are built with `createQuery` / `createInfiniteQuery` from `react-query-kit`, typed
-  `<Data, Variables, AxiosError>`. See `src/api/post/use-get-posts/use-get-posts.ts` and
-  `src/api/comment/use-get-comments-by-post-id/use-get-comments-by-post-id.ts`.
-- Entity types live in `src/api/<entity>/types.ts` (e.g. `Post` in `src/api/post/types.ts`); shared envelope types in
-  `src/api/types.ts`.
+  `src/api/user/use-get-users/use-get-users.hook.ts` + `.hook.test.ts`.
+- Hooks are built with `createQuery` / `createInfiniteQuery` from `react-query-kit` (still a dependency — check
+  `package.json` before assuming it is gone; it stays until Phase C moves `user`), typed `<Data, Variables, AxiosError>`.
+  See `src/api/user/use-get-users/use-get-users.hook.ts`.
+- Entity types live in `src/api/<entity>/types.ts` (e.g. `User` in `src/api/user/types.ts`); shared envelope types in
+  `src/api/api.types.ts`.
 - Barrels: `src/api/<entity>/index.ts` re-exports the entity's hooks and types; `src/api/index.ts` re-exports the
-  entities.
+  entities. `@/api/user` is the only entity here — posts and comments moved to `src/modules/feed/` in Phase B and do
+  not belong back in `src/api/`; `@/api/user` stays deliberately, as Phase C scope.
 
-The provider is `src/components/api-provider/api-provider.tsx`, mounted in `src/app/_layout.tsx`.
+### `src/modules/feed/` — module/gateway/repository (Phase B shape, the target pattern)
+
+- No `react-query-kit`. Raw `@tanstack/react-query` (`useQuery`/`useInfiniteQuery`) called from
+  `feed.repository.queries.ts`, configured by `queryOptions`/`infiniteQueryOptions` builders in
+  `feed.query-options.ts`.
+- Views/components call `feedRepository.queries.useFeedPosts(filters?, dataSource?, options?)` (and
+  `useFeedPost`/`useFeedComments`) through a `use-*-business` hook, never inline — see "Layering rules" under
+  "Feature modules" above.
+- A gateway (`http` or `asyncStorage`, chosen via `DataSource`) sits behind the repository; the repository never
+  calls `httpClient`/AsyncStorage directly. See "Feature modules" above for the full tree.
+- Zod validates every HTTP response through `feed.types.ts`'s schemas, wired in via `httpClient`'s `responseSchema`
+  option (Phase A's contract, reused as-is).
+
+The provider is `src/components/api-provider/api-provider.tsx`, mounted in `src/app/_layout.tsx` — shared by both
+shapes above, one `QueryClient` for the whole app.
 
 The upstream API is jsonplaceholder-shaped: endpoints return bare arrays, not a pagination envelope. Pagination in
-`use-get-posts` is derived from page length (`lastPage.length === DEFAULT_LIMIT`). See TD-4 before touching
-`src/api/common/utils.ts`.
+`feed.query-options.ts` is derived from page length (`lastPage.length === DEFAULT_LIMIT`), preserved unchanged from
+the pre-Phase-B `use-get-posts` hook it replaced. See TD-4 before touching `src/api/common/utils.ts`.
 
 ## Client state — Zustand
 
@@ -299,7 +387,7 @@ Add every user-facing string here and read it via `useTranslation()`. Add the ke
 
 ## Tests
 
-Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 16 test files
+Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 31 test files
 currently.
 
 - Tests are **co-located**: `<name>.test.ts(x)` next to the file under test.
@@ -387,7 +475,7 @@ Never hold Gradle, an emulator, and Metro at the same time. `plugins/with-local-
 ```tsx
 // src/app/(drawer)/(tabs)/index.tsx
 export default function HomeScreen() {
-  const { data } = useGetPosts();
+  const { data } = feedRepository.queries.useFeedPosts();
   return <FlashList data={data} ... />;
 }
 ```
@@ -396,7 +484,7 @@ export default function HomeScreen() {
 
 ```tsx
 // src/app/(drawer)/(tabs)/index.tsx
-import { HomeView } from '@/modules/home';
+import { HomeView } from '@/modules/feed';
 
 export default function HomeScreen() {
   return <HomeView />;
@@ -492,30 +580,30 @@ function build({ a, b, c, d }: BuildOptions) {
 
 ---
 
-❌ Reaching into another module's internals. This exists in the codebase today and is a known issue (TD-6) — do not copy
-it.
+❌ Reaching into a module's internals from outside it, bypassing its public barrel. TD-6 was exactly this — resolved
+in Phase B by folding every consumer into the one module that owns the internals — but the rule outlives that specific
+fix and applies to any future module.
 
 ```ts
-// src/modules/home/views/home-view/home-view.tsx
-import { PostsVerticalCarousel } from '@/modules/post/components';
-import { usePostAuthors } from '@/modules/post/hooks';
+// hypothetical: a file outside src/modules/feed/ reaching past its barrel
+import { PostsVerticalCarousel } from '@/modules/feed/components';
+import { usePostAuthors } from '@/modules/feed/hooks';
 ```
 
 ✅ Import through the module's public barrel.
 
 ```ts
-import { PostsVerticalCarousel, usePostAuthors } from '@/modules/post';
+import { PostsVerticalCarousel, usePostAuthors } from '@/modules/feed';
 ```
 
 ## Known issues
 
 Verified against the code at the time of writing. Ranked by severity. IDs are stable and are never reused or renumbered
-when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3 and TD-8 have been
-resolved and removed.
+when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3, TD-6 and TD-8
+have been resolved and removed.
 
 | ID    | Severity | Issue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ----- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TD-6  | Medium   | **No module boundary enforcement.** `home-view.tsx` and `explore-view.tsx` import `@/modules/post/components` and `@/modules/post/hooks`, bypassing `src/modules/post/index.ts`. Nothing prevents this today. Phase 2 is expected to enforce boundaries.                                                                                                                                                                                                                                                                                                                                                                                      |
 | TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth.                                                                                                                                                                                                                                                                                                                                                              |
 | TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                                                                                                                                                                         |
 | TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                                                                                                                                                                             |

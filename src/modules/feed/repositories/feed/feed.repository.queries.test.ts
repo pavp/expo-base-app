@@ -54,6 +54,20 @@ describe('feedRepositoryQueries', () => {
     it('accepts exactly 3 positional parameters: filters, dataSource, options', () => {
       expect(feedRepositoryQueries.useFeedPosts.length).toBeLessThanOrEqual(3);
     });
+
+    it('rejects an options caller that tries to override the pagination contract', () => {
+      // `feedRepositoryQueries.useFeedPosts` spreads `...feedQueryOptions.posts(...), ...options`, so
+      // `options` is applied last — at runtime it would silently win over the repository's own
+      // `getNextPageParam`/`initialPageParam`. `QueryOptions`/`InfiniteQueryOptions` omitting these keys
+      // is what makes this a compile-time error instead of a runtime pagination bug. This is a type-only
+      // assertion — `useFeedPosts` is never actually invoked, since calling a hook outside a render
+      // tree throws "Invalid hook call" regardless of the argument shape.
+      type UseFeedPostsOptions = Parameters<typeof feedRepositoryQueries.useFeedPosts>[2];
+      // @ts-expect-error getNextPageParam is owned by the repository's query-options builder, never the caller.
+      const withGetNextPageParam: UseFeedPostsOptions = { getNextPageParam: () => undefined };
+
+      expect(withGetNextPageParam).toBeDefined();
+    });
   });
 
   describe('useFeedPost', () => {
