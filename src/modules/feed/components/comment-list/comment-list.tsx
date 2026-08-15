@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
-import { feedRepository } from '../../repositories/feed';
-
 import { CommentItem } from './components';
+import { useCommentListBusiness } from './hooks';
 import { styles } from './styles';
 
 interface CommentListProps {
@@ -12,7 +11,7 @@ interface CommentListProps {
 
 export const CommentList = ({ postId }: CommentListProps) => {
   const { t } = useTranslation();
-  const { data: comments = [] } = feedRepository.queries.useFeedComments(postId);
+  const { comments } = useCommentListBusiness(postId);
 
   return (
     <View>
