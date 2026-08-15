@@ -131,6 +131,17 @@ module.exports = defineConfig([
     },
   },
   {
+    // Only plain JS needs these: TS test files have `no-undef` off and resolve them via @types/jest.
+    files: ['**/?(*.)+(spec|test).js'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+      },
+    },
+  },
+  {
     files: ['src/app/**/*', 'test/**/*'],
     rules: {
       'check-file/folder-naming-convention': 'off',
