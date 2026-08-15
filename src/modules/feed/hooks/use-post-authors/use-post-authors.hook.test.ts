@@ -1,10 +1,10 @@
-import * as userHooks from '@/api/user';
+import { userRepository } from '@/shared/user';
 import { generateMockUsers } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
 import { usePostAuthors } from './use-post-authors.hook';
 
-jest.mock('@/api/user');
+jest.mock('@/shared/user');
 
 describe('usePostAuthors', () => {
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe('usePostAuthors', () => {
   it('should map every user id to its name', async () => {
     const users = generateMockUsers(3);
 
-    jest.spyOn(userHooks, 'useGetUsers').mockReturnValue({ data: users } as any);
+    jest.spyOn(userRepository.queries, 'useUsers').mockReturnValue({ data: users } as any);
 
     const { result } = await renderHookWithProviders(() => usePostAuthors());
 
@@ -25,7 +25,7 @@ describe('usePostAuthors', () => {
   });
 
   it('should return an empty map while the users have not arrived', async () => {
-    jest.spyOn(userHooks, 'useGetUsers').mockReturnValue({ data: undefined } as any);
+    jest.spyOn(userRepository.queries, 'useUsers').mockReturnValue({ data: undefined } as any);
 
     const { result } = await renderHookWithProviders(() => usePostAuthors());
 

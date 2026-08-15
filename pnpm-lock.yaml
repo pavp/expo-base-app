@@ -104,9 +104,6 @@ importers:
       react-native-worklets:
         specifier: 0.10.1
         version: 0.10.1(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(react-native@0.86.2(@babel/core@7.29.7)(@react-native/jest-preset@0.86.2(@babel/core@7.29.7)(react@19.2.3))(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
-      react-query-kit:
-        specifier: ^3.3.4
-        version: 3.3.4(@tanstack/react-query@5.101.4(react@19.2.3))
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -4450,14 +4447,6 @@ packages:
       '@react-native/jest-preset':
         optional: true
       '@types/react':
-        optional: true
-
-  react-query-kit@3.3.4:
-    resolution: {integrity: sha512-YzKjMT7d5WdSg9aem8inWeQfQOhsbEXTwzSd3NxHCwoMqnwU06kaqxjHL6Jn++vyqQTl50lL7PaPXEZ8WXdsig==}
-    peerDependencies:
-      '@tanstack/react-query': ^4 || ^5
-    peerDependenciesMeta:
-      '@tanstack/react-query':
         optional: true
 
   react-reconciler@0.33.0:
@@ -10634,10 +10623,6 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
-
-  react-query-kit@3.3.4(@tanstack/react-query@5.101.4(react@19.2.3)):
-    optionalDependencies:
-      '@tanstack/react-query': 5.101.4(react@19.2.3)
 
   react-reconciler@0.33.0(react@19.2.3):
     dependencies:

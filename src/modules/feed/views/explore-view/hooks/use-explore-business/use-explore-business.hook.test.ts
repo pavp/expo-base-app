@@ -1,4 +1,4 @@
-import * as userHooks from '@/api/user';
+import { userRepository } from '@/shared/user';
 import { mockPost, mockUser } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
@@ -7,7 +7,7 @@ import { feedRepository } from '../../../../repositories/feed';
 
 import { useExploreBusiness } from './use-explore-business.hook';
 
-jest.mock('@/api/user');
+jest.mock('@/shared/user');
 jest.mock('../../../../repositories/feed');
 jest.mock('../../../../hooks');
 
@@ -18,7 +18,7 @@ describe('useExploreBusiness', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (usePostAuthors as jest.Mock).mockReturnValue(new Map());
-    jest.spyOn(userHooks, 'useGetUsers').mockReturnValue({ data: [mockUser] } as any);
+    jest.spyOn(userRepository.queries, 'useUsers').mockReturnValue({ data: [mockUser] } as any);
   });
 
   it('should query the feed repository with the given filters and enabled flag', async () => {
