@@ -1,4 +1,4 @@
-import { HomeView } from '@/modules/home';
+import { HomeView } from '@/modules/feed';
 
 export default function HomeScreen() {
   return <HomeView />;

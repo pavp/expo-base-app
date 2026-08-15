@@ -1,37 +1,37 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useGetPosts } from '@/api/post';
-import { useGetUsers } from '@/api/user';
-// Imported directly rather than through `@/hooks`: that barrel pulls in the app
-// init hooks, and with them AsyncStorage, which tests would have to mock.
-import { useDebouncedValue } from '@/core/hooks';
-import { PostsVerticalCarousel } from '@/modules/post/components';
-import { usePostAuthors } from '@/modules/post/hooks';
 import { EmptyState, FilterChip, FilterChips, SafeAreaView, SearchInput } from '@/ui';
 
+import { PostsVerticalCarousel } from '../../components';
+
+import { useExploreBusiness, useExploreController } from './hooks';
 import { styles } from './styles';
 
 export const ExploreView = () => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [authorId, setAuthorId] = useState<number | null>(null);
-  const debouncedSearchTerm = useDebouncedValue(searchTerm.trim());
+  const { searchTerm, setSearchTerm, authorId, setAuthorId, debouncedSearchTerm, hasFilter } =
+    useExploreController();
 
-  const { data: users } = useGetUsers();
-  const authorsById = usePostAuthors();
-
-  const hasFilter = debouncedSearchTerm.length > 0 || authorId !== null;
-
-  const { data, isLoading, isError, hasNextPage, isFetchingNextPage, refetch, fetchNextPage, isRefetching } =
-    useGetPosts({
-      variables: {
-        q: debouncedSearchTerm || undefined,
-        userId: authorId ?? undefined,
-      },
-      enabled: hasFilter,
-    });
+  const {
+    users,
+    authorsById,
+    postsData,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    isRefetching,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+  } = useExploreBusiness(
+    {
+      q: debouncedSearchTerm || undefined,
+      userId: authorId ?? undefined,
+    },
+    hasFilter,
+  );
 
   const authorOptions = useMemo<FilterChip[]>(
     () => [
@@ -44,8 +44,6 @@ export const ExploreView = () => {
   const onEndReached = useCallback(() => {
     if (hasNextPage) fetchNextPage();
   }, [fetchNextPage, hasNextPage]);
-
-  const postsData = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
 
   const renderResults = () => {
     if (!hasFilter)

@@ -1,11 +1,10 @@
 import { mockComment } from '@/test/entities/comment.mock';
 import { renderWithProviders, screen } from '@/test/test-utils';
 
-import { feedRepository } from '../../repositories/feed';
-
 import { CommentList } from './comment-list';
+import * as useCommentListBusinessHook from './hooks';
 
-jest.mock('../../repositories/feed');
+jest.mock('./hooks');
 
 describe('CommentList', () => {
   afterEach(() => {
@@ -13,9 +12,9 @@ describe('CommentList', () => {
   });
 
   it('should render the comment count and every comment body', async () => {
-    jest.spyOn(feedRepository.queries, 'useFeedComments').mockReturnValue({
-      data: [mockComment],
-    } as any);
+    jest.spyOn(useCommentListBusinessHook, 'useCommentListBusiness').mockReturnValue({
+      comments: [mockComment],
+    });
 
     await renderWithProviders(<CommentList postId="1" />);
 
@@ -24,9 +23,9 @@ describe('CommentList', () => {
   });
 
   it('should render a zero count when there are no comments yet', async () => {
-    jest.spyOn(feedRepository.queries, 'useFeedComments').mockReturnValue({
-      data: undefined,
-    } as any);
+    jest.spyOn(useCommentListBusinessHook, 'useCommentListBusiness').mockReturnValue({
+      comments: [],
+    });
 
     await renderWithProviders(<CommentList postId="1" />);
 

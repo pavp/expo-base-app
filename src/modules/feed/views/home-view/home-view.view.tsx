@@ -1,25 +1,17 @@
-import React, { useCallback, useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useGetPosts } from '@/api/post';
-import { PostsVerticalCarousel } from '@/modules/post/components';
-import { usePostAuthors } from '@/modules/post/hooks';
 import { EmptyState, SafeAreaView } from '@/ui';
 
+import { PostsVerticalCarousel } from '../../components';
+
+import { useHomeBusiness } from './hooks';
 import { styles } from './styles';
 
 export const HomeView = () => {
   const { t } = useTranslation();
-  const { data, isLoading, isError, hasNextPage, isFetchingNextPage, refetch, fetchNextPage, isRefetching } =
-    useGetPosts();
-
-  const authorsById = usePostAuthors();
-
-  const onEndReached = useCallback(() => {
-    if (hasNextPage) fetchNextPage();
-  }, [fetchNextPage, hasNextPage]);
-
-  const postsData = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
+  const { postsData, authorsById, isLoading, isError, isFetchingNextPage, isRefetching, onEndReached, refetch } =
+    useHomeBusiness();
 
   const renderContent = () => {
     if (isError)
