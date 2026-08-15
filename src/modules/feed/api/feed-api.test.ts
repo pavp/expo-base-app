@@ -134,5 +134,11 @@ describe('feedApi', () => {
 
       await expect(feedApi.getCommentsByPostId('1')).rejects.toBeInstanceOf(HttpValidationError);
     });
+
+    it('rejects an otherwise complete comment whose postId arrives as a string', async () => {
+      mock.onGet('posts/1/comments').reply(200, [{ ...mockComment, postId: String(mockComment.postId) }]);
+
+      await expect(feedApi.getCommentsByPostId('1')).rejects.toBeInstanceOf(HttpValidationError);
+    });
   });
 });

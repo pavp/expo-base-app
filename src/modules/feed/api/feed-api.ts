@@ -4,6 +4,8 @@ import { httpClient } from '@/api/http-client/http-client';
 
 import { Comment, CommentArraySchema, FeedFilters, Post, PostArraySchema, PostSchema } from '../feed.types';
 
+import { buildPostsParams } from './helpers/posts-params/posts-params.helper';
+
 export interface FeedPage {
   page: number;
   limit: number;
@@ -15,17 +17,6 @@ export interface FeedApiContract {
   getPostById(id: string, options?: ApiOptions): Promise<Post>;
   getCommentsByPostId(postId: string, options?: ApiOptions): Promise<Comment[]>;
 }
-
-/**
- * Builds the jsonplaceholder query parameters axios serializes into the URL. `q` is sent only when
- * truthy and `userId` only when defined, so an absent filter never becomes an empty parameter.
- */
-const buildPostsParams = ({ page, limit }: FeedPage, { q, userId }: FeedFilters) => ({
-  _page: page,
-  _limit: limit,
-  ...(q ? { q } : {}),
-  ...(userId !== undefined ? { userId } : {}),
-});
 
 // Service implementation with Zod response validation. There is no `requestSchema` counterpart:
 // this module is read-only, so no operation here ever sends a request body to validate.
