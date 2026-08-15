@@ -4,8 +4,9 @@ import { withUnistyles } from 'react-native-unistyles';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
-import { Post } from '@/api/post';
 import { ActivityIndicator } from '@/ui';
+
+import type { Post } from '../../feed.types';
 
 import { PostVerticalCarouselItem } from './components';
 import { styles } from './styles';

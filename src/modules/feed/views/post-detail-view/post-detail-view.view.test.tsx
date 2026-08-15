@@ -3,12 +3,11 @@ import React from 'react';
 import { mockPost, mockUser } from '@/test/entities';
 import { renderWithProviders, screen, waitFor } from '@/test/test-utils';
 
-import * as hooks from '../../hooks';
-
+import * as hooks from './hooks';
 import { PostDetailView } from './post-detail-view.view';
 
-jest.mock('../../hooks', () => ({
-  useDetailPost: jest.fn(),
+jest.mock('./hooks', () => ({
+  usePostDetailBusiness: jest.fn(),
 }));
 
 describe('PostDetailView', () => {
@@ -20,7 +19,7 @@ describe('PostDetailView', () => {
   });
 
   it('should display ActivityIndicator while loading', async () => {
-    jest.spyOn(hooks, 'useDetailPost').mockReturnValueOnce({
+    jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValueOnce({
       post,
       user,
       isLoading: true,
@@ -39,7 +38,7 @@ describe('PostDetailView', () => {
   });
 
   it('should render post details correctly when data is loaded', async () => {
-    jest.spyOn(hooks, 'useDetailPost').mockReturnValueOnce({
+    jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValueOnce({
       post,
       user,
       isLoading: false,
@@ -59,7 +58,7 @@ describe('PostDetailView', () => {
   });
 
   it('should report a failed post request instead of crashing', async () => {
-    jest.spyOn(hooks, 'useDetailPost').mockReturnValue({
+    jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValue({
       post: undefined,
       user: undefined,
       isLoading: false,
@@ -72,7 +71,7 @@ describe('PostDetailView', () => {
   });
 
   it('should still render the post when only the author is missing', async () => {
-    jest.spyOn(hooks, 'useDetailPost').mockReturnValue({
+    jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValue({
       post,
       user: undefined,
       isLoading: false,

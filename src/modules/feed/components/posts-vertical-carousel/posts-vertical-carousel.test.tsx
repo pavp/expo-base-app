@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 
-import { Post } from '@/api/post';
 import { mockPost } from '@/test/entities';
 import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
+
+import type { Post } from '../../feed.types';
 
 import { MockPostVerticalCarouselItem } from './components/posts-vertical-carousel-item/__mocks__';
 import type { PostItemCardProps } from './components/posts-vertical-carousel-item/posts-vertical-carousel-item';

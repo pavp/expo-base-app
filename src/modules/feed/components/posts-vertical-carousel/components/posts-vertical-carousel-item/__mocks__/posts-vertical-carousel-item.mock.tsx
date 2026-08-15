@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { Post } from '@/api/post';
+import type { Post } from '../../../../../feed.types';
 
 interface MockPostItemCardProps {
   item: Post;
