@@ -1,7 +1,7 @@
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { MaterialIcon } from '@/ui';
+import { MaterialIcon } from '../material-icon/material-icon.component';
 
 import { styles } from './styles';
 

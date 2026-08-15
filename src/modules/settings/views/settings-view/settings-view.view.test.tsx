@@ -18,13 +18,6 @@ jest.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: jest.fn() },
 }));
 
-// `@/components`'s barrel re-exports `CustomDrawerContent`, which pulls in
-// `expo-router/drawer` -> `react-native-reanimated` worklets init and throws
-// outside a real app. No test in this repo imports the barrel for this reason.
-jest.mock('@/components', () => ({
-  SettingsOption: jest.requireActual('@/components/settings-option/settings-option').SettingsOption,
-}));
-
 describe('SettingsView', () => {
   const setTheme = jest.fn();
   const toggleTheme = jest.fn();
