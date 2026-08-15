@@ -1,10 +1,11 @@
+import { secureStorage } from '@/core/lib/secure-storage';
 import { createStoreWithMiddleware } from '@/core/lib/zustand';
 
 import type { UserStoreState } from './user.store.types';
 
-// Nested `state.actions` (design decision D3, Phase A commitment). `actions` itself is dropped
-// from the persisted payload by the factory's own `partialize`, unconditionally — only
-// `hasHydrated` needs to be named here via `exclude`.
+// Swapping `storage` keeps the persisted key `user`, so a token written under the previous
+// AsyncStorage backend is orphaned rather than migrated. Nothing reads the token yet, so there is
+// no session to lose — but a migration would be needed if that changes before launch.
 export const useUserStore = createStoreWithMiddleware<UserStoreState>(
   (set) => ({
     user: null,
@@ -24,5 +25,6 @@ export const useUserStore = createStoreWithMiddleware<UserStoreState>(
   {
     persist: true,
     exclude: ['hasHydrated'],
+    storage: secureStorage,
   },
 );
