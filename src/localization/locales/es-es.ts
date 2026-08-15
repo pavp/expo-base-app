@@ -10,6 +10,11 @@ const es_ES: typeof en_US = {
       posts: 'Placeholders',
       settings: 'Ajustes',
     },
+    errorBoundary: {
+      title: 'Algo salió mal',
+      description: 'Esta parte de la aplicación se detuvo inesperadamente. Puedes intentar cargarla de nuevo.',
+      retry: 'Reintentar',
+    },
     home: {
       errorTitle: 'Algo salió mal',
       errorDescription: 'No se pudieron cargar las publicaciones. Desliza hacia abajo para reintentar.',

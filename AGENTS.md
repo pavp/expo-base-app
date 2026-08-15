@@ -355,8 +355,9 @@ Seven primitives, each a folder with the component and (where it styles anything
 `ActivityIndicator` must be imported from `@/ui`, never from `react-native` — enforced by `no-restricted-imports` in
 `eslint.config.js` (the rule is disabled inside `src/ui/**` so the primitive itself can wrap it).
 
-`src/components/` is for app-level shared components that are not primitives: `api-provider`, `navigation/*`,
-`settings-option`, `theme-button`.
+`src/components/` is for app-level shared components that are not primitives: `api-provider`, `error-fallback`,
+`navigation/*`, `theme-button`. `error-fallback` lives here rather than in `src/ui/` because it translates its own copy
+and logs the error it receives — a primitive does neither.
 
 ## Server state
 
