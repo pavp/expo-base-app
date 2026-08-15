@@ -7,7 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { APIProvider } from '@/components';
-import { useInitApp } from '@/hooks';
+import { useInitApp } from '@/modules/settings';
 
 import 'react-native-reanimated';
 import '@/localization/i18n';

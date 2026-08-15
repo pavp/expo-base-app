@@ -13,8 +13,6 @@ const config: Config = {
     'src/components/**/*.{ts,tsx}',
     'src/modules/**/*.{ts,tsx}',
     'src/core/**/*.{ts,tsx}',
-    'src/hooks/**/*.{ts,tsx}',
-    'src/store/**/*.{ts,tsx}',
     'src/api/**/*.{ts,tsx}',
     'src/ui/**/*.{ts,tsx}',
   ],
