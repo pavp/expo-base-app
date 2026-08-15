@@ -20,6 +20,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff',
     },
+    // App-wide: this API has no per-key granularity, so theme and language stop syncing too.
+    allowBackup: false,
   },
   web: {
     bundler: 'metro',
@@ -30,6 +32,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-localization',
     'expo-font',
     'expo-router',
+    'expo-secure-store',
     [
       'expo-splash-screen',
       {
@@ -39,6 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     './plugins/with-local-gradle-tuning',
+    './plugins/with-ios-file-protection',
   ],
   experiments: {
     typedRoutes: true,
