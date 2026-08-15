@@ -4,8 +4,8 @@ import { userApi } from '../../api/user-api';
 
 import { userQueryKeys } from './user.repository.keys';
 
-// No gateway indirection (design decision D2) — `queryFn` calls `userApi` directly. There is one
-// data source, so a gateway here would be a pass-through with nothing to switch between.
+// `queryFn` calls `userApi` directly rather than going through a gateway as `feed` does: there is
+// one data source here, so a gateway would be a pass-through with nothing to switch between.
 const getUserListQueryOptions = () =>
   queryOptions({
     queryKey: userQueryKeys.list(),

@@ -1,6 +1,5 @@
-// Single public barrel for `src/shared/user/`. `userApi`, keys and query-options stay
-// module-private — consumers outside this module import only what is re-exported here, so TD-6
-// (reaching past a module's own barrel) cannot recur through this module.
+// `userApi`, the query keys and the query options are deliberately not re-exported: outside code
+// goes through `userRepository`, so reaching past this barrel is never necessary.
 export { userRepository } from './repositories/user';
 export { getUserToken, useUserTokenSelector } from './selectors';
 export { useUserStore } from './stores/user.store';

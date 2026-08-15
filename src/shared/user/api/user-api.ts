@@ -5,7 +5,6 @@ import { httpClient } from '@/api/http-client/http-client';
 import type { User } from '../user.types';
 import { UserArraySchema, UserSchema } from '../user.types';
 
-// Contract interface
 export interface UserApiContract {
   getAll(options?: ApiOptions): Promise<User[]>;
   getById(id: number, options?: ApiOptions): Promise<User>;
@@ -29,5 +28,4 @@ const createUserApiService = (): UserApiContract => ({
   },
 });
 
-// Singleton instance for the entire app
 export const userApi = createUserApiService();

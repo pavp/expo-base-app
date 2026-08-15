@@ -1,11 +1,5 @@
 import { useUserStore } from '../../stores/user.store';
 
-/**
- * User Token Selector Hook
- *
- * Returns the current access token from the store.
- * Optimized for token access in interceptors and auth checks.
- */
 export const useUserTokenSelector = () => {
   return useUserStore((state) => state.user?.accessToken);
 };

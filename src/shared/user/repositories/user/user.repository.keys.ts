@@ -1,6 +1,6 @@
 /**
- * No `dataSource` segment here — unlike `feedQueryKeys` — because `src/shared/user/` has one data
- * source (design decision D1). A second source would need the same segment `feedQueryKeys` carries.
+ * No `dataSource` segment here, unlike `feedQueryKeys`: user data comes from one source, so there
+ * is nothing to disambiguate. Adding a second source would mean adding that segment back.
  */
 export const userQueryKeys = {
   all: ['user'] as const,
