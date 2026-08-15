@@ -6,7 +6,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
-import { APIProvider } from '@/components';
+import { APIProvider, ErrorFallback } from '@/components';
 import { useInitApp } from '@/modules/settings';
 
 import 'react-native-reanimated';
@@ -15,6 +15,9 @@ import '@/styles/unistyles';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Catches whatever the individual routes do not. Metro errors still reach LogBox in development.
+export { ErrorFallback as ErrorBoundary };
 
 export default function RootLayout() {
   const { appIsReady } = useInitApp();

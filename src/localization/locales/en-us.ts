@@ -8,6 +8,11 @@ export default {
       posts: 'Placeholders',
       settings: 'Settings',
     },
+    errorBoundary: {
+      title: 'Something went wrong',
+      description: 'This part of the app stopped unexpectedly. You can try loading it again.',
+      retry: 'Try again',
+    },
     home: {
       errorTitle: 'Something went wrong',
       errorDescription: 'The posts could not be loaded. Pull down to try again.',
