@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useGetUsers } from '@/api/user';
+import { userRepository } from '@/shared/user';
 
 /**
  * The demo API returns posts without any author data, so the author name is
@@ -13,7 +13,7 @@ import { useGetUsers } from '@/api/user';
  * line rather than the feed.
  */
 export const usePostAuthors = () => {
-  const { data: users } = useGetUsers();
+  const { data: users } = userRepository.queries.useUsers();
 
   return useMemo(() => new Map(users?.map(({ id, name }) => [id, name])), [users]);
 };

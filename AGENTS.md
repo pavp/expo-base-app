@@ -21,21 +21,26 @@ The target is the structure used by the sibling `create-scaffold-nextjs-app` rep
   gateway (`http`/`asyncStorage`) → query-only repository (keys, query-options, queries) → views. It absorbed
   `src/api/post/`, `src/api/comment/`, and the former `home`, `explore` and `post` modules; none of those four
   locations exist anymore. `react-query-kit` is no longer used inside `feed` — see "Server state" below.
-- **Phase C (not started):** `src/modules/settings/` and `src/shared/user/`, following the pattern Phase B established.
-  `@/api/user` deliberately stays at the api layer, on `react-query-kit`, until Phase C moves it.
+- **Phase C (partial):** `src/shared/user/` is built and is the only source of user data — a contract/factory/singleton
+  `api/`, no gateway, feeding `repositories/user/` (query-only, no `dataSource` segment) and `stores/`/`selectors/`.
+  `src/api/user/` and `src/store/` are deleted; `react-query-kit` is no longer a dependency. `src/modules/settings/`
+  has not started yet — `src/hooks/` and the settings screen's hand-rolled reads/writes are still in their
+  pre-Phase-C shape. TD-11 (plaintext token storage) is not fixed yet.
 - **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
   React error boundary, schema-validated env, and a module generator.
 
 Practical consequences for an agent working here now:
 
-- `@/api/user` is temporary. It moves into `src/shared/user/` in Phase C — do not build on its current shape, and do
-  not add a fourth entity beside it at the api layer (posts and comments are gone from `src/api/`; feed logic belongs
-  in `src/modules/feed/`, not back in `src/api/`).
+- `src/api/` holds only the axios client and endpoint map now — no entity lives there. A new entity needing server
+  data follows either `feed`'s module/gateway/repository shape or `shared/user`'s gateway-free shape (single data
+  source), never the retired `react-query-kit` pattern.
 - `src/modules/feed/` is the only module today. Views/components never call `feedRepository` directly — data access
   lives in a `use-*-business` hook beside the view or component that needs it (see "Feature modules" below).
-- `src/store/` is a holdover (TD-12). New stores belong beside their owner, not there.
+- `src/shared/user/index.ts` is the only import surface for user data — never import
+  `@/shared/user/{api,repositories,stores,selectors}` directly from outside the module.
 - Every store goes through `createStoreWithMiddleware`; importing `zustand` directly is a lint error outside
-  `src/core/lib/zustand/**`.
+  `src/core/lib/zustand/**`. `src/shared/user/stores/user.store.ts` is the only store today; its actions are nested
+  under `state.actions`, not flat.
 
 Anything not listed above is stable enough to build on.
 
@@ -115,18 +120,22 @@ Do not commit or push unless the user asks.
 
 ### Add an API call
 
-Only `@/api/user` still uses the old `react-query-kit` flow, and it is Phase C scope — do not extend it. Every other
-entity follows `feed`'s module/gateway/repository shape:
+Every entity follows `feed`'s module/gateway/repository shape, or `shared/user`'s gateway-free variant when there is
+only one data source:
 
 1. Add the Zod schema and its inferred type to the module's `<module>.types.ts`. Add or extend the endpoint path in
    `src/api/endpoints.ts` (or a module-local constants file, if the module has its own).
 2. Add the call to the module's `api/<module>-api.ts` — a thin `httpClient` call with `responseSchema` wired to the
    Zod schema. No `createQuery`/`createInfiniteQuery`.
 3. Add or extend the gateway(s) behind `repositories/<module>/gateways/` (`http-gateway`, plus `async-storage-gateway`
-   if the module needs an offline/local `DataSource`), each implementing the module's `*Gateway` contract.
-4. Add the query key to `<module>.repository.keys.ts`, the `queryOptions`/`infiniteQueryOptions` builder to
-   `<module>.query-options.ts`, and the exported hook to `<module>.repository.queries.ts` — positional
-   `(filters, dataSource, options)` signature, exactly `max-params: 3`.
+   if the module needs an offline/local `DataSource`), each implementing the module's `*Gateway` contract. **Skip
+   this step entirely when there is only one data source** (`shared/user`'s precedent) — the query-options builder
+   calls the api layer directly and there is no `gateways/` folder at all.
+4. Add the query key to `<module>.repository.keys.ts` and the `queryOptions` builder to `<module>.query-options.ts`.
+   With a gateway (step 3 done), the query key carries a `dataSource` segment and the builder takes a positional
+   `(filters, dataSource, options)` signature, exactly `max-params: 3`. Without one, the key has no `dataSource`
+   segment and the builder takes `(options)` only. Add the exported hook to `<module>.repository.queries.ts` either
+   way.
 5. Test at the layer that owns the behavior: `axios-mock-adapter` for the api/gateway layers, pure function calls for
    the query-options builder (no rendering, no network), `renderHookWithProviders` + `axios-mock-adapter` for the
    repository hook. Do not add a dedicated test for the Zod schema itself — schemas are exercised through the
@@ -171,14 +180,14 @@ app.config.ts                -> Expo config (dynamic, TS)
 plugins/with-local-gradle-tuning.js -> config plugin, applied in app.config.ts
 src/
   app/                       -> expo-router file-based routes (NON-default location)
-  api/                       -> axios client + the one remaining react-query-kit entity (user)
+  api/                       -> axios client + endpoint map only — no entity lives here anymore
   components/                -> app-level shared components (not primitives)
   config.ts                  -> env-derived config (`EXPO_PUBLIC_API_URL`)
-  hooks/                     -> cross-cutting hooks (`hooks/common/*`)
+  hooks/                     -> cross-cutting hooks (`hooks/common/*`) — folds into `modules/settings/` in Phase C
   lib/async-storage/         -> thin AsyncStorage get/set wrapper
   localization/              -> i18next setup + TS translation modules
   modules/                   -> feature modules: feed (posts + comments end to end; see "Feature modules" below)
-  store/                     -> Zustand client state (one store)
+  shared/user/               -> user data + client state: api -> repository (no gateway) -> stores + selectors
   styles/                    -> unistyles config, themes, breakpoints
   ui/                        -> presentational primitives
 test/                        -> jest setup, polyfills, render helpers, entity mocks
@@ -308,30 +317,20 @@ Seven primitives, each a folder with the component and (where it styles anything
 
 ## Server state
 
-Two shapes coexist, by design, not by inconsistency: the api layer (`src/api/`, one entity left) for what Phase C
-hasn't absorbed yet, and the module/gateway/repository layer (`src/modules/feed/`) for what Phase B already moved.
+`src/api/` no longer holds an entity — only the axios client and the endpoint map. Two shapes cover every entity
+today, both built on raw `@tanstack/react-query` with no `react-query-kit` anywhere in the tree.
 
-### `src/api/` — `react-query-kit` hooks (Phase C scope)
+### `src/api/` — shared infrastructure only
 
 - `src/api/common/client.ts` — the single axios instance, `baseURL: config.apiURL` from `src/config.ts`
   (`EXPO_PUBLIC_API_URL`).
 - `src/api/endpoints.ts` — `API_ENDPOINT` string map. Add new paths here, not inline.
-- One hook per operation, in its own folder, colocated with its test:
-  `src/api/user/use-get-users/use-get-users.hook.ts` + `.hook.test.ts`.
-- Hooks are built with `createQuery` / `createInfiniteQuery` from `react-query-kit` (still a dependency — check
-  `package.json` before assuming it is gone; it stays until Phase C moves `user`), typed `<Data, Variables, AxiosError>`.
-  See `src/api/user/use-get-users/use-get-users.hook.ts`.
-- Entity types live in `src/api/<entity>/types.ts` (e.g. `User` in `src/api/user/types.ts`); shared envelope types in
-  `src/api/api.types.ts`.
-- Barrels: `src/api/<entity>/index.ts` re-exports the entity's hooks and types; `src/api/index.ts` re-exports the
-  entities. `@/api/user` is the only entity here — posts and comments moved to `src/modules/feed/` in Phase B and do
-  not belong back in `src/api/`; `@/api/user` stays deliberately, as Phase C scope.
+- `src/api/index.ts` re-exports `./common` only.
 
-### `src/modules/feed/` — module/gateway/repository (Phase B shape, the target pattern)
+### `src/modules/feed/` — module/gateway/repository (two data sources)
 
-- No `react-query-kit`. Raw `@tanstack/react-query` (`useQuery`/`useInfiniteQuery`) called from
-  `feed.repository.queries.ts`, configured by `queryOptions`/`infiniteQueryOptions` builders in
-  `feed.query-options.ts`.
+- Raw `@tanstack/react-query` (`useQuery`/`useInfiniteQuery`) called from `feed.repository.queries.ts`, configured by
+  `queryOptions`/`infiniteQueryOptions` builders in `feed.query-options.ts`.
 - Views/components call `feedRepository.queries.useFeedPosts(filters?, dataSource?, options?)` (and
   `useFeedPost`/`useFeedComments`) through a `use-*-business` hook, never inline — see "Layering rules" under
   "Feature modules" above.
@@ -339,6 +338,21 @@ hasn't absorbed yet, and the module/gateway/repository layer (`src/modules/feed/
   calls `httpClient`/AsyncStorage directly. See "Feature modules" above for the full tree.
 - Zod validates every HTTP response through `feed.types.ts`'s schemas, wired in via `httpClient`'s `responseSchema`
   option (Phase A's contract, reused as-is).
+
+### `src/shared/user/` — api/repository (one data source, no gateway)
+
+- `api/user-api.ts` — `UserApiContract` interface + `createUserApiService` factory + `userApi` singleton, calling
+  `httpClient` directly with `ApiOptions` for `signal`. No `createQuery`/`createInfiniteQuery`.
+- `repositories/user/` — `user.repository.keys.ts` (no `dataSource` segment — there is only one source),
+  `user.query-options.ts` (calls `userApi` directly in `queryFn`, no gateway indirection), and
+  `user.repository.queries.ts` exposing `useUsers(options?)` / `useUser(id, options?)`. Query-only — no mutation is
+  exposed, since jsonplaceholder's `user` data is read-only here.
+- Zod validates every response through `user.types.ts`'s `UserSchema`/`UserArraySchema`, wired in via `httpClient`'s
+  `responseSchema` option; unknown upstream fields (`address`, `phone`, `website`, `company`) are stripped, not
+  passed through.
+- `src/shared/user/index.ts` is the only import surface: `userRepository`, `useUserStore`, `useUserActions`,
+  `useUserTokenSelector`, `getUserToken`, and the `User` type. `userApi`, the keys, and the query-options builder stay
+  module-private — import through the barrel, never `@/shared/user/{api,repositories,stores,selectors}` directly.
 
 The provider is `src/components/api-provider/api-provider.tsx`, mounted in `src/app/_layout.tsx` — shared by both
 shapes above, one `QueryClient` for the whole app.
@@ -355,10 +369,11 @@ lint error outside `src/core/lib/zustand/**` and `test/**`. The factory composes
 devtools, and drops `actions` and `hasHydrated` from the persisted payload. Pass `exclude` for anything else that must
 stay out, and `storage` to persist somewhere other than AsyncStorage.
 
-One store exists today: `src/store/user-store/user-store.store.ts`, holding `user: { accessToken } | null` with
-`setCredentials` / `removeCredentials`. Its actions are flat rather than nested under `state.actions`; Phase C rewrites
-this store, and nesting them now would only churn `src/api/common/client.ts`. See TD-11 for the token's storage and
-TD-12 for where stores are meant to live.
+One store exists today: `src/shared/user/stores/user.store.ts`, holding `user: { accessToken } | null` with actions
+nested under `state.actions` (`state.actions.setCredentials` / `state.actions.removeCredentials`), persisted via
+`persist: true` with `exclude: ['hasHydrated']` (`actions` is dropped by the factory itself). `hasHydrated` has no
+reader today — it is the mechanism reserved for gating a store-backed boot path once a real one exists. See TD-11 for
+the token's storage (still AsyncStorage-backed plaintext; not yet fixed).
 
 Tests reset stores through `test/__mocks__/zustand/index.ts`, which wraps `create` and registers reset functions — the
 reason the factory funnels every store through a single `create` call.
@@ -609,4 +624,3 @@ have been resolved and removed.
 | TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                                                                                                                                                                         |
 | TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | TD-11 | High     | **The access token is persisted unencrypted.** Fixing TD-5 wired `user-store` to AsyncStorage, which stores plaintext — an SQLite database on Android, a file in the app container on iOS, both readable from an unencrypted device backup or a rooted/jailbroken device. Before TD-5 the token never reached disk on native, so this is new exposure, not a pre-existing one. `app.config.ts` sets neither `android:allowBackup="false"` nor an `NSFileProtection` class. The fix is `expo-secure-store` (Keychain / Keystore) behind the `storage` option `createStoreWithMiddleware` already accepts; the dependency is not installed yet. |
-| TD-12 | Low      | **`src/store/` is a holdover.** Stores belong beside their owner (`modules/<x>/stores/`, `shared/<x>/stores/`), not in a top-level folder — `src/store/user-store/` moves to `src/shared/user/` in Phase C. The `no-restricted-imports` rule on `zustand` governs how stores are built, not where they live, so nothing stops a new store landing here in the meantime. Do not add one.                                                                                                                                                                                                                                                       |

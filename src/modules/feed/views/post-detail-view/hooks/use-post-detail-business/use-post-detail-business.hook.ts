@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useGetUser } from '@/api/user';
+import { userRepository } from '@/shared/user';
 
 import { feedRepository } from '../../../../repositories/feed';
 
@@ -11,7 +11,7 @@ interface UsePostDetailBusinessProps {
 
 /**
  * Business logic hook specific to `PostDetailView`. Composes the post query
- * (`feedRepository`) with the author query (`@/api/user`) and reduces both
+ * (`feedRepository`) with the author query (`@/shared/user`) and reduces both
  * into the single loading/error state the view renders against.
  */
 export const usePostDetailBusiness = ({ id, userId }: UsePostDetailBusinessProps) => {
@@ -20,7 +20,7 @@ export const usePostDetailBusiness = ({ id, userId }: UsePostDetailBusinessProps
     isLoading: isLoadingPost,
     isError: isErrorPost,
   } = feedRepository.queries.useFeedPost(id);
-  const { data: user, isLoading: isLoadingUser } = useGetUser({ variables: userId.toString() });
+  const { data: user, isLoading: isLoadingUser } = userRepository.queries.useUser(Number(userId));
 
   const isLoading = useMemo(() => isLoadingPost || isLoadingUser, [isLoadingPost, isLoadingUser]);
 

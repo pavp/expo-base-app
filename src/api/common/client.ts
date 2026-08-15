@@ -1,13 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- kept for the commented auth interceptors below */
-import axios, { AxiosError, CreateAxiosDefaults, InternalAxiosRequestConfig } from 'axios';
+import axios, { CreateAxiosDefaults } from 'axios';
 
 import { config } from '@/config';
-import { useUserStore } from '@/store';
-
-interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
-  _retry?: boolean;
-}
-/* eslint-enable @typescript-eslint/no-unused-vars */
 
 const baseConfig: CreateAxiosDefaults = {
   baseURL: config.apiURL,
@@ -20,7 +13,7 @@ export const client = axios.create(baseConfig);
 
 // client.interceptors.request.use(
 //   function (config) {
-//     const accessToken = useUserStore.getState().user?.accessToken;
+//     const accessToken = getUserToken();
 
 //     if (accessToken) {
 //       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -45,13 +38,13 @@ export const client = axios.create(baseConfig);
 //       try {
 //         // TODO: call refresh token service (getRefreshToken)
 //         const payload = { accessToken: 'new' };
-//         useUserStore.setState({ user: { accessToken: payload.accessToken } });
+//         useUserStore.getState().actions.setCredentials({ accessToken: payload.accessToken });
 //         originalRequest.headers.Authorization = `Bearer ${payload.accessToken}`;
 
 //         return instance(originalRequest);
 //       } catch (error) {
 //         if (error instanceof AxiosError && error.response?.status === 403) {
-//           useUserStore.getState().removeCredentials();
+//           useUserStore.getState().actions.removeCredentials();
 
 //           return;
 //         }

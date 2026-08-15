@@ -1,4 +1,4 @@
-import * as userHooks from '@/api/user';
+import { userRepository } from '@/shared/user';
 import { mockPost, mockUser } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
@@ -6,7 +6,7 @@ import { feedRepository } from '../../../../repositories/feed';
 
 import { usePostDetailBusiness } from './use-post-detail-business.hook';
 
-jest.mock('@/api/user');
+jest.mock('@/shared/user');
 jest.mock('../../../../repositories/feed');
 
 describe('usePostDetailBusiness', () => {
@@ -23,7 +23,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: false,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: user,
       isLoading: false,
     } as any);
@@ -41,7 +41,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: true,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: user,
       isLoading: false,
     } as any);
@@ -59,7 +59,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: false,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: {},
       isLoading: true,
     } as any);
@@ -77,7 +77,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: true,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: {},
       isLoading: true,
     } as any);
@@ -95,7 +95,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: false,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: user,
       isLoading: false,
     } as any);
@@ -116,7 +116,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: false,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: undefined,
       isLoading: false,
       isError: true,
@@ -134,7 +134,7 @@ describe('usePostDetailBusiness', () => {
       isLoading: false,
     } as any);
 
-    jest.spyOn(userHooks, 'useGetUser').mockReturnValue({
+    jest.spyOn(userRepository.queries, 'useUser').mockReturnValue({
       data: undefined,
       isLoading: false,
     } as any);
