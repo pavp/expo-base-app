@@ -345,7 +345,8 @@ shapes above, one `QueryClient` for the whole app.
 
 The upstream API is jsonplaceholder-shaped: endpoints return bare arrays, not a pagination envelope. Pagination in
 `feed.query-options.ts` is derived from page length (`lastPage.length === DEFAULT_LIMIT`), preserved unchanged from
-the pre-Phase-B `use-get-posts` hook it replaced. See TD-4 before touching `src/api/common/utils.ts`.
+the pre-Phase-B `use-get-posts` hook it replaced. Callers cannot override it: `InfiniteQueryOptions` omits
+`getNextPageParam` and `initialPageParam`, so changing the contract is a type error rather than a convention.
 
 ## Client state — Zustand
 
