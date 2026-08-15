@@ -4,9 +4,9 @@ import { ScrollView, Text, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import Constants from 'expo-constants';
 
-import { SettingsOption } from '@/components';
 import { SupportedLanguage } from '@/localization/i18n';
 
+import { SettingsOption } from '../../components';
 import { useSettingsBusiness } from '../../hooks';
 
 import { styles } from './styles';
