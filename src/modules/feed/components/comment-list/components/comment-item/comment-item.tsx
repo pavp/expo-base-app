@@ -1,7 +1,8 @@
 import { Text, View } from 'react-native';
 
-import { Comment } from '@/api/comment';
 import { Avatar } from '@/ui';
+
+import type { Comment } from '../../../../feed.types';
 
 import { styles } from './styles';
 

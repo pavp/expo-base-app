@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { Text, TouchableOpacity } from 'react-native';
 
-import { Post } from '@/api/post';
+import type { Post } from '../../../../feed.types';
 
 import { styles } from './styles';
 
