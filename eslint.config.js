@@ -43,6 +43,7 @@ module.exports = defineConfig([
       'import/first': 'error',
       'import/newline-after-import': 'error',
       'import/no-duplicates': 'error',
+      'import/no-cycle': ['error', { maxDepth: 10 }],
       'max-params': ['error', 3],
       'no-restricted-imports': [
         'error',
