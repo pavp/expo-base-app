@@ -8,7 +8,8 @@ import type { Comment, FeedFilters, Post } from '../../feed.types';
 import type { feedQueryKeys } from './feed.repository.keys';
 
 /**
- * Query-only repository (no mutations — jsonplaceholder is read-only, see design decision D4).
+ * Query-only repository: the upstream jsonplaceholder API is read-only, so there is nothing to
+ * mutate.
  * Every hook takes exactly 3 positional parameters (`max-params: 3`), `dataSource` and `options`
  * both optional — there is no room for a fourth positional parameter.
  *
