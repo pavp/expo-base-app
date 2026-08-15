@@ -28,7 +28,7 @@ describe('httpGateway', () => {
   describe('findPosts', () => {
     it('delegates to feed-api and returns the validated page', async () => {
       const posts = generateMockPosts(10);
-      mock.onGet('posts?_page=1&_limit=10').reply(200, posts);
+      mock.onGet('posts', { params: { _page: 1, _limit: 10 } }).reply(200, posts);
 
       const result = await httpGateway.findPosts({ page: 1, limit: 10 });
 
@@ -36,7 +36,7 @@ describe('httpGateway', () => {
     });
 
     it('propagates HttpValidationError when the payload fails PostArraySchema', async () => {
-      mock.onGet('posts?_page=1&_limit=10').reply(200, [{ id: 'not-a-number' }]);
+      mock.onGet('posts', { params: { _page: 1, _limit: 10 } }).reply(200, [{ id: 'not-a-number' }]);
 
       await expect(httpGateway.findPosts({ page: 1, limit: 10 })).rejects.toBeInstanceOf(HttpValidationError);
     });

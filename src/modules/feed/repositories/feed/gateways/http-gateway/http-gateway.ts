@@ -1,6 +1,6 @@
 import { GatewaySourceInfo } from '@/types/gateway.types';
 
-import { fetchComments, fetchPostById, fetchPosts } from '../../../../api/feed-api';
+import { feedApi } from '../../../../api/feed-api';
 import { FeedGateway } from '../feed.gateway.types';
 
 const sourceInfo: GatewaySourceInfo = {
@@ -11,7 +11,8 @@ const sourceInfo: GatewaySourceInfo = {
 
 export const httpGateway: FeedGateway = {
   getSourceInfo: () => sourceInfo,
-  findPosts: ({ page, limit, ...filters }, options) => fetchPosts(filters, { page, limit, signal: options?.signal }),
-  findPostById: (id, options) => fetchPostById(id, options?.signal),
-  findCommentsByPostId: (postId, options) => fetchComments(postId, options?.signal),
+  findPosts: ({ page, limit, ...filters }, options) =>
+    feedApi.getPosts(filters, { page, limit }, { signal: options?.signal }),
+  findPostById: (id, options) => feedApi.getPostById(id, { signal: options?.signal }),
+  findCommentsByPostId: (postId, options) => feedApi.getCommentsByPostId(postId, { signal: options?.signal }),
 };

@@ -5,6 +5,11 @@ export interface RequestConfig extends Omit<AxiosRequestConfig, 'data'> {
   responseSchema?: z.ZodType;
 }
 
+/** Shared per-call options every api-layer operation accepts, so cancellation stays uniform. */
+export interface ApiOptions {
+  signal?: AbortSignal;
+}
+
 export interface HttpClientContract {
   get<T>(url: string, config?: RequestConfig): Promise<T>;
   post<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T>;
