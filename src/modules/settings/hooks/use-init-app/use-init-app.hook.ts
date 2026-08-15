@@ -7,7 +7,7 @@ import { useInitTheme } from '../use-init-theme/use-init-theme.hook';
 export const useInitApp = () => {
   const [prepareIsready, setPrepareIsready] = useState(false);
   const [loaded] = useFonts({
-    SpaceMono: require('../../../../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require('../../../../../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const { themeIsReady } = useInitTheme();
   const { languageIsReady } = useInitLanguage();

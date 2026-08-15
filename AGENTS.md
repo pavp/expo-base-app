@@ -21,11 +21,11 @@ The target is the structure used by the sibling `create-scaffold-nextjs-app` rep
   gateway (`http`/`asyncStorage`) → query-only repository (keys, query-options, queries) → views. It absorbed
   `src/api/post/`, `src/api/comment/`, and the former `home`, `explore` and `post` modules; none of those four
   locations exist anymore. `react-query-kit` is no longer used inside `feed` — see "Server state" below.
-- **Phase C (partial):** `src/shared/user/` is built and is the only source of user data — a contract/factory/singleton
-  `api/`, no gateway, feeding `repositories/user/` (query-only, no `dataSource` segment) and `stores/`/`selectors/`.
-  `src/api/user/` and `src/store/` are deleted; `react-query-kit` is no longer a dependency. `src/modules/settings/`
-  has not started yet — `src/hooks/` and the settings screen's hand-rolled reads/writes are still in their
-  pre-Phase-C shape. TD-11 (plaintext token storage) is not fixed yet.
+- **Phase C (done):** `src/shared/user/` is the only source of user data — a contract/factory/singleton `api/`, no
+  gateway, feeding `repositories/user/` (query-only, no `dataSource` segment) and `stores/`/`selectors/`. TD-11
+  (plaintext token storage) is fixed: the store persists through `expo-secure-store` (Keychain/Keystore) on iOS and
+  Android, `android:allowBackup` is `false`, and iOS sets an `NSFileProtection` class. `src/modules/settings/` carries
+  the theme/language screen and the app's boot-time hooks end to end; `src/hooks/` and `src/store/` are both deleted.
 - **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
   React error boundary, schema-validated env, and a module generator.
 
@@ -34,8 +34,9 @@ Practical consequences for an agent working here now:
 - `src/api/` holds only the axios client and endpoint map now — no entity lives there. A new entity needing server
   data follows either `feed`'s module/gateway/repository shape or `shared/user`'s gateway-free shape (single data
   source), never the retired `react-query-kit` pattern.
-- `src/modules/feed/` is the only module today. Views/components never call `feedRepository` directly — data access
-  lives in a `use-*-business` hook beside the view or component that needs it (see "Feature modules" below).
+- `src/modules/` holds `feed` and `settings`. Views/components never call a repository directly — data access lives
+  in a `use-*-business` hook beside the view or component that needs it (see "Feature modules" below). `settings` has
+  no repository or store of its own — see its own section under "Feature modules".
 - `src/shared/user/index.ts` is the only import surface for user data — never import
   `@/shared/user/{api,repositories,stores,selectors}` directly from outside the module.
 - Every store goes through `createStoreWithMiddleware`; importing `zustand` directly is a lint error outside
@@ -176,17 +177,18 @@ everything belongs here.
 
 ```
 index.ts                     -> `import 'expo-router/entry'` + `import './src/styles/unistyles'`
-app.config.ts                -> Expo config (dynamic, TS)
-plugins/with-local-gradle-tuning.js -> config plugin, applied in app.config.ts
+app.config.ts                -> Expo config (dynamic, TS) — allowBackup: false, registers two config plugins
+plugins/with-local-gradle-tuning.js  -> config plugin, applied in app.config.ts
+plugins/with-ios-file-protection.js  -> config plugin, applied in app.config.ts — sets NSFileProtectionKey
 src/
   app/                       -> expo-router file-based routes (NON-default location)
   api/                       -> axios client + endpoint map only — no entity lives here anymore
   components/                -> app-level shared components (not primitives)
   config.ts                  -> env-derived config (`EXPO_PUBLIC_API_URL`)
-  hooks/                     -> cross-cutting hooks (`hooks/common/*`) — folds into `modules/settings/` in Phase C
-  lib/async-storage/         -> thin AsyncStorage get/set wrapper
+  core/lib/async-storage/    -> thin AsyncStorage get/set wrapper
+  core/lib/secure-storage/   -> StateStorage adapter over expo-secure-store, native only (see "Client state" below)
   localization/              -> i18next setup + TS translation modules
-  modules/                   -> feature modules: feed (posts + comments end to end; see "Feature modules" below)
+  modules/                   -> feature modules: feed (posts + comments), settings (theme/language + boot hooks)
   shared/user/               -> user data + client state: api -> repository (no gateway) -> stores + selectors
   styles/                    -> unistyles config, themes, breakpoints
   ui/                        -> presentational primitives
@@ -195,6 +197,9 @@ scripts/                     -> validate-branch-name.js, reset-project.js
 .github/                     -> pr-validation workflow + setup-node-pnpm composite action
 .husky/                      -> pre-commit, commit-msg, pre-push
 ```
+
+`src/hooks/` and `src/store/` no longer exist — the former folded into `src/modules/settings/`, the latter into
+`src/shared/user/stores/`.
 
 Path aliases (`tsconfig.json`, mirrored in `jest.config.ts` `moduleNameMapper`):
 
@@ -216,7 +221,7 @@ src/app/(drawer)/(tabs)/_layout.tsx  -> Tabs (home, explore)
 src/app/(drawer)/(tabs)/index.tsx    -> renders <HomeView /> from @/modules/feed
 src/app/(drawer)/(tabs)/explore.tsx  -> renders <ExploreView /> from @/modules/feed
 src/app/post/[id].tsx                -> renders <PostDetailView /> from @/modules/feed
-src/app/settings/index.tsx           -> settings screen (+ local styles.ts)
+src/app/settings/index.tsx           -> renders <SettingsView /> from @/modules/settings
 ```
 
 **Route files are thin.** They render one view from a module and nothing else — see
@@ -229,7 +234,9 @@ in `src/app/_layout.tsx`; navigator `screenOptions` otherwise render with a stal
 
 ## Feature modules (`src/modules/`)
 
-One module exists: `feed` (posts + comments end to end). It carries every layer the target architecture defines:
+Two modules exist: `feed` (posts + comments end to end) and `settings` (theme/language + the app's boot-time hooks).
+`feed` carries every layer the target architecture defines; `settings` deliberately does not, and its own section
+below explains why.
 
 ```
 src/modules/feed/
@@ -289,6 +296,42 @@ Conventions in force:
   that UI state and composes with the business hook. `home-view` and `post-detail-view` have no UI-only state, so
   neither has a controller hook; `explore-view` does (`searchTerm`, `authorId`), so it has both
   `use-explore-business` and `use-explore-controller`. Do not add an empty controller hook "for symmetry."
+
+### `settings` — a module with no repository and no store
+
+```
+src/modules/settings/
+├── index.ts                          -> public barrel: SettingsView, useSettingsBusiness, useInitApp
+├── settings.constants.ts             -> SETTINGS_STORAGE_KEY = { THEME: 'theme', LANGUAGE: 'language' }
+├── hooks/
+│   ├── use-settings-business/        -> single owner of both storage keys; setTheme/toggleTheme/setLanguage
+│   ├── use-init-app/                 -> composes useFonts + useInitTheme + useInitLanguage into appIsReady
+│   ├── use-init-theme/               -> boot-time read, module-private (only use-init-app consumes it)
+│   └── use-init-language/            -> boot-time read, module-private (only use-init-app consumes it)
+└── views/
+    └── settings-view/
+        ├── settings-view.view.tsx
+        ├── styles.ts
+        ├── settings-view.view.test.tsx
+        └── index.ts
+```
+
+The theme and language screen reads and writes through `UnistylesRuntime` and the `i18n` singleton, not a store —
+those two singletons are already the source of truth, and a store would be a second one to keep in sync on every
+change. `use-settings-business` is the single owner of the `theme`/`language` `AsyncStorage` keys, replacing four
+previously independent writers (the settings screen's two writes, the theme-toggle button's own duplicate write, and
+the two boot-time readers). There is no controller hook either: theme and language are synchronous local reads, not
+a query with loading/error state to gate.
+
+`useInitTheme`/`useInitLanguage` stay out of the module's public barrel; only `useInitApp` (which composes both) and
+`useSettingsBusiness` are exported, following the same barrel-privacy convention as `feed`'s gateways and key
+factories.
+
+Importing `SettingsView` (or anything else) through `@/modules/settings` in a test pulls in `@/components`'s barrel,
+which re-exports `CustomDrawerContent` and, through it, `expo-router/drawer` — a chain that throws outside a real
+app. Mock the module boundary with an explicit factory in that case (`jest.mock('@/modules/settings', () => ({ ... }))`),
+never a no-argument auto-mock, which still has to `require` the real module first to shape itself and hits the same
+chain.
 
 ### File-name suffixes
 
@@ -372,8 +415,24 @@ stay out, and `storage` to persist somewhere other than AsyncStorage.
 One store exists today: `src/shared/user/stores/user.store.ts`, holding `user: { accessToken } | null` with actions
 nested under `state.actions` (`state.actions.setCredentials` / `state.actions.removeCredentials`), persisted via
 `persist: true` with `exclude: ['hasHydrated']` (`actions` is dropped by the factory itself). `hasHydrated` has no
-reader today — it is the mechanism reserved for gating a store-backed boot path once a real one exists. See TD-11 for
-the token's storage (still AsyncStorage-backed plaintext; not yet fixed).
+reader today — it is the mechanism reserved for gating a store-backed boot path once a real one exists.
+
+This store passes `storage: secureStorage` (`src/core/lib/secure-storage/`) to the factory, so the token is written
+through `expo-secure-store` — Keychain on iOS, Keystore on Android — instead of AsyncStorage. **Native only, by
+design**: the adapter no-ops rather than persisting on web, because `expo-secure-store` has no web implementation to
+delegate to; a token set while running `pnpm web` is not written anywhere and does not survive a reload. This was a
+one-time, non-additive swap — it mutates the persisted identity `'user'`, so a token written under the pre-swap
+AsyncStorage backend is not migrated and is not read back; it is orphaned on disk, not deleted. There was no live
+consumer of that token before the swap, so nothing was actually lost.
+
+Alongside the storage swap, `app.config.ts` sets `android.allowBackup: false` (app-wide — device backups no longer
+carry theme/language preferences either, an accepted cost since both regenerate on next launch) and registers
+`plugins/with-ios-file-protection.js`, a `withInfoPlist` config plugin that sets `NSFileProtectionKey` to
+`NSFileProtectionCompleteUntilFirstUserAuthentication` (not the stricter `Complete`, which would make the app's
+container unreadable while the device is locked and break any launch-before-first-unlock path). Both are native build
+output, not something `pnpm lint`/`typecheck`/`test` can see — verify with `pnpm android:prebuild` against the
+generated `AndroidManifest.xml`, and `pnpm exec expo prebuild --platform ios --clean` against the generated
+`Info.plist`, with no emulator/simulator booted (see "Low-memory hosts" below).
 
 Tests reset stores through `test/__mocks__/zustand/index.ts`, which wraps `create` and registers reset functions — the
 reason the factory funnels every store through a single `create` call.
@@ -394,7 +453,7 @@ Never hardcode a hex value in a component. `src/styles/themes.ts` is the only pa
 
 `i18next` + `react-i18next`. Setup in `src/localization/i18n.ts`; initial language is the device locale
 (`expo-localization`), falling back to `config.translation.defaultLocale`. A stored preference is applied later by
-`src/hooks/common/use-init-language/use-init-language.ts`.
+`src/modules/settings/hooks/use-init-language/`.
 
 Translations are **TypeScript modules, not JSON**: `src/localization/locales/en-us.ts`, `es-es.ts`, re-exported from
 `locales/index.ts` as `en_US` / `es_ES`. Supported languages: `['en', 'es']`.
@@ -403,7 +462,7 @@ Add every user-facing string here and read it via `useTranslation()`. Add the ke
 
 ## Tests
 
-Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 31 test files
+Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 41 test files
 currently.
 
 - Tests are **co-located**: `<name>.test.ts(x)` next to the file under test.
@@ -615,12 +674,11 @@ import { PostsVerticalCarousel, usePostAuthors } from '@/modules/feed';
 ## Known issues
 
 Verified against the code at the time of writing. Ranked by severity. IDs are stable and are never reused or renumbered
-when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3, TD-6 and TD-8
-have been resolved and removed.
+when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3, TD-6, TD-8 and
+TD-11 have been resolved and removed.
 
-| ID    | Severity | Issue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ----- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth.                                                                                                                                                                                                                                                                                                                                                              |
-| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                                                                                                                                                                                                                                                                                                                                                                                         |
-| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                                                                                                                                                                                                                                                                                                                                                                             |
-| TD-11 | High     | **The access token is persisted unencrypted.** Fixing TD-5 wired `user-store` to AsyncStorage, which stores plaintext — an SQLite database on Android, a file in the app container on iOS, both readable from an unencrypted device backup or a rooted/jailbroken device. Before TD-5 the token never reached disk on native, so this is new exposure, not a pre-existing one. `app.config.ts` sets neither `android:allowBackup="false"` nor an `NSFileProtection` class. The fix is `expo-secure-store` (Keychain / Keystore) behind the `storage` option `createStoreWithMiddleware` already accepts; the dependency is not installed yet. |
+| ID    | Severity | Issue                                                                                                                                                                                                                                                                            |
+| ----- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth. |
+| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                            |
+| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                |
