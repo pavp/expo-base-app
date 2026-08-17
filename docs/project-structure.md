@@ -28,6 +28,7 @@ those boundaries intact.
 │   ├── types/                  ## Contracts shared across layers
 │   └── config.ts               ## Environment-derived configuration
 ├── test/                       ## Test setup, render helpers, entity mocks
+├── types/                      ## Ambient declarations for untyped dependencies
 ├── scripts/                    ## Repository automation
 ├── .github/                    ## CI workflows and composite actions
 └── .husky/                     ## Git hooks
@@ -119,6 +120,19 @@ config plugins. `plugins/` holds those plugins — each one patches native proje
 
 Jest setup, polyfills, render helpers that wrap components in the application's providers, and entity mock factories.
 Tests themselves are co-located next to the file under test, not here.
+
+### Ambient Declarations (`types/`)
+
+Type declarations for dependencies that ship none and have no published `@types` package. Each declares only the
+surface the project actually consumes, rather than attempting to describe a whole library.
+
+**This is not the same folder as `src/types/`, and the split is intentional.** `src/types/` holds application
+contracts — code that compiles, ships, and is measured by coverage. Root `types/` holds tooling patches that exist
+only to make configuration files type-check. Keeping them apart keeps a declaration file out of the application tree
+and out of the coverage globs.
+
+A declaration here may be referenced explicitly by the file that needs it, in which case the path is load-bearing:
+moving the file breaks the type check unless the reference moves with it.
 
 ## Importing Files
 
