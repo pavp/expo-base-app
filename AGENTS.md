@@ -74,8 +74,15 @@ src/
   styles/                       themes.ts, breakpoints.ts, unistyles.ts
   types/gateway.types.ts        DataSource, BaseGateway, GatewayCapabilities
   config.ts                     env-derived config
-test/                           setup, polyfills, test-utils, entities/, __mocks__/
+test/                           setup, polyfills, test-utils, http-mock, entities/, __mocks__/
+types/jest-expo.d.ts            Ambient decl for the jest preset — tooling only, not app code
 ```
+
+**Two `types` folders, deliberately.** `src/types/` holds application contracts that compile and ship. Root `types/`
+holds tooling declarations that exist only because a dependency ships none — keeping them out of `src/` keeps them out
+of the coverage globs and the application tree. `jest.config.ts` reaches this one through an explicit
+`/// <reference path="./types/jest-expo.d.ts" />`, so moving the file breaks the type check unless that line moves
+with it.
 
 Path aliases (`tsconfig.json`, mirrored in `jest.config.ts` `moduleNameMapper`): `@/*` -> `./src/*`,
 `@/test/*` -> `./test/*`, `@/assets/*` -> `./assets/*`.
