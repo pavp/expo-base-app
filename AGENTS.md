@@ -284,8 +284,9 @@ only — it no-ops on web, so a value set under `pnpm web` is not persisted.
 
 - Render through `@/test/test-utils`, never `@testing-library/react-native` — enforced by `no-restricted-imports`
 - `renderWithProviders` and `renderHookWithProviders` are **async**. Await them
-- The test `QueryClient` sets `retry: false` and `gcTime: 0`; without `gcTime` a query outlives its test and refetches
-  against a reset adapter
+- `createTestQueryClient` builds a client **per render**; both helpers return it as `{ result, queryClient }`. Defaults
+  `retry: false`, `gcTime: 0`, `staleTime: 0`, no refetch on mount or reconnect. Override with `queryClientOptions`
+- `setupMockQueryData(queryClient, key, data)` seeds the cache, so a hook reading cached data needs no HTTP mock
 - Fixtures use `@faker-js/faker` in `test/entities/*.mock.ts`, importing types through module barrels
 - Coverage globs cover `src/{components,modules,core,api,shared,ui}`
 - Thresholds: branches 78, functions 87, lines 89, statements 89 — a few points under measured, so a real drop fails

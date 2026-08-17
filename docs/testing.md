@@ -184,6 +184,35 @@ const { result } = await renderHookWithProviders(() => useEntityListBusiness({})
 await waitFor(() => expect(result.current.isLoading).toBe(false));
 ```
 
+### Per-Test Query Clients
+
+Both helpers build a fresh query client per render and return it alongside the render result. Nothing is shared
+between tests, so a query mounted by one can never resolve into another:
+
+```typescript
+const { result, queryClient } = await renderHookWithProviders(() => useEntityListBusiness({}));
+```
+
+Pass `queryClientOptions` to tune the defaults for one test, or `queryClient` to supply your own:
+
+```typescript
+await renderHookWithProviders(() => useEntityListBusiness({}), { queryClientOptions: { staleTime: 60_000 } });
+```
+
+### `setupMockQueryData(queryClient, queryKey, data)`
+
+Seeds the cache directly. A hook that reads cached data — a selector, a derived value, anything downstream of a query
+that has already resolved — can then be tested without standing up an HTTP mock at all:
+
+```typescript
+const { queryClient } = await renderHookWithProviders(() => null);
+
+setupMockQueryData(queryClient, entityQueryKeys.list(), [mockEntity]);
+```
+
+Reach for this when the behaviour under test is what happens _to_ the data. When the behaviour is the fetch itself,
+mock the transport instead.
+
 ## 🎭 Entity Factories
 
 Fixtures are generated, not hand-written:
