@@ -1,5 +1,5 @@
 import { getItem } from '@/core/lib/async-storage';
-import { mockComment } from '@/test/entities/comment.mock';
+import { mockComment } from '@/test/entities';
 
 import { FEED_COMMENTS_STORAGE_KEY_PREFIX } from '../../async-storage-gateway.constants';
 

@@ -1,5 +1,5 @@
 import { getItem } from '@/core/lib/async-storage';
-import { generateMockPosts } from '@/test/entities/post.mock';
+import { generateMockPosts } from '@/test/entities';
 
 import { FEED_POSTS_STORAGE_KEY } from '../../async-storage-gateway.constants';
 

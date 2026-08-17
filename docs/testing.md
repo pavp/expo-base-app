@@ -235,6 +235,14 @@ Coverage is collected across application source, excluding barrels, type declara
 behaviour to exercise. Thresholds are enforced globally rather than per file, so a well-tested module can offset a
 thin one without letting the whole suite drift.
 
+**The floor sits a few points under measured coverage.** Close enough that deleting a tested branch fails the run,
+loose enough that a refactor shifting a few lines does not. A floor far below reality — say 55 against a measured 94 —
+enforces nothing: a change could delete a third of the tested behaviour and still pass.
+
+When coverage rises, raise the floor. Never lower it to turn a red run green; that converts a signal into a
+formality. A directory added to the source tree is added to the globs in the same change, or it is silently
+unmeasured.
+
 **Coverage measures what ran, not what was verified.** A test that renders a screen and asserts nothing scores the same
 as one that checks every branch. Read the number as a floor, never as evidence.
 

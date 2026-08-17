@@ -287,8 +287,9 @@ only — it no-ops on web, so a value set under `pnpm web` is not persisted.
 - The test `QueryClient` sets `retry: false` and `gcTime: 0`; without `gcTime` a query outlives its test and refetches
   against a reset adapter
 - Fixtures use `@faker-js/faker` in `test/entities/*.mock.ts`, importing types through module barrels
-- Coverage globs cover `src/{components,modules,core,api,ui}` — **`src/shared/` is not included**
-- Thresholds: branches 50, functions 55, lines 55, statements 55
+- Coverage globs cover `src/{components,modules,core,api,shared,ui}`
+- Thresholds: branches 78, functions 87, lines 89, statements 89 — a few points under measured, so a real drop fails
+  while a refactor that shifts a few lines does not. Raise them when coverage rises; never lower them to green a run
 - Mock a module boundary with an **explicit factory**, never a no-argument auto-mock — the auto-mock still requires the
   real module to shape itself
 - **Keep native-only components out of shared barrels.** A barrel loads every module it re-exports, named export or
@@ -450,7 +451,6 @@ import { getItem } from '@/core/lib/async-storage';
 | --------------------------------------------------------------------------- | ------------------------------------ | -------- |
 | Mocks a private FlashList path; any version bump can break the whole suite  | `test/jest.setup.ts`                 | LOW      |
 | `validate-commits` lints commits the squash merge discards, never the title | `pr-validation.yml`                  | LOW      |
-| `src/shared/` is absent from the coverage globs                             | `jest.config.ts`                     | LOW      |
 | AsyncStorage gateway keys are read but never written — dead branch          | `async-storage-gateway.constants.ts` | LOW      |
 
 `@shopify/flash-list` is pinned to exactly `2.0.2` in `package.json` because of the first item.

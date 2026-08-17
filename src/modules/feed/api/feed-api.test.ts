@@ -2,8 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 
 import { HttpValidationError } from '@/api/api.types';
 import { client } from '@/api/common/client';
-import { mockComment } from '@/test/entities/comment.mock';
-import { generateMockPosts, mockPost } from '@/test/entities/post.mock';
+import { generateMockPosts, mockComment, mockPost } from '@/test/entities';
 
 import { feedApi } from './feed-api';
 
