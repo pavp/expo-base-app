@@ -77,6 +77,11 @@ sites.
 
 Nothing in `core/` may import from `modules/` or `shared/`. The dependency arrow points one way.
 
+Import each wrapper by its own path — `@/core/lib/async-storage`, `@/core/hooks` — rather than through an aggregating
+barrel at the `core/` root. There is no such barrel, deliberately: an `@/core` entry point would put every wrapper's
+dependencies on one import surface, so a consumer wanting a storage helper would also pull in the store library and
+the secure-storage adapter. The same reasoning applies to `api/`.
+
 ### Shared API Infrastructure (`api/`)
 
 The single HTTP client instance, the endpoint map, and the client contract. No entity lives here — entities own their

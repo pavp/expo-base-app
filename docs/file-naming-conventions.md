@@ -271,6 +271,26 @@ export * from './components';
 The module root barrel is the module's contract. Wildcard re-exports are acceptable one level down, inside a folder
 whose contents are already private to the module.
 
+### When a Barrel Earns Its Place
+
+A barrel is a **public contract**: it declares what a module offers and hides everything else. That is the only job
+worth an extra file.
+
+Add one when:
+
+- It is a module's or a shared entity's sole entry point
+- It publishes a folder that outside code is meant to consume as a unit
+
+Do **not** add one when:
+
+- It aggregates unrelated infrastructure under one path — every consumer then inherits every dependency the barrel
+  reaches, including those it does not use
+- It re-exports a single symbol from a single file for a single consumer, adding a hop and nothing else
+- It sits between two other barrels, so reaching one component costs three files
+
+A barrel nobody imports through is not a contract — it is a file that exists. If every consumer reaches past it to the
+concrete module, delete it: the bypass is the codebase reporting that the indirection buys nothing.
+
 ## Exceptions
 
 Two directories are exempt from the kebab-case rule, and both exemptions are configured in the lint setup rather than

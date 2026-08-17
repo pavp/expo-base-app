@@ -63,7 +63,7 @@ app.config.ts                   Expo config — typedRoutes, allowBackup: false,
 plugins/                        with-local-gradle-tuning.js, with-ios-file-protection.js
 src/
   app/                          expo-router routes (NON-default location)
-  api/                          client.ts, http-client/, endpoints.ts, api.types.ts
+  api/                          client.ts, http-client/, endpoints.ts, api.types.ts (no root barrel)
   components/                   api-provider, error-fallback, navigation/, theme-button
   core/hooks/                   use-debounced-value
   core/lib/                     async-storage, react-query, secure-storage, zustand
@@ -427,6 +427,14 @@ import type { FeedPage } from '../../feed-api';
 
 // ❌ An empty controller hook added for symmetry
 // ✅ No controller unless the view has UI-only state
+
+// ❌ An aggregating barrel over unrelated infrastructure — every consumer
+//    inherits every dependency it reaches. src/api/ and src/core/ had these
+//    and nobody imported through them; both were deleted.
+export * from './hooks';
+export * from './lib';
+// ✅ Import each wrapper by its own path
+import { getItem } from '@/core/lib/async-storage';
 ```
 
 ---
