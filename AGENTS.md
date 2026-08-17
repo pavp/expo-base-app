@@ -1,686 +1,469 @@
-# AGENTS.md
+# AGENTS.md — expo-base-app
 
-Architecture and convention contract for `expo-base-app`. Read this before changing any file. Every claim below is
-anchored to a path in this repository.
+Architecture and convention contract. Read this before changing any file. Every claim is anchored to a path in this
+repository.
 
-Expo SDK 57 / React Native 0.86.2 / React 19 / TypeScript strict. Package manager is **pnpm 11.11.0**, pinned by
-`packageManager` in `package.json`.
+Human-facing documentation lives in `docs/` and is written against a generic entity. This file is the opposite: it
+describes what is actually here, with real paths.
 
-## Refactor in progress — read first
+Expo SDK 57 / React Native 0.86.2 / React 19 / TypeScript strict. Package manager is pnpm, pinned by `packageManager`
+in `package.json`. Node `>=22`.
 
-This repository is mid-refactor. A phased architecture overhaul is underway, and this document describes **what exists
-today**, not the target state.
+---
 
-The target is the structure used by the sibling `create-scaffold-nextjs-app` repository, adapted to React Native.
+## Architecture overview
 
-- **Phase 0 (done):** tooling foundation — pnpm, TypeScript strict, CI at `.github/workflows/pr-validation.yml`, git
-  hooks in `.husky/`.
-- **Phase A (done):** conventions and cross-cutting infrastructure — type suffixes on filenames, the `src/core/` layer,
-  derived environment flags, a Zod-validating http client, gateway type contracts, and the Zustand store factory.
-- **Phase B (done):** `src/modules/feed/` — one module carrying posts and comments end to end: Zod schemas → dual
-  gateway (`http`/`asyncStorage`) → query-only repository (keys, query-options, queries) → views. It absorbed
-  `src/api/post/`, `src/api/comment/`, and the former `home`, `explore` and `post` modules; none of those four
-  locations exist anymore. `react-query-kit` is no longer used inside `feed` — see "Server state" below.
-- **Phase C (done):** `src/shared/user/` is the only source of user data — a contract/factory/singleton `api/`, no
-  gateway, feeding `repositories/user/` (query-only, no `dataSource` segment). `src/modules/settings/` carries the
-  theme/language screen and the app's boot-time hooks end to end; `src/hooks/` and `src/store/` are both deleted. The
-  user store and its token selectors were part of this phase and have since been removed — **this app has no
-  authentication and will not have one**, so nothing exists to hold a session. `android:allowBackup` is `false` and iOS
-  sets an `NSFileProtection` class; both are kept as general hardening for any future persisted data.
-- **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
-  React error boundary, schema-validated env, and a module generator.
+**3-layer module architecture:**
 
-Practical consequences for an agent working here now:
-
-- `src/api/` holds only the axios client and endpoint map now — no entity lives there. A new entity needing server
-  data follows either `feed`'s module/gateway/repository shape or `shared/user`'s gateway-free shape (single data
-  source), never the retired `react-query-kit` pattern.
-- `src/modules/` holds `feed` and `settings`. Views/components never call a repository directly — data access lives
-  in a `use-*-business` hook beside the view or component that needs it (see "Feature modules" below). `settings` has
-  no repository or store of its own — see its own section under "Feature modules".
-- `src/shared/user/index.ts` is the only import surface for user data — never import
-  `@/shared/user/{api,repositories}` directly from outside the module. It exports `userRepository` and the `User` type
-  and nothing else; the users it serves are feed post authors, not a signed-in user.
-- **The app has no authentication and no Zustand store.** Do not add a bearer-token interceptor, a session store, or a
-  refresh flow. Every store still goes through `createStoreWithMiddleware`, and importing `zustand` directly is a lint
-  error outside `src/core/lib/zustand/**` — see "Client state" below for what that means with zero stores in the tree.
-
-Anything not listed above is stable enough to build on.
-
-## Non-negotiables
-
-1. **pnpm only.** Never `npm`, `yarn`, or `npx`. Use `pnpm` and `pnpm exec`. Node `>=22` (`.nvmrc` = `22`).
-2. **Every change ships as a PR with squash merge.** No exceptions for size. No direct pushes to `main`.
-3. **Branch names must match `<type>/<kebab-case>`** — enforced by `scripts/validate-branch-name.js` and by the
-   `validate-branch-name` CI job. Types: `feat|fix|chore|refactor|docs|test|perf|ci|hotfix`. `main` and `dependabot/*`
-   are exempt.
-4. **Commits are conventional commits** — enforced by `commitlint.config.js` via `.husky/commit-msg`. `type-enum` is
-   closed to `feat|fix|chore|refactor|docs|test|perf|ci|style|build|revert`. `subject-max-length` is 72. Scope is
-   optional and unrestricted by design (no `scope-enum`) — scopes are feature-module names.
-5. **`pnpm lint` must be clean.** It runs with `--max-warnings 0`, so a warning fails the build like an error.
-6. **TypeScript is strict** (`tsconfig.json`). `pnpm typecheck` must pass.
-
-## Commands
-
-| Command                 | What it does                                                                  |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| `pnpm install`          | Installs from `pnpm-lock.yaml`.                                               |
-| `pnpm start`            | `expo start` — Metro dev server.                                              |
-| `pnpm lint`             | `eslint . --max-warnings 0` — a warning fails like an error.                  |
-| `pnpm lint:fix`         | Same, with `--fix`.                                                           |
-| `pnpm typecheck`        | `tsc --noEmit`.                                                               |
-| `pnpm test`             | `jest`. Coverage is collected on every run (`collectCoverage: true`).         |
-| `pnpm web`              | `expo start --web`.                                                           |
-| `pnpm android`          | `expo run:android` — boots a device before compiling. See "Low-memory hosts". |
-| `pnpm ios`              | `expo run:ios` — boots a simulator before compiling. See "Low-memory hosts".  |
-| `pnpm android:prebuild` | `expo prebuild --platform android --clean` with `LOCAL_ANDROID_BUILD=1`.      |
-| `pnpm android:build`    | `android:prebuild`, then `./gradlew assembleDebug --no-daemon`.               |
-| `pnpm android:install`  | `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`.           |
-| `pnpm prebuild`         | `expo prebuild` (both platforms).                                             |
-| `pnpm build-android`    | `eas build -p android --profile preview`.                                     |
-| `pnpm doctor`           | `expo install --check`.                                                       |
-| `pnpm reset-project`    | `scripts/reset-project.js` — Expo template script.                            |
-
-`pnpm-workspace.yaml` carries `allowBuilds: unrs-resolver: true`. Do not remove it: without it `pnpm install` exits 1
-with `ERR_PNPM_IGNORED_BUILDS`, which breaks every install and every CI job.
-
-## Before you finish a change
-
-```bash
-pnpm lint       # --max-warnings 0: a warning fails like an error
-pnpm typecheck
-pnpm test
+```
+Presentation    views/  components/  hooks/        Renders. No fetching decisions.
+Application     repositories/<module>/             Keys, query-options, hooks. Owns caching.
+Data            <module>.types.ts  api/  gateways/ Schemas, transport, one impl per source.
 ```
 
-`.husky/pre-push` runs `typecheck` + `test` anyway, so running them yourself only saves a round trip.
+**Data flow (always top-down, never skip layers):**
 
-## Delivery
-
-Every change ships as a **PR with squash merge**. No exceptions for size, no direct pushes to `main`.
-
-```bash
-git checkout -b feat/short-kebab-description   # <type>/<kebab-case>, enforced in CI
-# ... work ...
-git commit -m "feat(explore): add author filter"   # conventional commit, subject <= 72 chars
-gh pr create
+```
+View -> use-*-business -> repository -> gateway -> api -> httpClient -> network
+                                                              |
+                                                        Zod validation
 ```
 
-The squash-merge commit takes the **PR title**, and the `validate-commits` CI job never sees it (TD-10) — so write the
-PR title as a conventional commit too.
+**Reference module:** `src/modules/feed/` — the only module with every layer implemented.
+
+---
+
+## Available scripts
+
+```bash
+pnpm install            # Install from pnpm-lock.yaml
+pnpm start              # Metro dev server
+pnpm lint               # eslint . --max-warnings 0 — a warning fails like an error
+pnpm lint:fix           # Same, with --fix
+pnpm typecheck          # tsc --noEmit
+pnpm test               # jest, coverage always collected
+pnpm android:build      # prebuild + assembleDebug, no device booted
+pnpm android:install    # adb install the debug APK
+pnpm android:prebuild   # expo prebuild --platform android --clean
+pnpm prebuild           # expo prebuild, both platforms
+pnpm doctor             # expo install --check
+```
+
+`pnpm-workspace.yaml` carries `allowBuilds: unrs-resolver: true`. Removing it breaks every install with
+`ERR_PNPM_IGNORED_BUILDS`. pnpm 11 reads settings from this file — the `pnpm` field in `package.json` and `.npmrc`'s
+`onlyBuiltDependencies` are both ignored.
+
+---
+
+## Repo structure
+
+```
+index.ts                        expo-router/entry + ./src/styles/unistyles
+app.config.ts                   Expo config — typedRoutes, allowBackup: false, 2 plugins
+plugins/                        with-local-gradle-tuning.js, with-ios-file-protection.js
+src/
+  app/                          expo-router routes (NON-default location)
+  api/                          client.ts, http-client/, endpoints.ts, api.types.ts
+  components/                   api-provider, error-fallback, navigation/, theme-button
+  core/hooks/                   use-debounced-value
+  core/lib/                     async-storage, react-query, secure-storage, zustand
+  localization/                 i18n.ts + locales/{en-us,es-es}.ts
+  modules/feed/                 posts + comments, every layer
+  modules/settings/             theme/language + boot hooks
+  shared/user/                  api -> repository, no gateway
+  styles/                       themes.ts, breakpoints.ts, unistyles.ts
+  types/gateway.types.ts        DataSource, BaseGateway, GatewayCapabilities
+  config.ts                     env-derived config
+test/                           setup, polyfills, test-utils, entities/, __mocks__/
+```
+
+Path aliases (`tsconfig.json`, mirrored in `jest.config.ts` `moduleNameMapper`): `@/*` -> `./src/*`,
+`@/test/*` -> `./test/*`, `@/assets/*` -> `./assets/*`.
+
+---
+
+## How to add a new module
+
+Full guide: `docs/developer-guide.md`. Summary of all 18 steps:
+
+**1. Verify the real payload** — curl the endpoint before writing a schema. A guessed shape fails at runtime.
+
+**2. Create directories** — only the ones the module needs. No empty scaffolding.
+
+**3. Define types** — Zod schemas + `z.infer` in `<module>.types.ts`. Undeclared fields are stripped, not passed
+through.
+
+**4. Add the endpoint** — `src/api/endpoints.ts`, never inline.
+
+**5. Create the api layer** — contract interface + `create*ApiService()` factory + singleton. `responseSchema` wired
+to the Zod schema.
+
+**6. Decide on gateways** — more than one data source? If not, skip to step 8 and follow `src/shared/user/`.
+
+**7. Implement gateways** — contract in `<module>.gateway.types.ts`, one folder per source, factory with a
+`DataSource` switch.
+
+**8. Query keys** — factory in `<module>.repository.keys.ts`. A `dataSource` segment only when gateways exist.
+
+**9. Query options** — `queryOptions`/`infiniteQueryOptions` in `<module>.query-options.ts`. Forward `signal`.
+
+**10. Repository** — interface, queries, singleton in `repositories/<module>/index.ts`.
+
+**11. Business hook** — `use-<name>-business`. Flatten pages here.
+
+**12. Controller hook** — only if the view has UI-only state. Never for symmetry.
+
+**13. View** — `views/<name>-view/<name>-view.view.tsx` + `styles.ts` + test + `index.ts`.
+
+**14. Translations** — same key in `en-us.ts` and `es-es.ts`.
+
+**15. Barrel** — explicit named exports. Gateways, keys, and query-options stay private.
+
+**16. Route** — `src/app/`, three statements: import view, re-export `ErrorFallback as ErrorBoundary`, render.
+
+**17. Tests** — at the layer that owns the behavior. See `docs/testing.md`.
+
+**18. Verify** — `pnpm lint && pnpm typecheck && pnpm test`, then run the app. Jest and Metro resolve modules
+differently; a cycle invisible to tests can blank the screen on device.
+
+---
+
+## Layer responsibilities
+
+### Business hook — owns data access
+
+- The only place a repository is called
+- Flattens paged data so no component sees `pages`
+- Takes `enabled` as a parameter when a controller decides whether the query runs
+- Lives in `views/<view>/hooks/` for one consumer, `modules/<module>/hooks/` for two or more
+
+### Controller hook — owns UI state
+
+- Local state, handlers, derived flags — never data fetching
+- Only `explore-view` has one (`src/modules/feed/views/explore-view/hooks/use-explore-controller/`), because it has
+  `searchTerm` and `authorId`. `home-view` and `post-detail-view` have no UI-only state and no controller.
+
+---
+
+## Repository pattern
+
+- `feed.repository.keys.ts` — every key carries a `dataSource` segment, so switching source cannot serve a stale entry
+- `feed.query-options.ts` — pagination derived from page length (`lastPage.length === DEFAULT_LIMIT`), because
+  jsonplaceholder returns bare arrays with no total count. `DEFAULT_LIMIT = 10` in `src/api/common/constants.ts`
+- Callers cannot override pagination: `InfiniteQueryOptions` in `src/core/lib/react-query/react-query.types.ts` omits
+  `getNextPageParam` and `initialPageParam`
+- The 5 explicit generics on `infiniteQueryOptions` are load-bearing — without them the page-param type degrades to
+  `unknown` and `select` stops matching
+- `cancel` helpers take `QueryClient` as their **first parameter**, injected by the caller, so `@/core/lib` never
+  imports an app-layer singleton
+- **No mutation exists today.** `MutationOptions` is defined in `react-query.types.ts` and unused
+
+---
+
+## Gateway pattern
+
+- Contract: `src/types/gateway.types.ts` — `DataSource = 'http' | 'asyncStorage'`, `BaseGateway`,
+  `GatewayCapabilities`
+- `createFeedGateway(dataSource)` switches; `http` is the default case
+- `async-storage-gateway` **ignores filters** (`_filters`) — local storage holds what was cached, so server-side
+  filtering has nothing to apply
+- **Nothing writes the AsyncStorage keys.** `FEED_POSTS_STORAGE_KEY` and `FEED_COMMENTS_STORAGE_KEY_PREFIX` are read
+  but never written — a documented, accepted dead branch
+- `src/shared/user/` deliberately has **no gateway**: one data source means the factory would have one branch and the
+  key segment one value. `queryFn` calls `userApi` directly
+
+---
+
+## Theming (unistyles v3)
+
+- `src/styles/themes.ts` — `commonTheme` carries 5 scales (`margins`, `padding`, `radius`, `borderWidth`, `fontSize`),
+  spread into `lightTheme` and `darkTheme`
+- Both palettes declare the same 11 colour keys. Every value carries contrast rationale in a comment — keep them
+- Styles go in a sibling `styles.ts` via `StyleSheet.create((theme) => ({ ... }))`
+- **Variant functions** are a real pattern: `styles.chip(isSelected)` — see `src/ui/filter-chips/styles.ts`
+- `src/styles/unistyles.ts` augments the module with empty interface bodies; the `no-empty-object-type` disable is
+  required, not an oversight
+- Never hardcode a hex value. Never add a second palette
+
+**The runtime palette rule**, repeated in all three layouts:
+
+```ts
+const { rt } = useUnistyles();
+const theme = UnistylesRuntime.getTheme(rt.themeName);
+```
+
+The hook's own `theme` can lag `themeName`, painting native headers with the previous theme's colours. Same quirk
+motivates `src/ui/safe-area-view/` and the `withUnistyles(FlashList)` cast in `posts-vertical-carousel.tsx`.
+
+---
+
+## Navigation (expo-router)
+
+Routes are rooted at `src/app/`, not the default `app/`. Root `index.ts` does `import 'expo-router/entry'`.
+
+```
+src/app/_layout.tsx                  Stack: APIProvider > SafeAreaProvider > ThemeProvider
+src/app/(drawer)/_layout.tsx         Drawer, custom content
+src/app/(drawer)/(tabs)/_layout.tsx  Tabs (index, explore)
+src/app/post/[id].tsx                PostDetailView
+src/app/settings/index.tsx           SettingsView
+```
+
+**Every leaf route is 3 statements:** import the view, `export { ErrorFallback as ErrorBoundary }`, render. The error
+boundary re-export is part of the pattern.
+
+Root layout calls `SplashScreen.preventAutoHideAsync()` at module scope and gates render on `useInitApp()`'s
+`appIsReady`. React Navigation's `ThemeProvider` gets `DarkTheme`/`DefaultTheme` — required for iOS 26 Liquid Glass
+header buttons.
+
+`experiments.typedRoutes: true`; types come from `.expo/types`. Navigate with the object form:
+`router.navigate({ pathname: '/post/[id]', params: { id } })`.
+
+---
+
+## Internationalization (i18next)
+
+- `supportedLanguages = ['en', 'es'] as const` in `src/localization/i18n.ts`
+- Initial language is the device locale via `expo-localization`, falling back to `config.translation.defaultLocale`
+- Locales are **TS modules**, not JSON: `locales/en-us.ts`, `es-es.ts`, re-exported as `en_US`/`es_ES`
+- A stored preference is applied after boot by `use-init-language`, which validates against `supportedLanguages`
+  before applying
+- Add every key to **both** locale files
+- In a component needing the current language, destructure `i18n` from `useTranslation()` — the imported singleton
+  does not trigger a re-render on change
+
+---
+
+## Client state
+
+**No store exists.** The only one ever written held an auth token and was deleted with the rest of the auth
+scaffolding — **this app has no authentication and will not have one.** Do not add a bearer-token interceptor, a
+session store, or a refresh flow.
+
+`createStoreWithMiddleware` from `@/core/lib/zustand` remains, tested, so the first store with real client state has
+one documented way to be built. It composes immer, `persist`, and devtools, and drops `actions` and `hasHydrated` from
+the persisted payload. Actions belong nested under `state.actions`.
+
+Importing `zustand` directly is a lint error outside `src/core/lib/zustand/**` and `test/**`.
+
+`src/core/lib/secure-storage/` is a `StateStorage` adapter over `expo-secure-store` with **no consumer today**. Native
+only — it no-ops on web, so a value set under `pnpm web` is not persisted.
+
+---
+
+## Config
+
+- `src/config.ts` — derives from `EXPO_PUBLIC_API_URL`. Not schema-validated; this was evaluated and deliberately
+  dropped as unnecessary for one variable
+- `app.config.ts` — `android.allowBackup: false` app-wide, so device backups no longer carry theme/language either
+  (accepted: both regenerate on next launch)
+- `plugins/with-ios-file-protection.js` sets `NSFileProtectionKey` to
+  `NSFileProtectionCompleteUntilFirstUserAuthentication` — not the stricter `Complete`, which would make the container
+  unreadable while locked
+- Both are native build output. `pnpm lint`/`typecheck`/`test` cannot see them — verify against the generated
+  `AndroidManifest.xml` and `Info.plist`, with no simulator booted
+
+---
+
+## Testing
+
+39 test files, co-located. `jest-expo` preset, `testEnvironment: 'jsdom'`, `clearMocks: true`.
+
+### Mock level by test type
+
+| What you test         | Mock at                               |
+| --------------------- | ------------------------------------- |
+| api / gateway         | `axios-mock-adapter` on `client`      |
+| query-options builder | nothing — call the pure function      |
+| repository hook       | `axios-mock-adapter` + render helpers |
+| business hook         | the repository                        |
+| controller hook       | nothing                               |
+| view                  | the hooks it consumes                 |
+
+### Rules
+
+- Render through `@/test/test-utils`, never `@testing-library/react-native` — enforced by `no-restricted-imports`
+- `renderWithProviders` and `renderHookWithProviders` are **async**. Await them
+- The test `QueryClient` sets `retry: false` and `gcTime: 0`; without `gcTime` a query outlives its test and refetches
+  against a reset adapter
+- Fixtures use `@faker-js/faker` in `test/entities/*.mock.ts`, importing types through module barrels
+- Coverage globs cover `src/{components,modules,core,api,ui}` — **`src/shared/` is not included**
+- Thresholds: branches 50, functions 55, lines 55, statements 55
+- Mock a module boundary with an **explicit factory**, never a no-argument auto-mock — the auto-mock still requires the
+  real module to shape itself
+
+---
+
+## File naming and import conventions
+
+### Files — kebab-case (ESLint enforced)
+
+Suffixes in the tree today, with a real example each:
+
+| Suffix                | Example                                           |
+| --------------------- | ------------------------------------------------- |
+| `.view.tsx`           | `settings-view/settings-view.view.tsx`            |
+| `.component.tsx`      | `src/ui/search-input/search-input.component.tsx`  |
+| `.hook.ts`            | `hooks/use-post-authors/use-post-authors.hook.ts` |
+| `.types.ts`           | `src/modules/feed/feed.types.ts`                  |
+| `.helper.ts`          | `api/helpers/posts-params/posts-params.helper.ts` |
+| `.constants.ts`       | `src/modules/settings/settings.constants.ts`      |
+| `.query-options.ts`   | `repositories/feed/feed.query-options.ts`         |
+| `.repository.keys.ts` | `repositories/feed/feed.repository.keys.ts`       |
+| `.queries.ts`         | `repositories/feed/feed.repository.queries.ts`    |
+| `.lib.ts`             | `core/lib/secure-storage/secure-storage.lib.ts`   |
+| `.middleware.ts`      | `core/lib/zustand/zustand.middleware.ts`          |
+| `.mock.ts` / `.tsx`   | `test/entities/post.mock.ts`                      |
+
+`.store.ts`, `.gateway.ts` and `.repository.ts` are documented in `docs/file-naming-conventions.md` but have **zero
+instances** — no store exists, gateway files are named for their source (`http-gateway.ts`), and the repository is
+`repositories/feed/index.ts`.
+
+`ignoreMiddleExtensions: true` is what makes `feed.repository.keys.ts` legal. Both check-file rules are **off** for
+`src/app/**` and `test/**`; `__mocks__` is exempt from the folder rule only.
+
+### Import order (ESLint auto-fix)
+
+`simple-import-sort/imports` and `/exports`, groups: react/packages -> `@/` internal -> side effects -> parent ->
+relative -> styles. Plus `import/first`, `import/newline-after-import`, `import/no-duplicates`.
+
+### Restricted imports
+
+| Restricted                      | Use instead          | Lifted in                            |
+| ------------------------------- | -------------------- | ------------------------------------ |
+| `@testing-library/react-native` | `@/test/test-utils`  | `test/**`, `src/ui/**`               |
+| `ActivityIndicator` from RN     | `@/ui`               | `test/**`, `src/ui/**`               |
+| `zustand`, `zustand/*`          | `@/core/lib/zustand` | `src/core/lib/zustand/**`, `test/**` |
+
+---
+
+## Git conventions
+
+### Commits (Conventional Commits — enforced by commitlint + Husky)
+
+`type-enum` closed to `feat|fix|chore|refactor|docs|test|perf|ci|style|build|revert`. `subject-max-length` 72. Scope
+optional and unrestricted — scopes are module names.
+
+A `.commitlintrc.*` file would silently shadow `commitlint.config.js` via cosmiconfig precedence. Do not add one.
+
+### Branch naming (validated pre-push + in CI)
+
+`^(feat|fix|chore|refactor|docs|test|perf|ci|hotfix)/[a-z0-9]+(-[a-z0-9]+)*$`. `main` and `dependabot/*` exempt.
+`hotfix` is a valid branch type but **not** a valid commit type.
+
+### Hooks
+
+- `pre-commit` -> `lint-staged`: `*.{ts,tsx}` triggers a whole-project `pnpm typecheck` (function form, because `tsc`
+  with explicit filenames ignores `tsconfig.json`); `eslint --fix`; `prettier --write` on `*.{md,json,yml,yaml}`
+- `commit-msg` -> `commitlint --edit`
+- `pre-push` -> `pnpm typecheck && pnpm test`, skipped when `CI` or `GITHUB_ACTIONS` is true
+
+**Markdown you write here is reformatted by prettier at 120 columns on commit.**
+
+### Delivery
+
+Every change ships as a PR with squash merge. No exceptions for size, no direct pushes to `main`. The squash commit
+takes the **PR title**, which `validate-commits` never sees — write it as a conventional commit by hand.
+
+Fill in `.github/PULL_REQUEST_TEMPLATE.md`. `gh pr create --body` does not apply it automatically.
 
 Do not commit or push unless the user asks.
 
-## Recipes
+---
 
-### Add a screen
+## CI
 
-1. Add or extend a module under `src/modules/<feature>/views/<name>-view/` — `<name>-view.tsx`, `styles.ts`,
-   `<name>-view.test.tsx`.
-2. Export it from `src/modules/<feature>/index.ts`.
-3. Add the route file under `src/app/` that renders it and nothing else.
-4. Register it in the enclosing `_layout.tsx` if it needs a title or options; add the title key to **both**
-   `src/localization/locales/en-us.ts` and `es-es.ts`.
+`.github/workflows/pr-validation.yml`, on `pull_request` to `main`, `cancel-in-progress: true`.
 
-### Add an API call
+Jobs: `lint`, `typecheck`, `test`, `validate-branch-name`, `validate-commits`, and `ready-to-merge` — which `needs`
+all five and asserts each result is literally `success`, so a skipped or cancelled job cannot pass. That aggregator is
+the single required check.
 
-Every entity follows `feed`'s module/gateway/repository shape, or `shared/user`'s gateway-free variant when there is
-only one data source:
+`validate-branch-name` reads `github.head_ref` because HEAD is a detached merge commit. `validate-commits` needs
+`fetch-depth: 0` and runs from the event SHAs, not `origin/main..HEAD`.
 
-1. Add the Zod schema and its inferred type to the module's `<module>.types.ts`. Add or extend the endpoint path in
-   `src/api/endpoints.ts` (or a module-local constants file, if the module has its own).
-2. Add the call to the module's `api/<module>-api.ts` — a thin `httpClient` call with `responseSchema` wired to the
-   Zod schema. No `createQuery`/`createInfiniteQuery`.
-3. Add or extend the gateway(s) behind `repositories/<module>/gateways/` (`http-gateway`, plus `async-storage-gateway`
-   if the module needs an offline/local `DataSource`), each implementing the module's `*Gateway` contract. **Skip
-   this step entirely when there is only one data source** (`shared/user`'s precedent) — the query-options builder
-   calls the api layer directly and there is no `gateways/` folder at all.
-4. Add the query key to `<module>.repository.keys.ts` and the `queryOptions` builder to `<module>.query-options.ts`.
-   With a gateway (step 3 done), the query key carries a `dataSource` segment and the builder takes a positional
-   `(filters, dataSource, options)` signature, exactly `max-params: 3`. Without one, the key has no `dataSource`
-   segment and the builder takes `(options)` only. Add the exported hook to `<module>.repository.queries.ts` either
-   way.
-5. Test at the layer that owns the behavior: `axios-mock-adapter` for the api/gateway layers, pure function calls for
-   the query-options builder (no rendering, no network), `renderHookWithProviders` + `axios-mock-adapter` for the
-   repository hook. Do not add a dedicated test for the Zod schema itself — schemas are exercised through the
-   consumer that actually parses a payload (e.g. `<module>-api.test.ts`), not in isolation.
-6. Views/components never call the repository directly — add a `use-<owner>-business` hook that does, per "Layering
-   rules" under "Feature modules" above.
-
-### Add a UI primitive
-
-`src/ui/<name>/<name>.tsx` + `styles.ts`, exported from `src/ui/index.ts`. No data fetching, no `useTranslation` — take
-strings as props. `src/ui` is inside the coverage globs, but most primitives still lack tests; write the test anyway.
-
-### Add a theme token
-
-Edit `src/styles/themes.ts`. A colour goes in **both** `lightTheme` and `darkTheme`; a scale value goes in
-`commonTheme`. Types flow automatically through the module augmentation in `src/styles/unistyles.ts`. Do not introduce a
-second palette.
-
-### Add a string
-
-Same key in both `src/localization/locales/en-us.ts` and `es-es.ts`, read with `t('...')`.
-
-### Run the app on a low-memory Mac
-
-Do not use `pnpm ios` / `pnpm android` on an 8 GB machine — see "Low-memory hosts" below.
-
-### Debug a failing `pnpm install`
-
-`ERR_PNPM_IGNORED_BUILDS` means `allowBuilds: unrs-resolver: true` is missing from `pnpm-workspace.yaml`. Restore it.
-
-### Edit this file
-
-`.husky/pre-commit` runs `prettier --write` over `*.md`, so match `.prettierrc.js` (`printWidth: 120`, single quotes) or
-your markdown will be reformatted under you. `CLAUDE.md` is a pointer to this file and holds no content of its own —
-everything belongs here.
-
-## Directory map
-
-```
-index.ts                     -> `import 'expo-router/entry'` + `import './src/styles/unistyles'`
-app.config.ts                -> Expo config (dynamic, TS) — allowBackup: false, registers two config plugins
-plugins/with-local-gradle-tuning.js  -> config plugin, applied in app.config.ts
-plugins/with-ios-file-protection.js  -> config plugin, applied in app.config.ts — sets NSFileProtectionKey
-src/
-  app/                       -> expo-router file-based routes (NON-default location)
-  api/                       -> axios client + endpoint map only — no entity lives here anymore
-  components/                -> app-level shared components (not primitives)
-  config.ts                  -> env-derived config (`EXPO_PUBLIC_API_URL`)
-  core/lib/async-storage/    -> thin AsyncStorage get/set wrapper
-  core/lib/secure-storage/   -> StateStorage adapter over expo-secure-store, native only, no consumer yet
-  localization/              -> i18next setup + TS translation modules
-  modules/                   -> feature modules: feed (posts + comments), settings (theme/language + boot hooks)
-  shared/user/               -> user data: api -> repository (no gateway); read-only, no store
-  styles/                    -> unistyles config, themes, breakpoints
-  ui/                        -> presentational primitives
-test/                        -> jest setup, polyfills, render helpers, entity mocks
-scripts/                     -> validate-branch-name.js, reset-project.js
-.github/                     -> pr-validation workflow + setup-node-pnpm composite action
-.husky/                      -> pre-commit, commit-msg, pre-push
-```
-
-`src/hooks/` and `src/store/` no longer exist — the former folded into `src/modules/settings/`, the latter held only the
-user store and was deleted with it.
-
-Path aliases (`tsconfig.json`, mirrored in `jest.config.ts` `moduleNameMapper`):
-
-- `@/*` -> `./src/*`
-- `@/test/*` -> `./test/*`
-- `@/assets/*` -> `./assets/*`
-
-## Navigation
-
-expo-router, file-based, rooted at **`src/app/`** — not the default `app/`. The root `index.ts` does
-`import 'expo-router/entry'`.
-
-Route tree as it exists:
-
-```
-src/app/_layout.tsx                  -> Stack: APIProvider > SafeAreaProvider > ThemeProvider
-src/app/(drawer)/_layout.tsx         -> Drawer, custom content via components/navigation/custom-drawer-content
-src/app/(drawer)/(tabs)/_layout.tsx  -> Tabs (home, explore)
-src/app/(drawer)/(tabs)/index.tsx    -> renders <HomeView /> from @/modules/feed
-src/app/(drawer)/(tabs)/explore.tsx  -> renders <ExploreView /> from @/modules/feed
-src/app/post/[id].tsx                -> renders <PostDetailView /> from @/modules/feed
-src/app/settings/index.tsx           -> renders <SettingsView /> from @/modules/settings
-```
-
-**Route files are thin.** They render one view from a module and nothing else — see
-`src/app/(drawer)/(tabs)/index.tsx`. Put screen logic in `src/modules/<feature>/views/`, not in `src/app/`.
-
-`experiments.typedRoutes: true` in `app.config.ts`, so route types come from `.expo/types`.
-
-Layouts read the palette via `UnistylesRuntime.getTheme(rt.themeName)` rather than a captured `theme` — see the comment
-in `src/app/_layout.tsx`; navigator `screenOptions` otherwise render with a stale theme.
-
-## Feature modules (`src/modules/`)
-
-Two modules exist: `feed` (posts + comments end to end) and `settings` (theme/language + the app's boot-time hooks).
-`feed` carries every layer the target architecture defines; `settings` deliberately does not, and its own section
-below explains why.
-
-```
-src/modules/feed/
-├── index.ts                       -> public barrel — the ONLY import surface from outside the module
-├── feed.types.ts                  -> Zod schemas + z.infer'd types (Post, Comment, FeedFilters)
-├── api/
-│   ├── feed-api.ts                -> thin httpClient calls, Zod responseSchema wiring
-│   └── helpers/<name>/             -> one folder per helper, colocated with its consumer
-├── components/
-│   ├── index.ts                   -> named exports only, never `export *`
-│   └── <component>/                -> <component>.tsx + styles.ts + .test.tsx; hooks/ only if it fetches its own data
-├── hooks/                          -> module-level hooks: consumed by 2+ views (e.g. use-post-authors)
-├── repositories/feed/
-│   ├── feed.repository.keys.ts    -> query key factory
-│   ├── feed.query-options.ts      -> queryOptions/infiniteQueryOptions builders — pagination lives here
-│   ├── feed.repository.queries.ts -> the exported hooks (useFeedPosts, useFeedPost, useFeedComments)
-│   ├── feed.repository.types.ts   -> the repository's own interface
-│   ├── index.ts                   -> feedRepository singleton
-│   └── gateways/
-│       ├── feed.gateway.types.ts  -> FeedGateway contract
-│       ├── http-gateway/          -> DataSource: 'http'
-│       ├── async-storage-gateway/ -> DataSource: 'asyncStorage'
-│       └── index.ts               -> createFeedGateway(dataSource) factory
-└── views/
-    └── <name>-view/
-        ├── <name>-view.view.tsx
-        ├── styles.ts
-        ├── <name>-view.view.test.tsx
-        ├── index.ts
-        └── hooks/                  -> view-private hooks: consumed by exactly this one view
-```
-
-Conventions in force:
-
-- The module has one `index.ts` barrel that names its public exports explicitly (never `export *` from the module
-  root). It exports **only** components, types, module-level hooks, the repository singleton, and views — never a
-  gateway, query-options builder, or key factory. That is the module-boundary contract (TD-6, resolved): nothing
-  outside `src/modules/feed/` may import `@/modules/feed/{components,hooks}` directly, and nothing inside the module
-  reaches into a sibling module's internals, because there is no sibling module to reach into.
-- Add subfolders (`components/`, `hooks/`) only when the module actually needs them — do not scaffold empty ones.
-- A view lives in its own folder: `views/<name>-view/<name>-view.view.tsx` plus a sibling `styles.ts` and
-  `<name>-view.view.test.tsx`.
-- Nested components repeat the same shape one level down — see
-  `src/modules/feed/components/posts-vertical-carousel/components/posts-vertical-carousel-item/`.
-
-### Layering rules — where data access lives
-
-- **Views and components never call the repository directly.** Data access lives in a `use-<owner>-business` hook
-  colocated with the view or component that needs it — see
-  `src/modules/feed/components/comment-list/hooks/use-comment-list-business/` for a component that fetches its own
-  data, and `src/modules/feed/views/home-view/hooks/use-home-business/` for a view.
-- **Consumer count decides where a hook lives**: a hook consumed by exactly one view is that view's own hook, under
-  `views/<view>/hooks/` (e.g. `use-post-detail-business`). A hook consumed by 2+ views is module-level, under
-  `src/modules/feed/hooks/` (e.g. `use-post-authors`, shared by `home-view` and `explore-view`).
-- **A controller hook is added only when a view has genuine UI-only state** — local state/handlers that are not data
-  fetching (e.g. a search term, a selected filter). `use-<view>-business` owns data; `use-<view>-controller` owns
-  that UI state and composes with the business hook. `home-view` and `post-detail-view` have no UI-only state, so
-  neither has a controller hook; `explore-view` does (`searchTerm`, `authorId`), so it has both
-  `use-explore-business` and `use-explore-controller`. Do not add an empty controller hook "for symmetry."
-
-### `settings` — a module with no repository and no store
-
-```
-src/modules/settings/
-├── index.ts                          -> public barrel: SettingsView, useSettingsBusiness, useInitApp
-├── settings.constants.ts             -> SETTINGS_STORAGE_KEY = { THEME: 'theme', LANGUAGE: 'language' }
-├── hooks/
-│   ├── use-settings-business/        -> single owner of both storage keys; setTheme/toggleTheme/setLanguage
-│   ├── use-init-app/                 -> composes useFonts + useInitTheme + useInitLanguage into appIsReady
-│   ├── use-init-theme/               -> boot-time read, module-private (only use-init-app consumes it)
-│   └── use-init-language/            -> boot-time read, module-private (only use-init-app consumes it)
-└── views/
-    └── settings-view/
-        ├── settings-view.view.tsx
-        ├── styles.ts
-        ├── settings-view.view.test.tsx
-        └── index.ts
-```
-
-The theme and language screen reads and writes through `UnistylesRuntime` and the `i18n` singleton, not a store —
-those two singletons are already the source of truth, and a store would be a second one to keep in sync on every
-change. `use-settings-business` is the single owner of the `theme`/`language` `AsyncStorage` keys, replacing four
-previously independent writers (the settings screen's two writes, the theme-toggle button's own duplicate write, and
-the two boot-time readers). There is no controller hook either: theme and language are synchronous local reads, not
-a query with loading/error state to gate.
-
-`useInitTheme`/`useInitLanguage` stay out of the module's public barrel; only `useInitApp` (which composes both) and
-`useSettingsBusiness` are exported, following the same barrel-privacy convention as `feed`'s gateways and key
-factories.
-
-Importing `SettingsView` (or anything else) through `@/modules/settings` in a test pulls in `@/components`'s barrel,
-which re-exports `CustomDrawerContent` and, through it, `expo-router/drawer` — a chain that throws outside a real
-app. Mock the module boundary with an explicit factory in that case (`jest.mock('@/modules/settings', () => ({ ... }))`),
-never a no-argument auto-mock, which still has to `require` the real module first to shape itself and hits the same
-chain.
-
-### File-name suffixes
-
-On top of Phase A's `.hook.ts`, `.view.tsx`, `.component.tsx` and `.store.ts`, Phase B added four more, all under
-`kebab-case.suffix.ts` and subject to the same `check-file` kebab-case rule:
-
-| Suffix                 | Meaning                                                           | Example                                                                |
-| ---------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `*.gateway.ts`         | A gateway implementation behind a `DataSource` switch             | `http-gateway.ts`, `async-storage-gateway.ts`                          |
-| `*.repository.ts`      | A repository object (aggregates keys + query-options + queries)   | not yet a standalone file in `feed` — see `repositories/feed/index.ts` |
-| `*.query-options.ts`   | `queryOptions`/`infiniteQueryOptions` builders for one repository | `feed.query-options.ts`                                                |
-| `*.repository.keys.ts` | A query key factory for one repository                            | `feed.repository.keys.ts`                                              |
-
-## `src/ui/` — primitives
-
-Seven primitives, each a folder with the component and (where it styles anything) a `styles.ts`:
-
-`activity-indicator`, `avatar`, `empty-state`, `filter-chips`, `material-icon`, `safe-area-view`, `search-input`, plus
-`src/ui/index.ts`.
-
-`ActivityIndicator` must be imported from `@/ui`, never from `react-native` — enforced by `no-restricted-imports` in
-`eslint.config.js` (the rule is disabled inside `src/ui/**` so the primitive itself can wrap it).
-
-`src/components/` is for app-level shared components that are not primitives: `api-provider`, `error-fallback`,
-`navigation/*`, `theme-button`. `error-fallback` lives here rather than in `src/ui/` because it translates its own copy
-and logs the error it receives — a primitive does neither.
-
-## Server state
-
-`src/api/` no longer holds an entity — only the axios client and the endpoint map. Two shapes cover every entity
-today, both built on raw `@tanstack/react-query` with no `react-query-kit` anywhere in the tree.
-
-### `src/api/` — shared infrastructure only
-
-- `src/api/common/client.ts` — the single axios instance, `baseURL: config.apiURL` from `src/config.ts`
-  (`EXPO_PUBLIC_API_URL`).
-- `src/api/endpoints.ts` — `API_ENDPOINT` string map. Add new paths here, not inline.
-- `src/api/index.ts` re-exports `./common` only.
-
-### `src/modules/feed/` — module/gateway/repository (two data sources)
-
-- Raw `@tanstack/react-query` (`useQuery`/`useInfiniteQuery`) called from `feed.repository.queries.ts`, configured by
-  `queryOptions`/`infiniteQueryOptions` builders in `feed.query-options.ts`.
-- Views/components call `feedRepository.queries.useFeedPosts(filters?, dataSource?, options?)` (and
-  `useFeedPost`/`useFeedComments`) through a `use-*-business` hook, never inline — see "Layering rules" under
-  "Feature modules" above.
-- A gateway (`http` or `asyncStorage`, chosen via `DataSource`) sits behind the repository; the repository never
-  calls `httpClient`/AsyncStorage directly. See "Feature modules" above for the full tree.
-- Zod validates every HTTP response through `feed.types.ts`'s schemas, wired in via `httpClient`'s `responseSchema`
-  option (Phase A's contract, reused as-is).
-
-### `src/shared/user/` — api/repository (one data source, no gateway)
-
-- `api/user-api.ts` — `UserApiContract` interface + `createUserApiService` factory + `userApi` singleton, calling
-  `httpClient` directly with `ApiOptions` for `signal`. No `createQuery`/`createInfiniteQuery`.
-- `repositories/user/` — `user.repository.keys.ts` (no `dataSource` segment — there is only one source),
-  `user.query-options.ts` (calls `userApi` directly in `queryFn`, no gateway indirection), and
-  `user.repository.queries.ts` exposing `useUsers(options?)` / `useUser(id, options?)`. Query-only — no mutation is
-  exposed, since jsonplaceholder's `user` data is read-only here.
-- Zod validates every response through `user.types.ts`'s `UserSchema`/`UserArraySchema`, wired in via `httpClient`'s
-  `responseSchema` option; unknown upstream fields (`address`, `phone`, `website`, `company`) are stripped, not
-  passed through.
-- `src/shared/user/index.ts` is the only import surface: `userRepository` and the `User` type. `userApi`, the keys, and
-  the query-options builder stay module-private — import through the barrel, never `@/shared/user/{api,repositories}`
-  directly.
-
-The provider is `src/components/api-provider/api-provider.tsx`, mounted in `src/app/_layout.tsx` — shared by both
-shapes above, one `QueryClient` for the whole app.
-
-The upstream API is jsonplaceholder-shaped: endpoints return bare arrays, not a pagination envelope. Pagination in
-`feed.query-options.ts` is derived from page length (`lastPage.length === DEFAULT_LIMIT`), preserved unchanged from
-the pre-Phase-B `use-get-posts` hook it replaced. Callers cannot override it: `InfiniteQueryOptions` omits
-`getNextPageParam` and `initialPageParam`, so changing the contract is a type error rather than a convention.
-
-## Client state — Zustand
-
-**Every store is built with `createStoreWithMiddleware` from `@/core/lib/zustand`** — importing `zustand` directly is a
-lint error outside `src/core/lib/zustand/**` and `test/**`. The factory composes immer, `persist` (AsyncStorage) and
-devtools, and drops `actions` and `hasHydrated` from the persisted payload. Pass `exclude` for anything else that must
-stay out, and `storage` to persist somewhere other than AsyncStorage.
-
-**No store exists today.** The only one ever written held an access token, and it was deleted along with the rest of the
-auth scaffolding: this app has no authentication and is not getting any. The factory, its tests and the `zustand`
-lint rule all stay in place, so the first store that has real client state to hold has a single documented way to be
-built. Actions belong nested under `state.actions`, not flat — that was the convention the deleted store followed and
-the one a new store should keep.
-
-`src/core/lib/secure-storage/` is the `StateStorage` adapter for the factory's `storage` option, writing through
-`expo-secure-store` — Keychain on iOS, Keystore on Android — instead of AsyncStorage. It has **no consumer today**; it
-stays exported from `@/core/lib` and covered by its own tests so it is ready for the first store that needs encrypted
-storage. **Native only, by design**: the adapter no-ops rather than persisting on web, because `expo-secure-store` has
-no web implementation to delegate to, so a value set while running `pnpm web` is not written anywhere and does not
-survive a reload.
-
-`app.config.ts` sets `android.allowBackup: false` (app-wide — device backups no longer
-carry theme/language preferences either, an accepted cost since both regenerate on next launch) and registers
-`plugins/with-ios-file-protection.js`, a `withInfoPlist` config plugin that sets `NSFileProtectionKey` to
-`NSFileProtectionCompleteUntilFirstUserAuthentication` (not the stricter `Complete`, which would make the app's
-container unreadable while the device is locked and break any launch-before-first-unlock path). Both are native build
-output, not something `pnpm lint`/`typecheck`/`test` can see — verify with `pnpm android:prebuild` against the
-generated `AndroidManifest.xml`, and `pnpm exec expo prebuild --platform ios --clean` against the generated
-`Info.plist`, with no emulator/simulator booted (see "Low-memory hosts" below).
-
-Tests reset stores through `test/__mocks__/zustand/index.ts`, which wraps `create` and registers reset functions — the
-reason the factory funnels every store through a single `create` call.
-
-## Styling — `react-native-unistyles` v3
-
-- Themes: `src/styles/themes.ts` — `commonTheme` (spacing/radius/fontSize scales) spread into `lightTheme` and
-  `darkTheme`. Colour choices carry contrast rationale in comments; keep them when editing.
-- Breakpoints: `src/styles/breakpoints.ts`.
-- `StyleSheet.configure` and the `declare module 'react-native-unistyles'` augmentation: `src/styles/unistyles.ts`.
-  `initialTheme: 'light'`.
-- Root `index.ts` imports `./src/styles/unistyles` so configuration runs before any component.
-- Styles go in a sibling `styles.ts` using `StyleSheet.create((theme) => ({ ... }))` and read tokens from `theme`.
-
-Never hardcode a hex value in a component. `src/styles/themes.ts` is the only palette; do not reintroduce a second one.
-
-## i18n — `src/localization/`
-
-`i18next` + `react-i18next`. Setup in `src/localization/i18n.ts`; initial language is the device locale
-(`expo-localization`), falling back to `config.translation.defaultLocale`. A stored preference is applied later by
-`src/modules/settings/hooks/use-init-language/`.
-
-Translations are **TypeScript modules, not JSON**: `src/localization/locales/en-us.ts`, `es-es.ts`, re-exported from
-`locales/index.ts` as `en_US` / `es_ES`. Supported languages: `['en', 'es']`.
-
-Add every user-facing string here and read it via `useTranslation()`. Add the key to **both** locale files.
-
-## Tests
-
-Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 40 test files
-currently.
-
-- Tests are **co-located**: `<name>.test.ts(x)` next to the file under test.
-- Render through `@/test/test-utils`, never `@testing-library/react-native` directly —
-  `no-restricted-imports` enforces this (disabled inside `test/**`). `test/test-utils.tsx` re-exports RNTL and adds
-  `renderWithProviders` / `renderHookWithProviders`, which wrap in a `QueryClientProvider` with `retry: false` and
-  `gcTime: 0`.
-- Entity fixtures use `@faker-js/faker` and live in `test/entities/*.mock.ts`.
-- Global mocks: `test/jest.setup.ts` (FlashList measurement, `NativeEventEmitter`, Ionicons, `@dev-plugins/react-query`)
-  and `test/jest.polyfills.ts`.
-- HTTP is mocked with `axios-mock-adapter`.
-
-## Lint rules that will fail your change
-
-From `eslint.config.js`, on top of `eslint-config-expo/flat`:
-
-- **kebab-case files and folders** — `check-file/filename-naming-convention` and
-  `check-file/folder-naming-convention`. Both are turned off for `src/app/**` (expo-router needs `(drawer)` and
-  `[id].tsx`) and `test/**`; `__mocks__` folders are exempt from the folder rule.
-- **`simple-import-sort/imports`** with explicit groups: react/packages, then internal `@/`, then side-effect, then
-  relative, then styles. Also `import/first`, `import/newline-after-import`, `import/no-duplicates`.
-- **`max-len` 120** (`code: 120`, URLs and brace-only import/export lines ignored). Prettier is configured to the same
-  width (`.prettierrc.js`: `printWidth: 120`, `singleQuote: true`).
-- **`max-params` 3.** More than three parameters means an options object.
-- **`padding-line-between-statements`** — blank line required before every `return`.
-- **`quotes: single`** (`avoidEscape: true`).
-- **`no-restricted-imports`** — `@testing-library/react-native` must go through `@/test/test-utils`;
-  `ActivityIndicator` must come from `@/ui`. Off in `test/**` and `src/ui/**`.
-- **`@typescript-eslint/no-unused-vars`: error** — TS files only (the plugin is not registered for the root JS configs).
-- `eslint-plugin-testing-library`'s `flat/react` config applies to test files, with `no-await-sync-events` off because
-  RNTL 14 made `fireEvent` async.
-
-### Warnings are errors
-
-`pnpm lint` runs with `--max-warnings 0`, so **any** warning fails the build — locally, in `.husky/pre-commit` via
-`.lintstagedrc.js`, and in the CI `lint` job. There is no tolerated-warning budget to hide a new finding in.
-
-Three sites carry an `eslint-disable` because the rule is wrong about them, each with the reason inline:
-
-| Location                   | Rule                                | Why it is disabled                                      |
-| -------------------------- | ----------------------------------- | ------------------------------------------------------- |
-| `src/styles/unistyles.ts`  | `no-empty-object-type`              | Empty bodies **are** the declaration-merging mechanism. |
-| `src/api/common/client.ts` | `import/no-named-as-default-member` | `axios.create` is the documented factory.               |
-| `src/localization/i18n.ts` | `import/no-named-as-default-member` | `i18n.use` is the singleton's own method.               |
-
-Add a disable only when the rule is provably wrong about the code, and always with the reason. Everything else gets
-fixed.
-
-## Git hooks and CI
-
-`.husky/`:
-
-- `pre-commit` -> `pnpm exec lint-staged`. `.lintstagedrc.js`: `*.{ts,tsx}` triggers a whole-project `pnpm typecheck`
-  (a function-form command, because `tsc` with explicit filenames ignores `tsconfig.json`); `*.{ts,tsx,js,mjs,cjs}` gets
-  `eslint --fix`; `*.{md,json,yml,yaml}` gets `prettier --write`. **Markdown you write here will be reformatted by
-  prettier at 120 columns.**
-- `commit-msg` -> `pnpm exec commitlint --edit "$1"`.
-- `pre-push` -> `pnpm typecheck && pnpm test`, skipped when `CI` or `GITHUB_ACTIONS` is `true`.
-
-`.github/workflows/pr-validation.yml` runs on `pull_request` to `main`, with
-`concurrency: cancel-in-progress: true`. Jobs: `lint`, `typecheck`, `test`, `validate-branch-name`, `validate-commits`,
-and a `ready-to-merge` aggregator that `needs` all five and fails unless each reports `success` — that aggregator is the
-single required status check. All jobs use the composite action `.github/actions/setup-node-pnpm/`, which reads the pnpm
-version from `packageManager`, caches the pnpm store, and runs `pnpm install --frozen-lockfile`.
-
-## Low-memory hosts (verified on an 8 GB M1)
-
-`expo run:ios` and `expo run:android` both **boot a device before compiling**, so the simulator/emulator and the
-compiler compete for RAM. On an 8 GB machine this starves the compiler — free RAM was measured dropping to ~17 MB during
-an iOS compile.
-
-Use **build-then-boot** instead:
-
-1. Compile with no device running: `pnpm android:build` (prebuild + `./gradlew assembleDebug --no-daemon`).
-2. Boot the emulator.
-3. `pnpm android:install`.
-
-Never hold Gradle, an emulator, and Metro at the same time. `plugins/with-local-gradle-tuning.js` (applied in
-`app.config.ts`) exists to tune local Gradle builds for this constraint.
+---
 
 ## Anti-patterns
 
-❌ Screen logic in a route file.
-
-```tsx
-// src/app/(drawer)/(tabs)/index.tsx
+```typescript
+// ❌ Screen logic in a route file
 export default function HomeScreen() {
   const { data } = feedRepository.queries.useFeedPosts();
-  return <FlashList data={data} ... />;
+  return <FlashList data={data} />;
 }
-```
-
-✅ Route renders a view; logic lives in the module.
-
-```tsx
-// src/app/(drawer)/(tabs)/index.tsx
-import { HomeView } from '@/modules/feed';
-
+// ✅ Route renders one view; logic lives in the module
 export default function HomeScreen() {
   return <HomeView />;
 }
-```
 
----
+// ❌ A view calling a repository directly
+const { data } = feedRepository.queries.useFeedPosts();
+// ✅ A business hook between them
+const { posts } = useHomeBusiness();
 
-❌ Hardcoded colours or spacing in a component, or a second palette alongside the theme.
+// ❌ Hardcoded colour or spacing
+container: { backgroundColor: '#f4f4f7', padding: 16 }
+// ✅ Theme tokens in a sibling styles.ts
+container: { backgroundColor: theme.colors.background, padding: theme.padding.xxl }
 
-```ts
-const colors = { background: '#f4f4f7' };
-container: { backgroundColor: '#f4f4f7', padding: 16 },
-```
-
-✅ Read tokens from the theme in a sibling `styles.ts`.
-
-```ts
-// styles.ts
-import { StyleSheet } from 'react-native-unistyles';
-
-export const styles = StyleSheet.create((theme) => ({
-  container: { backgroundColor: theme.colors.background, padding: theme.padding.xxl },
-}));
-```
-
----
-
-❌ Importing RNTL or `ActivityIndicator` directly — both are lint errors.
-
-```ts
-import { render } from '@testing-library/react-native';
-import { ActivityIndicator } from 'react-native';
-```
-
-✅ Go through the project's entry points.
-
-```ts
-import { renderWithProviders } from '@/test/test-utils';
-import { ActivityIndicator } from '@/ui';
-```
-
----
-
-❌ Hardcoded user-facing strings.
-
-```tsx
-<EmptyState title="No posts yet" />
-```
-
-✅ Keys in both `src/localization/locales/en-us.ts` and `es-es.ts`, read via `useTranslation`.
-
-```tsx
-const { t } = useTranslation();
-<EmptyState title={t('home.emptyTitle')} />;
-```
-
----
-
-❌ PascalCase or camelCase filenames — `check-file` rejects them outside `src/app/**` and `test/**`.
-
-```
-src/ui/SearchInput/SearchInput.tsx
-```
-
-✅ kebab-case throughout, component folder + sibling styles.
-
-```
-src/ui/search-input/search-input.tsx
-src/ui/search-input/styles.ts
-```
-
----
-
-❌ Four or more positional parameters (`max-params` 3), and no blank line before `return`.
-
-```ts
-function build(a: string, b: string, c: string, d: string) {
-  const out = a + b + c + d;
-  return out;
-}
-```
-
-✅ Options object, blank line before `return`.
-
-```ts
-function build({ a, b, c, d }: BuildOptions) {
-  const out = a + b + c + d;
-
-  return out;
-}
-```
-
----
-
-❌ Reaching into a module's internals from outside it, bypassing its public barrel. TD-6 was exactly this — resolved
-in Phase B by folding every consumer into the one module that owns the internals — but the rule outlives that specific
-fix and applies to any future module.
-
-```ts
-// hypothetical: a file outside src/modules/feed/ reaching past its barrel
+// ❌ Reaching past a module barrel
 import { PostsVerticalCarousel } from '@/modules/feed/components';
-import { usePostAuthors } from '@/modules/feed/hooks';
+// ✅ Through the public barrel
+import { PostsVerticalCarousel } from '@/modules/feed';
+
+// ❌ Hardcoded user-facing string
+<EmptyState title="No posts yet" />
+// ✅ Translation key in both locale files
+<EmptyState title={t('home.emptyTitle')} />
+
+// ❌ Value import creating a cycle
+import { FeedPage } from '../../feed-api';
+// ✅ Type-only import — erased at compile time
+import type { FeedPage } from '../../feed-api';
+
+// ❌ Adding a gateway for a single data source
+// ✅ queryFn calls the api directly — see src/shared/user/
+
+// ❌ An empty controller hook added for symmetry
+// ✅ No controller unless the view has UI-only state
 ```
 
-✅ Import through the module's public barrel.
-
-```ts
-import { PostsVerticalCarousel, usePostAuthors } from '@/modules/feed';
-```
+---
 
 ## Known issues
 
-Verified against the code at the time of writing. Ranked by severity. IDs are stable and are never reused or renumbered
-when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3, TD-6, TD-7, TD-8
-and TD-11 have been resolved and removed.
+| Item                                                                        | File                                 | Severity |
+| --------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| Mocks a private FlashList path; any version bump can break the whole suite  | `test/jest.setup.ts`                 | LOW      |
+| `validate-commits` lints commits the squash merge discards, never the title | `pr-validation.yml`                  | LOW      |
+| `src/shared/` is absent from the coverage globs                             | `jest.config.ts`                     | LOW      |
+| AsyncStorage gateway keys are read but never written — dead branch          | `async-storage-gateway.constants.ts` | LOW      |
 
-| ID    | Severity | Issue                                                                                                                                                                                                                                                 |
-| ----- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`. |
-| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                     |
+`@shopify/flash-list` is pinned to exactly `2.0.2` in `package.json` because of the first item.
+
+---
+
+## AI agent instructions
+
+**Before changing any file:** read the relevant `docs/` page for the pattern, then read the reference implementation
+in `src/modules/feed/`. Match what is there rather than what a generic tutorial would produce.
+
+**Adding a feature:** follow the 18 steps above. Skip step 7 when there is one data source and step 12 when the view
+has no UI-only state.
+
+**Before saying done:** `pnpm lint && pnpm typecheck && pnpm test`. For anything user-facing, run the app — green
+checks do not prove a screen renders.
+
+**Never:** add authentication, import `zustand` directly, hardcode a colour or a string, call a repository from a
+view, edit a generated native project, or use `--no-verify`.
+
+**Finding a pattern implementation:**
+
+- Full module with gateways -> `src/modules/feed/`
+- Module without a gateway -> `src/shared/user/`
+- Module without a repository -> `src/modules/settings/`
+- Business + controller pair -> `src/modules/feed/views/explore-view/hooks/`
+- Component fetching its own data -> `src/modules/feed/components/comment-list/hooks/`
+- Store factory (no consumer) -> `src/core/lib/zustand/`
+- Config plugin -> `plugins/with-ios-file-protection.js`
