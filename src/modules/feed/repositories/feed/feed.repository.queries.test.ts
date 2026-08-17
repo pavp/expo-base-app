@@ -3,7 +3,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { client } from '@/api/common/client';
 import { DEFAULT_LIMIT } from '@/api/common/constants';
 import { generateMockPosts, mockPost } from '@/test/entities';
-import { queryClient, renderHookWithProviders, waitFor } from '@/test/test-utils';
+import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { feedRepositoryQueries } from './feed.repository.queries';
 
@@ -11,9 +11,7 @@ describe('feedRepositoryQueries', () => {
   const mock = new MockAdapter(client);
 
   afterEach(() => {
-    queryClient.clear();
     mock.reset();
-    jest.clearAllMocks();
   });
 
   it('exposes only query operations — no create/update/delete member exists', () => {
