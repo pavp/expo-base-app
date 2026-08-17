@@ -1,2 +1,2 @@
 export { useInitApp, useSettingsBusiness } from './hooks';
-export { SettingsView } from './views';
+export { SettingsView } from './views/settings-view';

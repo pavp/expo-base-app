@@ -291,6 +291,13 @@ Do **not** add one when:
 A barrel nobody imports through is not a contract — it is a file that exists. If every consumer reaches past it to the
 concrete module, delete it: the bypass is the codebase reporting that the indirection buys nothing.
 
+The test is what the barrel groups, not where it sits. A `views/index.ts` collecting three views is doing real work:
+one import line reaches any of them, and adding a fourth touches one file. The same path holding a single view
+forwards one symbol and earns nothing — the module barrel should name that view's folder directly.
+
+And once a barrel exists, use it consistently. A folder where two siblings import through the barrel and a third
+reaches past it has no rule at all, only a habit that differs per file.
+
 ## Exceptions
 
 Two directories are exempt from the kebab-case rule, and both exemptions are configured in the lint setup rather than
