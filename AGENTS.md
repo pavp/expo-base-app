@@ -22,10 +22,11 @@ The target is the structure used by the sibling `create-scaffold-nextjs-app` rep
   `src/api/post/`, `src/api/comment/`, and the former `home`, `explore` and `post` modules; none of those four
   locations exist anymore. `react-query-kit` is no longer used inside `feed` — see "Server state" below.
 - **Phase C (done):** `src/shared/user/` is the only source of user data — a contract/factory/singleton `api/`, no
-  gateway, feeding `repositories/user/` (query-only, no `dataSource` segment) and `stores/`/`selectors/`. TD-11
-  (plaintext token storage) is fixed: the store persists through `expo-secure-store` (Keychain/Keystore) on iOS and
-  Android, `android:allowBackup` is `false`, and iOS sets an `NSFileProtection` class. `src/modules/settings/` carries
-  the theme/language screen and the app's boot-time hooks end to end; `src/hooks/` and `src/store/` are both deleted.
+  gateway, feeding `repositories/user/` (query-only, no `dataSource` segment). `src/modules/settings/` carries the
+  theme/language screen and the app's boot-time hooks end to end; `src/hooks/` and `src/store/` are both deleted. The
+  user store and its token selectors were part of this phase and have since been removed — **this app has no
+  authentication and will not have one**, so nothing exists to hold a session. `android:allowBackup` is `false` and iOS
+  sets an `NSFileProtection` class; both are kept as general hardening for any future persisted data.
 - **Phase D (not started):** improvements the reference scaffold does not have — enforced module boundaries, a real
   React error boundary, schema-validated env, and a module generator.
 
@@ -38,10 +39,11 @@ Practical consequences for an agent working here now:
   in a `use-*-business` hook beside the view or component that needs it (see "Feature modules" below). `settings` has
   no repository or store of its own — see its own section under "Feature modules".
 - `src/shared/user/index.ts` is the only import surface for user data — never import
-  `@/shared/user/{api,repositories,stores,selectors}` directly from outside the module.
-- Every store goes through `createStoreWithMiddleware`; importing `zustand` directly is a lint error outside
-  `src/core/lib/zustand/**`. `src/shared/user/stores/user.store.ts` is the only store today; its actions are nested
-  under `state.actions`, not flat.
+  `@/shared/user/{api,repositories}` directly from outside the module. It exports `userRepository` and the `User` type
+  and nothing else; the users it serves are feed post authors, not a signed-in user.
+- **The app has no authentication and no Zustand store.** Do not add a bearer-token interceptor, a session store, or a
+  refresh flow. Every store still goes through `createStoreWithMiddleware`, and importing `zustand` directly is a lint
+  error outside `src/core/lib/zustand/**` — see "Client state" below for what that means with zero stores in the tree.
 
 Anything not listed above is stable enough to build on.
 
@@ -186,10 +188,10 @@ src/
   components/                -> app-level shared components (not primitives)
   config.ts                  -> env-derived config (`EXPO_PUBLIC_API_URL`)
   core/lib/async-storage/    -> thin AsyncStorage get/set wrapper
-  core/lib/secure-storage/   -> StateStorage adapter over expo-secure-store, native only (see "Client state" below)
+  core/lib/secure-storage/   -> StateStorage adapter over expo-secure-store, native only, no consumer yet
   localization/              -> i18next setup + TS translation modules
   modules/                   -> feature modules: feed (posts + comments), settings (theme/language + boot hooks)
-  shared/user/               -> user data + client state: api -> repository (no gateway) -> stores + selectors
+  shared/user/               -> user data: api -> repository (no gateway); read-only, no store
   styles/                    -> unistyles config, themes, breakpoints
   ui/                        -> presentational primitives
 test/                        -> jest setup, polyfills, render helpers, entity mocks
@@ -198,8 +200,8 @@ scripts/                     -> validate-branch-name.js, reset-project.js
 .husky/                      -> pre-commit, commit-msg, pre-push
 ```
 
-`src/hooks/` and `src/store/` no longer exist — the former folded into `src/modules/settings/`, the latter into
-`src/shared/user/stores/`.
+`src/hooks/` and `src/store/` no longer exist — the former folded into `src/modules/settings/`, the latter held only the
+user store and was deleted with it.
 
 Path aliases (`tsconfig.json`, mirrored in `jest.config.ts` `moduleNameMapper`):
 
@@ -394,9 +396,9 @@ today, both built on raw `@tanstack/react-query` with no `react-query-kit` anywh
 - Zod validates every response through `user.types.ts`'s `UserSchema`/`UserArraySchema`, wired in via `httpClient`'s
   `responseSchema` option; unknown upstream fields (`address`, `phone`, `website`, `company`) are stripped, not
   passed through.
-- `src/shared/user/index.ts` is the only import surface: `userRepository`, `useUserStore`, `useUserActions`,
-  `useUserTokenSelector`, `getUserToken`, and the `User` type. `userApi`, the keys, and the query-options builder stay
-  module-private — import through the barrel, never `@/shared/user/{api,repositories,stores,selectors}` directly.
+- `src/shared/user/index.ts` is the only import surface: `userRepository` and the `User` type. `userApi`, the keys, and
+  the query-options builder stay module-private — import through the barrel, never `@/shared/user/{api,repositories}`
+  directly.
 
 The provider is `src/components/api-provider/api-provider.tsx`, mounted in `src/app/_layout.tsx` — shared by both
 shapes above, one `QueryClient` for the whole app.
@@ -413,20 +415,20 @@ lint error outside `src/core/lib/zustand/**` and `test/**`. The factory composes
 devtools, and drops `actions` and `hasHydrated` from the persisted payload. Pass `exclude` for anything else that must
 stay out, and `storage` to persist somewhere other than AsyncStorage.
 
-One store exists today: `src/shared/user/stores/user.store.ts`, holding `user: { accessToken } | null` with actions
-nested under `state.actions` (`state.actions.setCredentials` / `state.actions.removeCredentials`), persisted via
-`persist: true` with `exclude: ['hasHydrated']` (`actions` is dropped by the factory itself). `hasHydrated` has no
-reader today — it is the mechanism reserved for gating a store-backed boot path once a real one exists.
+**No store exists today.** The only one ever written held an access token, and it was deleted along with the rest of the
+auth scaffolding: this app has no authentication and is not getting any. The factory, its tests and the `zustand`
+lint rule all stay in place, so the first store that has real client state to hold has a single documented way to be
+built. Actions belong nested under `state.actions`, not flat — that was the convention the deleted store followed and
+the one a new store should keep.
 
-This store passes `storage: secureStorage` (`src/core/lib/secure-storage/`) to the factory, so the token is written
-through `expo-secure-store` — Keychain on iOS, Keystore on Android — instead of AsyncStorage. **Native only, by
-design**: the adapter no-ops rather than persisting on web, because `expo-secure-store` has no web implementation to
-delegate to; a token set while running `pnpm web` is not written anywhere and does not survive a reload. This was a
-one-time, non-additive swap — it mutates the persisted identity `'user'`, so a token written under the pre-swap
-AsyncStorage backend is not migrated and is not read back; it is orphaned on disk, not deleted. There was no live
-consumer of that token before the swap, so nothing was actually lost.
+`src/core/lib/secure-storage/` is the `StateStorage` adapter for the factory's `storage` option, writing through
+`expo-secure-store` — Keychain on iOS, Keystore on Android — instead of AsyncStorage. It has **no consumer today**; it
+stays exported from `@/core/lib` and covered by its own tests so it is ready for the first store that needs encrypted
+storage. **Native only, by design**: the adapter no-ops rather than persisting on web, because `expo-secure-store` has
+no web implementation to delegate to, so a value set while running `pnpm web` is not written anywhere and does not
+survive a reload.
 
-Alongside the storage swap, `app.config.ts` sets `android.allowBackup: false` (app-wide — device backups no longer
+`app.config.ts` sets `android.allowBackup: false` (app-wide — device backups no longer
 carry theme/language preferences either, an accepted cost since both regenerate on next launch) and registers
 `plugins/with-ios-file-protection.js`, a `withInfoPlist` config plugin that sets `NSFileProtectionKey` to
 `NSFileProtectionCompleteUntilFirstUserAuthentication` (not the stricter `Complete`, which would make the app's
@@ -463,7 +465,7 @@ Add every user-facing string here and read it via `useTranslation()`. Add the ke
 
 ## Tests
 
-Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 41 test files
+Jest with the `jest-expo` preset (`jest.config.ts`), `testEnvironment: 'jsdom'`, `clearMocks: true`. 40 test files
 currently.
 
 - Tests are **co-located**: `<name>.test.ts(x)` next to the file under test.
@@ -675,11 +677,10 @@ import { PostsVerticalCarousel, usePostAuthors } from '@/modules/feed';
 ## Known issues
 
 Verified against the code at the time of writing. Ranked by severity. IDs are stable and are never reused or renumbered
-when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3, TD-6, TD-8 and
-TD-11 have been resolved and removed.
+when an entry is resolved, so references elsewhere keep pointing at the same defect. TD-1, TD-2, TD-3, TD-6, TD-7, TD-8
+and TD-11 have been resolved and removed.
 
-| ID    | Severity | Issue                                                                                                                                                                                                                                                                            |
-| ----- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TD-7  | Low      | **Auth is a commented-out stub.** Both interceptors in `src/api/common/client.ts` are dead comments (bearer-token request interceptor and a 401 refresh-retry response interceptor), kept alive by an `eslint-disable` for the imports they reference. There is no working auth. |
-| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`.                            |
-| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                                                |
+| ID    | Severity | Issue                                                                                                                                                                                                                                                 |
+| ----- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TD-9  | Low      | **`test/jest.setup.ts` mocks a private FlashList path.** `@shopify/flash-list/dist/recyclerview/utils/measureLayout` is internal; any FlashList version bump can break the whole suite. `@shopify/flash-list` is pinned to `2.0.2` in `package.json`. |
+| TD-10 | Low      | **`validate-commits` does not check what lands.** The CI job lints the PR's individual commits, but squash merge replaces them with the PR title, which the job never sees. PR titles need manual conventional-commit discipline.                     |

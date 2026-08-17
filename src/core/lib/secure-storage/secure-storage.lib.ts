@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 
 import type { StateStorage } from '@/core/lib/zustand';
 
+// No store persists through this adapter today; it is here for whichever one first needs encrypted storage.
 // `expo-secure-store` registers no native module on web, so calling it there throws rather than
 // failing softly. Every method short-circuits on web instead: the store still constructs, it just
 // keeps nothing, which is why `pnpm web` keeps working and why a token never reaches disk there.
