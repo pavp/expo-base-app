@@ -1,4 +1,4 @@
-import { generateMockPosts } from '@/test/entities/post.mock';
+import { generateMockPosts } from '@/test/entities';
 
 import { feedQueryOptions } from './feed.query-options';
 

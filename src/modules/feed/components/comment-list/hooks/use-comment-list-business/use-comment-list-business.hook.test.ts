@@ -1,4 +1,4 @@
-import { mockComment } from '@/test/entities/comment.mock';
+import { mockComment } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
 import { feedRepository } from '../../../../repositories/feed';

@@ -14,17 +14,21 @@ const config: Config = {
     'src/modules/**/*.{ts,tsx}',
     'src/core/**/*.{ts,tsx}',
     'src/api/**/*.{ts,tsx}',
+    'src/shared/**/*.{ts,tsx}',
     'src/ui/**/*.{ts,tsx}',
   ],
   coveragePathIgnorePatterns: ['node_modules', 'interfaces', '.mock.ts', 'index.ts', 'index.tsx', 'types.ts'],
-  // Regression floor set below measured coverage, so a real drop fails while an
-  // ordinary refactor that shifts a few lines does not.
+  // Regression floor set a few points below measured coverage, so a real drop
+  // fails while an ordinary refactor that shifts a few lines does not. Measured
+  // at the time of writing: 83.73 branches, 92.44 functions, 94.65 lines,
+  // 94.66 statements. Raise these when coverage rises; never lower them to make
+  // a red run green.
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 55,
-      lines: 55,
-      statements: 55,
+      branches: 78,
+      functions: 87,
+      lines: 89,
+      statements: 89,
     },
   },
   moduleNameMapper: {

@@ -1,6 +1,5 @@
 import { getItem } from '@/core/lib/async-storage';
-import { mockComment } from '@/test/entities/comment.mock';
-import { generateMockPosts, mockPost } from '@/test/entities/post.mock';
+import { generateMockPosts, mockComment, mockPost } from '@/test/entities';
 
 import { asyncStorageGateway } from './async-storage-gateway';
 

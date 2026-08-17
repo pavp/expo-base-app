@@ -1,4 +1,4 @@
-import { mockComment } from '@/test/entities/comment.mock';
+import { mockComment } from '@/test/entities';
 import { renderWithProviders, screen } from '@/test/test-utils';
 
 import { CommentList } from './comment-list';
