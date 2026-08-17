@@ -287,7 +287,10 @@ only — it no-ops on web, so a value set under `pnpm web` is not persisted.
 - `createTestQueryClient` builds a client **per render**; both helpers return it as `{ result, queryClient }`. Defaults
   `retry: false`, `gcTime: 0`, `staleTime: 0`, no refetch on mount or reconnect. Override with `queryClientOptions`
 - `setupMockQueryData(queryClient, key, data)` seeds the cache, so a hook reading cached data needs no HTTP mock
-- Fixtures use `@faker-js/faker` in `test/entities/*.mock.ts`, importing types through module barrels
+- Fixtures use `@faker-js/faker` in `test/entities/*.mock.ts`, importing types through module barrels with
+  `import type`. Each entity exports `createMockX(overrides?)`, `generateMockXs(count, overrides?)` with sequential
+  ids, and a `mockX` constant derived from the factory. Prefer `createMockX({ field })` over spreading the constant;
+  spread only to build a payload the type would reject, for a schema test
 - Coverage globs cover `src/{components,modules,core,api,shared,ui}`
 - Thresholds: branches 78, functions 87, lines 89, statements 89 — a few points under measured, so a real drop fails
   while a refactor that shifts a few lines does not. Raise them when coverage rises; never lower them to green a run

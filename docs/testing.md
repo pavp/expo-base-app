@@ -243,31 +243,57 @@ mock the transport instead.
 
 ## 🎭 Entity Factories
 
-Fixtures are generated, not hand-written:
+Fixtures are generated, not hand-written. Each entity exports three things — a factory, a list generator, and a
+ready-made constant:
 
 ```typescript
-export const mockEntity: Entity = {
-  id: faker.string.uuid(),
+export const createMockEntity = (overrides: Partial<Entity> = {}): Entity => ({
+  id: faker.number.int(),
   name: faker.commerce.productName(),
-  authorId: faker.number.int({ min: 1, max: 10 }),
-};
+  authorId: faker.number.int(),
+  ...overrides,
+});
 
-export const generateMockEntities = (count: number): Entity[] =>
-  Array.from({ length: count }, () => ({ ...mockEntity, id: faker.string.uuid() }));
+export const generateMockEntities = (count: number, overrides: Partial<Entity> = {}): Entity[] =>
+  Array.from({ length: count }, (_, index) => createMockEntity({ id: index + 1, ...overrides }));
+
+export const mockEntity: Entity = createMockEntity();
 ```
 
 Generated fixtures surface assumptions a hand-written one hides — a test that passes only with a three-character name
 fails the first time the generator produces a longer one.
 
-Factories import their types **through module barrels**, never internal paths, so a fixture cannot depend on something
-the module keeps private.
+Factories import their types **through module barrels** with `import type`, never internal paths. The barrel keeps the
+fixture off anything the module treats as private; `import type` keeps the module's runtime dependencies out of the
+test.
 
-### Deterministic Data
+### Choosing Among the Three
 
-When an assertion depends on an exact value, pass it explicitly rather than asserting against a random one:
+| Need                                      | Use                                           |
+| ----------------------------------------- | --------------------------------------------- |
+| A value that must satisfy an assertion    | `createMockEntity({ name: 'Specific Name' })` |
+| Several items, one of which you assert on | `generateMockEntities(3)` — ids are `1..n`    |
+| Any valid entity, values irrelevant       | `mockEntity`                                  |
+
+**`overrides` beats spreading.** `createMockEntity({ authorId: 7 })` states what matters to the test; `{ ...mockEntity,
+authorId: 7 }` states it too but silently shares every other field with every other test that spreads the same
+constant.
+
+**List ids are sequential, not random.** A test asserting on "the second item" needs to know which one that is, and
+random ids can collide within a single list.
+
+**The constant is derived from the factory**, so there is one definition per entity. It is stable for the whole run —
+convenient, and the reason not to mutate it.
+
+### Invalid Payloads
+
+A schema test needs data the type system would reject, so build it by spreading rather than through the factory, whose
+`Partial<Entity>` signature exists precisely to prevent this:
 
 ```typescript
-const entity = { ...mockEntity, name: 'Specific Name' };
+mock.onGet('entities').reply(200, [{ ...mockEntity, id: 'not-a-number' }]);
+
+await expect(entityApi.getAll()).rejects.toBeInstanceOf(HttpValidationError);
 ```
 
 ## 🌐 Global Mocks

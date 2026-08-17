@@ -1,5 +1,5 @@
 import { DEFAULT_LIMIT } from '@/api/common/constants';
-import { generateMockPosts, mockPost } from '@/test/entities';
+import { generateMockComments, generateMockPosts, mockPost } from '@/test/entities';
 import { setupHttpMock } from '@/test/http-mock';
 import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 
@@ -76,13 +76,7 @@ describe('feedRepositoryQueries', () => {
 
   describe('useFeedComments', () => {
     it('fetches comments for a post', async () => {
-      const comments = generateMockPosts(2).map((post) => ({
-        postId: post.id,
-        id: post.id,
-        name: post.title,
-        body: post.body,
-        email: 'author@example.com',
-      }));
+      const comments = generateMockComments(2, { postId: 1 });
       mock.onGet('posts/1/comments').reply(200, comments);
 
       const { result } = await renderHookWithProviders(() => feedRepositoryQueries.useFeedComments('1'));
