@@ -36,12 +36,16 @@ The test utilities re-export everything from the underlying library, so there is
 
 ```
 test/
-├── test-utils.tsx        ## Render helpers wrapping the app's providers
+├── test-utils.tsx        ## Render helpers, query client factory, cache seeding
+├── http-mock.ts          ## setupHttpMock — adapter on the shared client
 ├── jest.setup.ts         ## Global mocks, run before each suite
 ├── jest.polyfills.ts     ## Environment polyfills, run before the framework
 ├── entities/             ## Entity mock factories
 └── __mocks__/            ## Module mocks resolved automatically
 ```
+
+A module mocked by several suites gets a `__mocks__` folder beside its own source instead, so the mock lives next to
+what it replaces.
 
 Tests themselves are **co-located** beside the file under test, named after it in full:
 
@@ -90,15 +94,11 @@ implementation; mocking too shallow turns a unit test into an integration test w
 
 ### Mocking HTTP
 
-Attach an adapter to the shared client instance:
+`setupHttpMock()` attaches an adapter to the shared client and registers its own reset, so a suite declares one line
+at describe scope:
 
 ```typescript
-const mock = new MockAdapter(client);
-
-afterEach(() => {
-  mock.reset();
-  jest.clearAllMocks();
-});
+const mock = setupHttpMock();
 
 it('requests the page and limit it was given', async () => {
   mock.onGet('entities', { params: { _page: 2, _limit: 10 } }).reply(200, [mockEntity]);
@@ -110,6 +110,9 @@ it('requests the page and limit it was given', async () => {
 ```
 
 Asserting on request parameters is what catches a builder that quietly stops forwarding a filter.
+
+**Do not add `afterEach(() => jest.clearAllMocks())`.** The jest configuration sets `clearMocks: true`, which clears
+mock state before every test. A hand-written block repeats what the config already guarantees.
 
 ### Mocking a Module Boundary
 
@@ -128,6 +131,31 @@ jest.mock('@/modules/settings');
 
 An automatic mock has to load the real module to discover its exports, so it hits the same failing import chain it was
 meant to avoid.
+
+### Manual Mocks for Frequently Mocked Modules
+
+When several suites mock the same module, define the mock once in a `__mocks__` folder beside it rather than writing a
+factory in each:
+
+```
+core/lib/storage/
+├── index.ts
+└── __mocks__/
+    └── index.ts     # every export, as jest.fn()
+```
+
+Tests then opt in with no factory at all:
+
+```typescript
+jest.mock('@/core/lib/storage');
+```
+
+**Cover every export, not just the ones used today.** Per-file factories drift: one suite mocks `getItem` and
+`setItem`, another only `getItem`, a third only `setItem`. The moment a test exercises a member its own factory
+omitted, the real implementation runs — reaching device storage in what was supposed to be an isolated test, and
+failing in a way that points nowhere near the cause.
+
+A manual mock cannot drift, because there is one definition.
 
 ### Preventing the Chain in the First Place
 

@@ -5,17 +5,11 @@ import { FEED_COMMENTS_STORAGE_KEY_PREFIX } from '../../async-storage-gateway.co
 
 import { readStoredComments } from './read-stored-comments.helper';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 const mockedGetItem = getItem as jest.MockedFunction<typeof getItem>;
 
 describe('readStoredComments', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('reads from the per-post comments key built from the shared prefix', async () => {
     mockedGetItem.mockResolvedValue(null);

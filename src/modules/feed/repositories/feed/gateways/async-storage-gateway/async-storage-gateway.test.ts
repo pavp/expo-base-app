@@ -3,17 +3,11 @@ import { generateMockPosts, mockComment, mockPost } from '@/test/entities';
 
 import { asyncStorageGateway } from './async-storage-gateway';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 const mockedGetItem = getItem as jest.MockedFunction<typeof getItem>;
 
 describe('asyncStorageGateway', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('reports its source info as asyncStorage, offline, with persistence and no realtime', () => {
     const info = asyncStorageGateway.getSourceInfo();

@@ -292,7 +292,11 @@ only — it no-ops on web, so a value set under `pnpm web` is not persisted.
 - Thresholds: branches 78, functions 87, lines 89, statements 89 — a few points under measured, so a real drop fails
   while a refactor that shifts a few lines does not. Raise them when coverage rises; never lower them to green a run
 - Mock a module boundary with an **explicit factory**, never a no-argument auto-mock — the auto-mock still requires the
-  real module to shape itself
+  real module to shape itself. The exception is a module with a `__mocks__` folder beside it, which jest resolves
+  instead: `src/core/lib/async-storage/__mocks__/index.ts` covers all 7 exports, so `jest.mock('@/core/lib/async-storage')`
+  takes no factory
+- `setupHttpMock()` from `@/test/http-mock` attaches an adapter to the shared client and registers its own reset
+- **Never write `afterEach(() => jest.clearAllMocks())`** — `clearMocks: true` in `jest.config.ts` already does it
 - **Keep native-only components out of shared barrels.** A barrel loads every module it re-exports, named export or
   wildcard alike, so one entry reaching `expo-router/drawer` makes the whole barrel unimportable in a test.
   `@/components` therefore omits the navigation components; import those by path

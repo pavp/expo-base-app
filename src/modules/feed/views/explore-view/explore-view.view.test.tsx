@@ -36,10 +36,6 @@ describe('ExploreView', () => {
     hasNextPage: false,
   };
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should prompt for a search term before anything is typed', async () => {
     (useExploreController as jest.Mock).mockReturnValue(baseController);
     (useExploreBusiness as jest.Mock).mockReturnValue(baseBusiness);

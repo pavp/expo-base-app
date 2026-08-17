@@ -1,20 +1,15 @@
 import { isCancel } from 'axios';
-import MockAdapter from 'axios-mock-adapter';
 import { z } from 'zod';
 
-import { client } from '@/api/common/client';
+import { setupHttpMock } from '@/test/http-mock';
 
 import { HttpValidationError } from '../api.types';
 
 import { httpClient } from './http-client';
 
 describe('httpClient', () => {
-  const mock = new MockAdapter(client);
+  const mock = setupHttpMock();
 
-  afterEach(() => {
-    mock.reset();
-    jest.clearAllMocks();
-  });
 
   it('returns the parsed body unchanged in shape when it matches responseSchema', async () => {
     const schema = z.object({ id: z.number(), title: z.string() });

@@ -7,9 +7,6 @@ import * as useCommentListBusinessHook from './hooks';
 jest.mock('./hooks');
 
 describe('CommentList', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('should render the comment count and every comment body', async () => {
     jest.spyOn(useCommentListBusinessHook, 'useCommentListBusiness').mockReturnValue({

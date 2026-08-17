@@ -1,17 +1,12 @@
-import MockAdapter from 'axios-mock-adapter';
-
-import { client } from '@/api/common/client';
 import { generateMockUsers, mockUser } from '@/test/entities';
+import { setupHttpMock } from '@/test/http-mock';
 import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { userRepositoryQueries } from './user.repository.queries';
 
 describe('userRepositoryQueries', () => {
-  const mock = new MockAdapter(client);
+  const mock = setupHttpMock();
 
-  afterEach(() => {
-    mock.reset();
-  });
 
   it('exposes only query operations — no create/update/delete member exists', () => {
     expect(userRepositoryQueries).not.toHaveProperty('create');

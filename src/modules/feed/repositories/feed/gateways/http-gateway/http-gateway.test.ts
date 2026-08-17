@@ -1,18 +1,12 @@
-import MockAdapter from 'axios-mock-adapter';
-
 import { HttpValidationError } from '@/api/api.types';
-import { client } from '@/api/common/client';
 import { generateMockPosts, mockComment, mockPost } from '@/test/entities';
+import { setupHttpMock } from '@/test/http-mock';
 
 import { httpGateway } from './http-gateway';
 
 describe('httpGateway', () => {
-  const mock = new MockAdapter(client);
+  const mock = setupHttpMock();
 
-  afterEach(() => {
-    mock.reset();
-    jest.clearAllMocks();
-  });
 
   it('reports its source info as http, online, with persistence and no realtime', () => {
     const info = httpGateway.getSourceInfo();

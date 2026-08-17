@@ -1,18 +1,12 @@
-import MockAdapter from 'axios-mock-adapter';
-
 import { HttpValidationError } from '@/api/api.types';
-import { client } from '@/api/common/client';
 import { generateMockPosts, mockComment, mockPost } from '@/test/entities';
+import { setupHttpMock } from '@/test/http-mock';
 
 import { feedApi } from './feed-api';
 
 describe('feedApi', () => {
-  const mock = new MockAdapter(client);
+  const mock = setupHttpMock();
 
-  afterEach(() => {
-    mock.reset();
-    jest.clearAllMocks();
-  });
 
   describe('contract', () => {
     it('exposes the whole query surface as callable operations on a single singleton', () => {

@@ -7,16 +7,10 @@ import { SETTINGS_STORAGE_KEY } from '../../settings.constants';
 
 import { useInitTheme } from './use-init-theme.hook';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  getItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 describe('useInitTheme', () => {
   const setThemeSpy = jest.spyOn(UnistylesRuntime, 'setTheme');
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('reads the theme under the settings storage key and applies it to the runtime', async () => {
     (getItem as jest.Mock).mockResolvedValue('dark');

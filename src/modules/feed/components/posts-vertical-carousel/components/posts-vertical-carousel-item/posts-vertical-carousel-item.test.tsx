@@ -6,10 +6,6 @@ import { PostVerticalCarouselItem } from './posts-vertical-carousel-item';
 describe('PostVerticalCarouselItem', () => {
   const mockHandlePressItem = jest.fn();
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should render correctly with title and body', async () => {
     await render(<PostVerticalCarouselItem item={mockPost} handlePressItem={mockHandlePressItem} />);
 
