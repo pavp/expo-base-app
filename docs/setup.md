@@ -30,8 +30,17 @@ without it every install fails, locally and in CI.
 cp .env.example .env
 ```
 
-Environment variables read by the client are exposed at build time and must carry the public prefix. Anything without
-it is stripped from the bundle.
+Variables the client reads must carry the `EXPO_PUBLIC_` prefix; anything without it is stripped from the bundle.
+
+**That prefix is not a namespace — it is a publication.** Every `EXPO_PUBLIC_` value is inlined into the JavaScript
+bundle at build time, so anyone holding the shipped app can read it. Treat these variables as public strings: a base
+URL, a feature flag, a public project identifier.
+
+Secrets never belong here, and no environment file makes them safe — the value ends up in the binary either way. An
+API key, a token, or a credential belongs behind a backend the app calls.
+
+`.env` itself stays out of version control. `.env.example` is committed as the template, so a new clone knows which
+variables exist without anyone having to ask.
 
 ### 3. Start the Development Server
 

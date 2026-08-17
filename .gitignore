@@ -32,6 +32,10 @@ web-build/
 expo-env.d.ts
 # @end expo-cli
 
+# Env template — the ignore rule above is inside a block expo-cli regenerates,
+# so this exception lives outside it to survive a sync.
+!.env.example
+
 # Metro
 .metro-health-check*
 
