@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { Post } from '@/modules/feed';
+import type { Post } from '@/modules/feed';
 
 export const mockPost: Post = {
   id: faker.number.int(),

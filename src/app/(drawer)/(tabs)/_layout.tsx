@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import { Tabs } from 'expo-router';
 
-import { TabBarIcon } from '@/components';
+import { TabBarIcon } from '@/components/navigation/tab-bar-icon/tab-bar-icon';
 
 export default function TabLayout() {
   const { t } = useTranslation();

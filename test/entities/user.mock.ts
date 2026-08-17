@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { User } from '@/shared/user';
+import type { User } from '@/shared/user';
 
 export const mockUser: User = {
   id: faker.number.int(),

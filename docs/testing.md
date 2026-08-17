@@ -129,6 +129,36 @@ jest.mock('@/modules/settings');
 An automatic mock has to load the real module to discover its exports, so it hits the same failing import chain it was
 meant to avoid.
 
+### Preventing the Chain in the First Place
+
+Mocking a boundary treats the symptom. The cause is usually a barrel that re-exports something only a real app can
+load, and there are two rules that keep it from arising:
+
+**Keep native-only components out of a shared barrel.** A barrel loads every module it re-exports — a named export is
+no lighter than a wildcard, because the module still has to be evaluated to read the symbol out of it. One entry
+reaching a native navigator makes the entire barrel unimportable in a test, including the plain component someone
+actually wanted. Export such components from their own path instead, and say so in the barrel:
+
+```typescript
+// ✅ Good — the heavy component is reachable, just not through here
+// Navigation components are absent deliberately: both reach a native navigator.
+export { ErrorFallback } from './error-fallback/error-fallback.component';
+```
+
+**Import types with `import type`.** A type imported as a value keeps a runtime edge to the module it came from, so a
+fixture that borrows one type from a feature module drags that module's whole dependency chain into every test that
+touches the fixture barrel:
+
+```typescript
+// ✅ Good — erased at compile time, no runtime edge
+import type { Entity } from '@/modules/entity';
+
+// ❌ Bad — pulls the module's native chain into the fixture barrel
+import { Entity } from '@/modules/entity';
+```
+
+Both are cheap to apply and remove the need for a mock at all.
+
 ## 🛠️ Test Utilities
 
 ### `renderWithProviders(ui, options?)`
