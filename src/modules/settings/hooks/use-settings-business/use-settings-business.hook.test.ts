@@ -8,9 +8,7 @@ import { SETTINGS_STORAGE_KEY } from '../../settings.constants';
 
 import { useSettingsBusiness } from './use-settings-business.hook';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  setItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 jest.mock('@/localization/i18n', () => ({
   __esModule: true,
@@ -24,10 +22,6 @@ describe('useSettingsBusiness', () => {
   // intercepts calls.
   const setThemeSpy = jest.spyOn(UnistylesRuntime, 'setTheme');
   const setAdaptiveThemesSpy = jest.spyOn(UnistylesRuntime, 'setAdaptiveThemes');
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   describe('setTheme', () => {
     it('applies the theme to the runtime and persists it under the theme key', async () => {

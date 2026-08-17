@@ -11,9 +11,6 @@ jest.mock('@dev-plugins/react-query', () => ({
 }));
 
 describe('APIProvider', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('should render children correctly', async () => {
     await render(

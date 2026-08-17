@@ -3,9 +3,7 @@ import { renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useInitApp } from './use-init-app.hook';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  getItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 describe('useInitApp', () => {
   it('becomes ready once fonts, theme and language have all resolved', async () => {

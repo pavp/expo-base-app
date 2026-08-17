@@ -5,17 +5,11 @@ import { FEED_POSTS_STORAGE_KEY } from '../../async-storage-gateway.constants';
 
 import { readStoredPosts } from './read-stored-posts.helper';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 const mockedGetItem = getItem as jest.MockedFunction<typeof getItem>;
 
 describe('readStoredPosts', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('reads from the posts storage key', async () => {
     mockedGetItem.mockResolvedValue(null);

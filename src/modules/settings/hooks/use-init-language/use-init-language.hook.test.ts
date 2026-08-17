@@ -6,9 +6,7 @@ import { SETTINGS_STORAGE_KEY } from '../../settings.constants';
 
 import { useInitLanguage } from './use-init-language.hook';
 
-jest.mock('@/core/lib/async-storage', () => ({
-  getItem: jest.fn(),
-}));
+jest.mock('@/core/lib/async-storage');
 
 jest.mock('@/localization/i18n', () => ({
   __esModule: true,
@@ -17,9 +15,6 @@ jest.mock('@/localization/i18n', () => ({
 }));
 
 describe('useInitLanguage', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('reads the language under the settings storage key and applies it to i18n', async () => {
     (getItem as jest.Mock).mockResolvedValue('es');

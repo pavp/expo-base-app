@@ -12,10 +12,6 @@ describe('HomeView', () => {
   const onEndReached = jest.fn();
   const refetch = jest.fn();
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should render correctly', async () => {
     (useHomeBusiness as jest.Mock).mockReturnValue({
       postsData: [mockPost],

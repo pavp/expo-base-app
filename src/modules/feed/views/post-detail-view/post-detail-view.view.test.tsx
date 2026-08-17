@@ -14,10 +14,6 @@ describe('PostDetailView', () => {
   const post = mockPost;
   const user = mockUser;
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should display ActivityIndicator while loading', async () => {
     jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValueOnce({
       post,

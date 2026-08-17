@@ -20,10 +20,6 @@ jest.mock('./components/posts-vertical-carousel-item/posts-vertical-carousel-ite
 describe('PostsVerticalCarousel', () => {
   const mockPosts: Post[] = [mockPost];
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should render data list when isLoading is false', async () => {
     await renderWithProviders(
       <PostsVerticalCarousel
