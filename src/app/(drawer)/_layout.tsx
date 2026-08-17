@@ -3,7 +3,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles';
 import { Drawer, DrawerToggleButton } from 'expo-router/drawer';
 
-import { CustomDrawerContent, ThemeButton } from '@/components';
+import { ThemeButton } from '@/components';
+import { CustomDrawerContent } from '@/components/navigation/custom-drawer-content/custom-drawer-content';
 
 export default function Layout() {
   const { t } = useTranslation();

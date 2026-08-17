@@ -291,6 +291,11 @@ only — it no-ops on web, so a value set under `pnpm web` is not persisted.
 - Thresholds: branches 50, functions 55, lines 55, statements 55
 - Mock a module boundary with an **explicit factory**, never a no-argument auto-mock — the auto-mock still requires the
   real module to shape itself
+- **Keep native-only components out of shared barrels.** A barrel loads every module it re-exports, named export or
+  wildcard alike, so one entry reaching `expo-router/drawer` makes the whole barrel unimportable in a test.
+  `@/components` therefore omits the navigation components; import those by path
+- Entity mocks import their types with `import type`, which is erased at compile time. A value import there pulls a
+  module's full native chain into `@/test/entities`
 
 ---
 
