@@ -464,11 +464,23 @@ import { getItem } from '@/core/lib/async-storage';
 
 | Item                                                                        | File                                 | Severity |
 | --------------------------------------------------------------------------- | ------------------------------------ | -------- |
-| Mocks a private FlashList path; any version bump can break the whole suite  | `test/jest.setup.ts`                 | LOW      |
 | `validate-commits` lints commits the squash merge discards, never the title | `pr-validation.yml`                  | LOW      |
 | AsyncStorage gateway keys are read but never written — dead branch          | `async-storage-gateway.constants.ts` | LOW      |
 
-`@shopify/flash-list` is pinned to exactly `2.0.2` in `package.json` because of the first item.
+**`@shopify/flash-list` is pinned to exactly `2.0.2` because Expo SDK 57 requires that version** —
+`expo install --check` reports `expected version: 2.0.2` against anything else. The pin is a compatibility
+constraint, not a test-suite workaround. Never widen it to a caret: `2.3.2` resolves its entrypoint to an
+untranspiled-ESM `dist/index.js`, which `transformIgnorePatterns` does not cover, and 4 feed suites die with
+`Cannot use import statement outside a module`.
+
+**Do not mock FlashList in `test/jest.setup.ts`.** An earlier setup mocked
+`@shopify/flash-list/dist/recyclerview/utils/measureLayout`. Version `2.0.2` ships no `dist/` directory at all —
+only `src/` — so that `jest.mock` matched no module and did nothing. Removing it left all 40 suites green.
+
+The package also ships `jestSetup.js`, which looks like the supported alternative. **It is broken in `2.0.2`**: it
+maps `FlashList` to a `RecyclerView` export the build does not publish, so `FlashList` becomes `undefined` and every
+test rendering it fails with `Element type is invalid`. Verify against the installed tree before wiring it in —
+reading the file is not enough.
 
 ---
 
