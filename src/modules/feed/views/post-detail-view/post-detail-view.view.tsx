@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 import { ActivityIndicator, EmptyState, SafeAreaView } from '@/ui';
 
-import { CommentList } from '../../components/comment-list/comment-list';
+import { CommentList } from '../../components';
 
 import { usePostDetailBusiness } from './hooks';
 import { styles } from './styles';
