@@ -3,6 +3,9 @@ name: PR Validation
 on:
   pull_request:
     branches: [main]
+    # `edited` matters: the title is a validated input, and without it a title
+    # changed after a green run would never be re-checked.
+    types: [opened, synchronize, reopened, edited]
 
 # Supersede in-flight runs for the same ref instead of queueing them.
 concurrency:
@@ -72,10 +75,24 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
+  validate-pr-title:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-pnpm
+      # Squash merge takes the PR title as the commit subject, so the title is
+      # the only message that reaches main — and no commit range can reach it.
+      # Piped via env, never interpolated into `run`: a title is user input.
+      - name: Run commitlint on the PR title
+        run: printf '%s' "$PR_TITLE" | pnpm exec commitlint --verbose
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+
   ready-to-merge:
     name: Ready to merge
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, validate-branch-name, validate-commits]
+    needs: [lint, typecheck, test, validate-branch-name, validate-commits, validate-pr-title]
     if: always()
     steps:
       # Single required status check for branch protection. Each dependency is
@@ -88,7 +105,8 @@ jobs:
             "typecheck:${{ needs.typecheck.result }}" \
             "test:${{ needs.test.result }}" \
             "validate-branch-name:${{ needs.validate-branch-name.result }}" \
-            "validate-commits:${{ needs.validate-commits.result }}"; do
+            "validate-commits:${{ needs.validate-commits.result }}" \
+            "validate-pr-title:${{ needs.validate-pr-title.result }}"; do
             job="${entry%%:*}"
             result="${entry##*:}"
             if [ "$result" != "success" ]; then

@@ -384,7 +384,7 @@ A `.commitlintrc.*` file would silently shadow `commitlint.config.js` via cosmic
 ### Delivery
 
 Every change ships as a PR with squash merge. No exceptions for size, no direct pushes to `main`. The squash commit
-takes the **PR title**, which `validate-commits` never sees — write it as a conventional commit by hand.
+takes the **PR title**, so write it as a conventional commit — `validate-pr-title` enforces this in CI.
 
 Fill in `.github/PULL_REQUEST_TEMPLATE.md`. `gh pr create --body` does not apply it automatically.
 
@@ -396,12 +396,18 @@ Do not commit or push unless the user asks.
 
 `.github/workflows/pr-validation.yml`, on `pull_request` to `main`, `cancel-in-progress: true`.
 
-Jobs: `lint`, `typecheck`, `test`, `validate-branch-name`, `validate-commits`, and `ready-to-merge` — which `needs`
-all five and asserts each result is literally `success`, so a skipped or cancelled job cannot pass. That aggregator is
-the single required check.
+Jobs: `lint`, `typecheck`, `test`, `validate-branch-name`, `validate-commits`, `validate-pr-title`, and
+`ready-to-merge` — which `needs` all six and asserts each result is literally `success`, so a skipped or cancelled job
+cannot pass. That aggregator is the single required check. Adding a job means adding it to `needs` **and** to the
+aggregator's loop; `needs` alone gates ordering, not success.
 
 `validate-branch-name` reads `github.head_ref` because HEAD is a detached merge commit. `validate-commits` needs
 `fetch-depth: 0` and runs from the event SHAs, not `origin/main..HEAD`.
+
+`validate-pr-title` pipes `github.event.pull_request.title` into commitlint, because the squash commit takes the PR
+title and no commit range can reach it. The workflow lists `edited` in its `types` for that job's sake — otherwise a
+title changed after a green run would never be re-checked. The title goes through an env var rather than being
+interpolated into `run`, which would be a shell injection.
 
 ---
 
@@ -462,10 +468,9 @@ import { getItem } from '@/core/lib/async-storage';
 
 ## Known issues
 
-| Item                                                                        | File                                 | Severity |
-| --------------------------------------------------------------------------- | ------------------------------------ | -------- |
-| `validate-commits` lints commits the squash merge discards, never the title | `pr-validation.yml`                  | LOW      |
-| AsyncStorage gateway keys are read but never written — dead branch          | `async-storage-gateway.constants.ts` | LOW      |
+| Item                                                               | File                                 | Severity |
+| ------------------------------------------------------------------ | ------------------------------------ | -------- |
+| AsyncStorage gateway keys are read but never written — dead branch | `async-storage-gateway.constants.ts` | LOW      |
 
 **`@shopify/flash-list` is pinned to exactly `2.0.2` because Expo SDK 57 requires that version** —
 `expo install --check` reports `expected version: 2.0.2` against anything else. The pin is a compatibility
