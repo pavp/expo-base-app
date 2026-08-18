@@ -1,4 +1,3 @@
-import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -33,17 +32,14 @@ export const ExploreView = () => {
     hasFilter,
   );
 
-  const authorOptions = useMemo<FilterChip[]>(
-    () => [
-      { value: null, label: t('explore.allAuthors') },
-      ...(users ?? []).map(({ id, name }) => ({ value: id, label: name })),
-    ],
-    [t, users],
-  );
+  const authorOptions: FilterChip[] = [
+    { value: null, label: t('explore.allAuthors') },
+    ...(users ?? []).map(({ id, name }) => ({ value: id, label: name })),
+  ];
 
-  const onEndReached = useCallback(() => {
+  const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
-  }, [fetchNextPage, hasNextPage]);
+  };
 
   const renderResults = () => {
     if (!hasFilter)

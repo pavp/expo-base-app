@@ -35,6 +35,8 @@ export const FilterChips = ({ options, selectedValue, onSelect, testID }: Filter
   const layouts = useRef<Record<string, ChipLayout>>({});
   const viewportWidth = useRef(0);
 
+  // Kept: the returned handler crosses into React Native's layout system, an
+  // imperative API outside React's compiler-managed graph.
   const onChipLayout = useCallback(
     (value: number | null) =>
       ({ nativeEvent }: LayoutChangeEvent) => {

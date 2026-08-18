@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { userRepository } from '@/shared/user';
 
 /**
@@ -15,5 +13,5 @@ import { userRepository } from '@/shared/user';
 export const usePostAuthors = () => {
   const { data: users } = userRepository.queries.useUsers();
 
-  return useMemo(() => new Map(users?.map(({ id, name }) => [id, name])), [users]);
+  return new Map(users?.map(({ id, name }) => [id, name]));
 };

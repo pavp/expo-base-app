@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useDebouncedValue } from '@/core/hooks';
 
@@ -12,10 +12,7 @@ export const useExploreController = () => {
   const [authorId, setAuthorId] = useState<number | null>(null);
   const debouncedSearchTerm = useDebouncedValue(searchTerm.trim());
 
-  const hasFilter = useMemo(
-    () => debouncedSearchTerm.length > 0 || authorId !== null,
-    [authorId, debouncedSearchTerm],
-  );
+  const hasFilter = debouncedSearchTerm.length > 0 || authorId !== null;
 
   return {
     searchTerm,

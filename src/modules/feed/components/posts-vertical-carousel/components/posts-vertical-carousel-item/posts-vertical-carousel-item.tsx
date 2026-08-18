@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { Text, TouchableOpacity } from 'react-native';
 
 import type { Post } from '../../../../feed.types';
@@ -14,7 +14,7 @@ export interface PostItemCardProps {
 const PostVerticalCarouselItem = ({ item, authorName, handlePressItem }: PostItemCardProps) => {
   const { title, body } = item;
 
-  const onPress = useCallback(() => handlePressItem(item), [handlePressItem, item]);
+  const onPress = () => handlePressItem(item);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} testID={'item-onpress'}>
@@ -33,6 +33,7 @@ const PostVerticalCarouselItem = ({ item, authorName, handlePressItem }: PostIte
   );
 };
 
+// Kept for the same reason as the list itself: this is the recycled cell.
 const MemoizedComponent = memo(PostVerticalCarouselItem) as typeof PostVerticalCarouselItem;
 
 export { MemoizedComponent as PostVerticalCarouselItem };

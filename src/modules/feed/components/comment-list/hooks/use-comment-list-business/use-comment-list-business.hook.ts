@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react';
-
 import type { Comment, CreateCommentInput } from '../../../../feed.types';
 import { feedRepository } from '../../../../repositories/feed';
 
@@ -16,18 +14,12 @@ export const useCommentListBusiness = (postId: string) => {
 
   // The stored list is a snapshot of a previous merge, so it repeats the server's own comments.
   // The server copy wins on a shared id: it is the newer of the two.
-  const mergedComments = useMemo<Comment[]>(() => {
-    const serverIds = new Set(comments.map(({ id }) => id));
-
-    return [...comments, ...storedComments.filter(({ id }) => !serverIds.has(id))];
-  }, [comments, storedComments]);
+  const serverIds = new Set(comments.map(({ id }) => id));
+  const mergedComments: Comment[] = [...comments, ...storedComments.filter(({ id }) => !serverIds.has(id))];
 
   // The form clears itself rather than being reset from here, so the callback travels with the
   // input instead of the hook holding a reference to the form's state.
-  const createComment = useCallback(
-    (input: CreateCommentInput, onSuccess: () => void) => mutate(input, { onSuccess }),
-    [mutate],
-  );
+  const createComment = (input: CreateCommentInput, onSuccess: () => void) => mutate(input, { onSuccess });
 
   return {
     comments: mergedComments,
