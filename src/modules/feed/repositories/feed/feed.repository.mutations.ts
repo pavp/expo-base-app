@@ -7,10 +7,8 @@ import { feedQueryKeys } from './feed.repository.keys';
 import type { CreateCommentContext, FeedMutationsRepository } from './feed.repository.types';
 
 /**
- * The optimistic comment needs an id before the server assigns one, and the two must not collide:
- * jsonplaceholder ids are small positive integers, and a duplicate would make React's list keys
- * ambiguous the moment a refetch merged both. A negative id is drawn from a range the server can
- * never produce, and `Date.now()` keeps two comments posted in the same session apart.
+ * jsonplaceholder ids are small positive integers, so a negative id cannot collide with one the
+ * server later assigns, and `Date.now()` keeps same-session comments apart.
  */
 const createOptimisticCommentId = (): number => -Date.now();
 

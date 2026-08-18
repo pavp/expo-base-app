@@ -47,22 +47,17 @@ export interface FeedQueriesRepository extends BaseRepository {
 }
 
 /**
- * The rollback context `useCreateComment`'s `onMutate` hands to `onError`: the comment list exactly
- * as it stood before the optimistic write. `undefined` is a meaningful value — the key held nothing
- * — and restoring it is what removes the optimistic entry on failure.
+ * The comment list as it stood before `useCreateComment`'s optimistic write. `undefined` is
+ * meaningful — the key held nothing — and restoring it removes the optimistic entry on failure.
  */
 export interface CreateCommentContext {
   previousComments?: Comment[];
 }
 
 /**
- * Write side of the repository. jsonplaceholder accepts `POST /comments` with a 201 but does not
- * persist: a later GET returns the original comments without the new one. The optimistic cache
- * write in `useCreateComment` is therefore the only thing that makes a new comment visible, not a
- * latency cosmetic.
- *
- * `dataSource` selects which cached comment list the optimistic write targets, so the hook keeps
- * the same 3-positional-parameter shape as the queries (`max-params: 3`).
+ * Write side of the repository. jsonplaceholder returns 201 for `POST /comments` but does not
+ * persist, so the optimistic cache write is what makes a new comment visible, not a latency
+ * cosmetic. `dataSource` selects which cached comment list that write targets.
  */
 export interface FeedMutationsRepository extends BaseRepository {
   useCreateComment: (
