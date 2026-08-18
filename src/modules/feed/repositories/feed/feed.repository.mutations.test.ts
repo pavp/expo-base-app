@@ -1,15 +1,22 @@
+import { setItem } from '@/core/lib/async-storage';
 import { createMockComment, generateMockComments } from '@/test/entities';
 import { setupHttpMock } from '@/test/http-mock';
 import { renderHookWithProviders, setupMockQueryData, waitFor } from '@/test/test-utils';
 
 import type { Comment, CreateCommentInput } from '../../feed.types';
 
+import { FEED_COMMENTS_STORAGE_KEY_PREFIX } from './gateways/async-storage-gateway/async-storage-gateway.constants';
 import { feedQueryKeys } from './feed.repository.keys';
 import { feedRepositoryMutations } from './feed.repository.mutations';
 import { feedRepositoryQueries } from './feed.repository.queries';
 
+jest.mock('@/core/lib/async-storage');
+
+const mockedSetItem = setItem as jest.MockedFunction<typeof setItem>;
+
 const POST_ID = 1;
 const commentsKey = feedQueryKeys.comments(String(POST_ID));
+const commentsStorageKey = `${FEED_COMMENTS_STORAGE_KEY_PREFIX}${POST_ID}`;
 
 // The default test client uses `gcTime: 0`, which evicts a seeded entry the moment it has no
 // observer — and a mutation is not an observer. These suites seed the comment list without
@@ -153,6 +160,65 @@ describe('feedRepositoryMutations', () => {
       // Assert
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: commentsKey });
+    });
+
+    it('persists the resulting comment list to storage, so it survives a restart', async () => {
+      // Arrange
+      const existing = generateMockComments(2, { postId: POST_ID });
+      mock.onPost('comments').reply(201, createMockComment({ postId: POST_ID }));
+
+      const { result, queryClient } = await renderHookWithProviders(() =>
+        feedRepositoryMutations.useCreateComment(String(POST_ID)),
+        seededCacheOptions,
+      );
+      setupMockQueryData(queryClient, [...commentsKey], existing);
+
+      // Act
+      result.current.mutate(buildInput());
+
+      // Assert
+      await waitFor(() => expect(mockedSetItem).toHaveBeenCalled());
+
+      const [key, persisted] = mockedSetItem.mock.calls[0];
+
+      expect(key).toBe(commentsStorageKey);
+      expect(persisted).toHaveLength(existing.length + 1);
+      expect(persisted).toEqual(
+        expect.arrayContaining([expect.objectContaining({ body: 'First mechanical comment.' })]),
+      );
+    });
+
+    it('does not persist when the server rejects the create', async () => {
+      // Arrange
+      mock.onPost('comments').reply(500);
+
+      const { result } = await renderHookWithProviders(() =>
+        feedRepositoryMutations.useCreateComment(String(POST_ID)),
+      );
+
+      // Act
+      result.current.mutate(buildInput());
+
+      // Assert
+      await waitFor(() => expect(result.current.isError).toBe(true));
+      expect(mockedSetItem).not.toHaveBeenCalled();
+    });
+
+    it('still reports success when persisting to storage fails', async () => {
+      // Arrange
+      mockedSetItem.mockRejectedValue(new Error('storage full'));
+      mock.onPost('comments').reply(201, createMockComment({ postId: POST_ID }));
+
+      const { result } = await renderHookWithProviders(() =>
+        feedRepositoryMutations.useCreateComment(String(POST_ID)),
+      );
+
+      // Act
+      result.current.mutate(buildInput());
+
+      // Assert
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.isError).toBe(false);
     });
   });
 });

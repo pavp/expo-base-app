@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { feedApi } from '../../api/feed-api';
 import type { Comment, CreateCommentInput } from '../../feed.types';
 
+import { writeStoredComments } from './gateways/async-storage-gateway/helpers/write-stored-comments/write-stored-comments.helper';
 import { feedQueryKeys } from './feed.repository.keys';
 import type { CreateCommentContext, FeedMutationsRepository } from './feed.repository.types';
 
@@ -32,6 +33,14 @@ export const feedRepositoryMutations: FeedMutationsRepository = {
         queryClient.setQueryData<Comment[]>(commentsKey, [...(previousComments ?? []), optimisticComment]);
 
         return { previousComments };
+      },
+
+      // Persistence sits here rather than in the business hook: the mutation already owns the cache
+      // write, and a second consumer of this hook would otherwise silently lose it.
+      onSuccess: (createdComment) => {
+        const comments = queryClient.getQueryData<Comment[]>(commentsKey) ?? [createdComment];
+
+        return writeStoredComments(postId, comments);
       },
 
       onError: (_error, _input, context) => {
