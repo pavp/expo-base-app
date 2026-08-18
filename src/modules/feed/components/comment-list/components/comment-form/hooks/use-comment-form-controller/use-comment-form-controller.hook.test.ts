@@ -1,80 +1,83 @@
-import { act, renderHookWithProviders } from '@/test/test-utils';
+import { act, renderHookWithProviders, waitFor } from '@/test/test-utils';
 
 import { useCommentFormController } from './use-comment-form-controller.hook';
 
-const fillValidFields = (setters: {
-  setName: (value: string) => void;
-  setEmail: (value: string) => void;
-  setBody: (value: string) => void;
-}) => {
-  setters.setName('Ada');
-  setters.setEmail('ada@example.com');
-  setters.setBody('A comment');
+type Controller = ReturnType<typeof useCommentFormController>;
+
+// `shouldValidate` runs the resolver on each set, which is what the `onTouched` bindings do on
+// blur. Without it `isValid` and `errors` would only settle on submit.
+const fill = async (result: { current: Controller }, values: Record<string, string>) => {
+  for (const [name, value] of Object.entries(values)) {
+    await act(async () => {
+      result.current.setValue(name as 'name' | 'email' | 'body', value, { shouldValidate: true });
+    });
+  }
 };
 
+const validValues = { name: 'Ada', email: 'ada@example.com', body: 'A comment' };
+
 describe('useCommentFormController', () => {
-  it('should start with empty fields and an invalid form', async () => {
-    const { result } = await renderHookWithProviders(() => useCommentFormController(1));
+  const onSubmit = jest.fn();
 
-    expect(result.current.name).toBe('');
-    expect(result.current.email).toBe('');
-    expect(result.current.body).toBe('');
+  it('should start with an invalid form and no errors shown', async () => {
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 1, onSubmit }));
+
     expect(result.current.isValid).toBe(false);
+    expect(result.current.errors).toEqual({});
   });
 
-  it('should stay invalid while the email is not a valid address', async () => {
-    const { result } = await renderHookWithProviders(() => useCommentFormController(1));
+  it('should stay invalid and surface the email key while the address is malformed', async () => {
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 1, onSubmit }));
 
-    await act(async () => {
-      result.current.setName('Ada');
-      result.current.setEmail('not-an-email');
-      result.current.setBody('A comment');
-    });
+    await fill(result, { ...validValues, email: 'not-an-email' });
 
-    expect(result.current.isValid).toBe(false);
+    await waitFor(() => expect(result.current.isValid).toBe(false));
+    expect(result.current.errors.email?.message).toBe('postDetail.commentForm.validation.emailInvalid');
   });
 
-  it('should stay invalid while a required field is blank', async () => {
-    const { result } = await renderHookWithProviders(() => useCommentFormController(1));
+  it('should surface the required key for a blank field', async () => {
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 1, onSubmit }));
 
-    await act(async () => {
-      result.current.setEmail('ada@example.com');
-      result.current.setBody('A comment');
-    });
+    await fill(result, { ...validValues, name: '' });
 
-    expect(result.current.isValid).toBe(false);
+    await waitFor(() => expect(result.current.isValid).toBe(false));
+    expect(result.current.errors.name?.message).toBe('postDetail.commentForm.validation.nameRequired');
   });
 
   it('should become valid once every field satisfies the create-comment schema', async () => {
-    const { result } = await renderHookWithProviders(() => useCommentFormController(1));
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 1, onSubmit }));
 
-    await act(async () => fillValidFields(result.current));
+    await fill(result, validValues);
 
-    expect(result.current.isValid).toBe(true);
+    await waitFor(() => expect(result.current.isValid).toBe(true));
+    expect(result.current.errors).toEqual({});
   });
 
-  it('should expose the typed input carrying the post id it was given', async () => {
-    const { result } = await renderHookWithProviders(() => useCommentFormController(42));
+  it('should submit the typed input carrying the post id it was given', async () => {
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 42, onSubmit }));
 
-    await act(async () => fillValidFields(result.current));
+    await fill(result, validValues);
+    await act(async () => result.current.submit());
 
-    expect(result.current.input).toEqual({
-      postId: 42,
-      name: 'Ada',
-      email: 'ada@example.com',
-      body: 'A comment',
-    });
+    expect(onSubmit).toHaveBeenCalledWith({ postId: 42, ...validValues }, expect.any(Function));
   });
 
-  it('should clear every field', async () => {
-    const { result } = await renderHookWithProviders(() => useCommentFormController(1));
+  it('should not submit while the form is invalid', async () => {
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 1, onSubmit }));
 
-    await act(async () => fillValidFields(result.current));
+    await fill(result, { ...validValues, email: 'not-an-email' });
+    await act(async () => result.current.submit());
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should clear every field back to an invalid form', async () => {
+    const { result } = await renderHookWithProviders(() => useCommentFormController({ postId: 1, onSubmit }));
+
+    await fill(result, validValues);
     await act(async () => result.current.clear());
 
-    expect(result.current.name).toBe('');
-    expect(result.current.email).toBe('');
-    expect(result.current.body).toBe('');
-    expect(result.current.isValid).toBe(false);
+    await waitFor(() => expect(result.current.isValid).toBe(false));
+    expect(result.current.errors).toEqual({});
   });
 });

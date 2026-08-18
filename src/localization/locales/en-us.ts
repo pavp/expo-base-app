@@ -31,6 +31,11 @@ export default {
         submit: 'Post comment',
         submitting: 'Posting…',
         error: 'Your comment could not be posted. Try again.',
+        validation: {
+          nameRequired: 'Enter your name.',
+          emailInvalid: 'Enter a valid email address.',
+          bodyRequired: 'Write your comment before posting.',
+        },
       },
     },
     explore: {

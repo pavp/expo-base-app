@@ -1,3 +1,4 @@
+import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -17,49 +18,88 @@ interface CommentFormProps {
 export const CommentForm = ({ postId, onSubmit, isPending, isError }: CommentFormProps) => {
   const { t } = useTranslation();
   const { theme } = useUnistyles();
-  const { name, setName, email, setEmail, body, setBody, input, isValid, clear } =
-    useCommentFormController(postId);
+  const { control, errors, isValid, submit } = useCommentFormController({ postId, onSubmit });
 
   const isDisabled = !isValid || isPending;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('postDetail.commentForm.title')}</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder={t('postDetail.commentForm.namePlaceholder')}
-        placeholderTextColor={theme.colors.typographyMuted}
-        autoCapitalize="words"
-        testID="comment-form-name"
+
+      <Controller
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <TextInput
+            style={styles.input}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            placeholder={t('postDetail.commentForm.namePlaceholder')}
+            placeholderTextColor={theme.colors.typographyMuted}
+            autoCapitalize="words"
+            testID="comment-form-name"
+          />
+        )}
       />
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder={t('postDetail.commentForm.emailPlaceholder')}
-        placeholderTextColor={theme.colors.typographyMuted}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="email-address"
-        testID="comment-form-email"
+      {errors.name?.message ? (
+        <Text style={styles.fieldError} testID="comment-form-name-error">
+          {t(errors.name.message)}
+        </Text>
+      ) : null}
+
+      <Controller
+        control={control}
+        name="email"
+        render={({ field }) => (
+          <TextInput
+            style={styles.input}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            placeholder={t('postDetail.commentForm.emailPlaceholder')}
+            placeholderTextColor={theme.colors.typographyMuted}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            testID="comment-form-email"
+          />
+        )}
       />
-      <TextInput
-        style={[styles.input, styles.bodyInput]}
-        value={body}
-        onChangeText={setBody}
-        placeholder={t('postDetail.commentForm.bodyPlaceholder')}
-        placeholderTextColor={theme.colors.typographyMuted}
-        multiline
-        testID="comment-form-body"
+      {errors.email?.message ? (
+        <Text style={styles.fieldError} testID="comment-form-email-error">
+          {t(errors.email.message)}
+        </Text>
+      ) : null}
+
+      <Controller
+        control={control}
+        name="body"
+        render={({ field }) => (
+          <TextInput
+            style={[styles.input, styles.bodyInput]}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            placeholder={t('postDetail.commentForm.bodyPlaceholder')}
+            placeholderTextColor={theme.colors.typographyMuted}
+            multiline
+            testID="comment-form-body"
+          />
+        )}
       />
+      {errors.body?.message ? (
+        <Text style={styles.fieldError} testID="comment-form-body-error">
+          {t(errors.body.message)}
+        </Text>
+      ) : null}
+
       {isError ? <Text style={styles.error}>{t('postDetail.commentForm.error')}</Text> : null}
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled }}
         disabled={isDisabled}
-        onPress={() => onSubmit(input, clear)}
+        onPress={submit}
         style={styles.submit(isDisabled)}
         testID="comment-form-submit"
       >

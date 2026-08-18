@@ -31,6 +31,15 @@ export const styles = StyleSheet.create((theme) => ({
     color: theme.colors.typographyMuted,
     fontSize: theme.fontSize.sm,
   },
+  // Negative margin pulls the message up against the field it belongs to, closing the
+  // container's `gap` so it reads as part of that input rather than the next one.
+  // Muted rather than a red: the palette carries no error colour, and adding one is a
+  // theme-wide decision, not a form-local one.
+  fieldError: {
+    color: theme.colors.typographyMuted,
+    fontSize: theme.fontSize.sm,
+    marginTop: -theme.margins.md,
+  },
   // Disabled reuses the muted pair rather than an opacity overlay, so the label keeps its
   // contrast against the surface it sits on instead of fading through it.
   submit: (isDisabled: boolean) => ({

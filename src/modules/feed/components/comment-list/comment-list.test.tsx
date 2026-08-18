@@ -1,5 +1,5 @@
 import { mockComment } from '@/test/entities';
-import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
+import { fireEvent, renderWithProviders, screen, waitFor } from '@/test/test-utils';
 
 import { CommentList } from './comment-list';
 import * as useCommentListBusinessHook from './hooks';
@@ -52,9 +52,13 @@ describe('CommentList', () => {
     await type('comment-form-body', 'A comment');
     fireEvent.press(screen.getByTestId('comment-form-submit'));
 
-    expect(createComment).toHaveBeenCalledWith(
-      { postId: 3, name: 'Ada', email: 'ada@example.com', body: 'A comment' },
-      expect.any(Function),
+    // `handleSubmit` awaits the zod resolver before calling through, so the call lands a tick
+    // after the press rather than synchronously with it.
+    await waitFor(() =>
+      expect(createComment).toHaveBeenCalledWith(
+        { postId: 3, name: 'Ada', email: 'ada@example.com', body: 'A comment' },
+        expect.any(Function),
+      ),
     );
   });
 });
