@@ -25,6 +25,15 @@ const es_ES: typeof en_US = {
       errorTitle: 'Publicación no disponible',
       errorDescription: 'No se pudo cargar esta publicación. Vuelve atrás e inténtalo de nuevo.',
       comments: 'Comentarios',
+      commentForm: {
+        title: 'Deja un comentario',
+        namePlaceholder: 'Tu nombre',
+        emailPlaceholder: 'Tu correo electrónico',
+        bodyPlaceholder: 'Escribe tu comentario',
+        submit: 'Publicar comentario',
+        submitting: 'Publicando…',
+        error: 'No se pudo publicar tu comentario. Inténtalo de nuevo.',
+      },
     },
     explore: {
       searchPlaceholder: 'Buscar publicaciones',
