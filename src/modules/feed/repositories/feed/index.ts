@@ -5,11 +5,13 @@ import type { FeedFilters } from '../../feed.types';
 
 import { feedQueryOptions } from './feed.query-options';
 import { feedQueryKeys } from './feed.repository.keys';
+import { feedRepositoryMutations } from './feed.repository.mutations';
 import { feedRepositoryQueries } from './feed.repository.queries';
-import type { FeedQueriesRepository } from './feed.repository.types';
+import type { FeedMutationsRepository, FeedQueriesRepository } from './feed.repository.types';
 
 export interface FeedRepository extends BaseRepository {
   queries: FeedQueriesRepository;
+  mutations: FeedMutationsRepository;
   keys: typeof feedQueryKeys;
   queryOptions: typeof feedQueryOptions;
 }
@@ -22,6 +24,7 @@ export interface FeedRepository extends BaseRepository {
 // a more specific parameter type is not assignable to a `...args: unknown[]` target.
 export const feedRepository: FeedRepository = {
   queries: feedRepositoryQueries,
+  mutations: feedRepositoryMutations,
   keys: feedQueryKeys,
   queryOptions: feedQueryOptions,
   cancel: {
@@ -33,4 +36,4 @@ export const feedRepository: FeedRepository = {
   },
 };
 
-export type { FeedQueriesRepository } from './feed.repository.types';
+export type { CreateCommentContext, FeedMutationsRepository, FeedQueriesRepository } from './feed.repository.types';

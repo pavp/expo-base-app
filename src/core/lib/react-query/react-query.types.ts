@@ -40,15 +40,18 @@ export type InfiniteQueryOptions<TData, TQueryKey extends QueryKey = QueryKey, T
 /**
  * Options a caller may pass into a repository mutation hook. `mutationFn` is owned by the
  * repository, not the caller, for the same reason `queryFn` is excluded from `QueryOptions`.
+ *
+ * `TContext` is what `onMutate` returns and `onError` receives back, so an optimistic mutation's
+ * cache snapshot stays typed through the rollback instead of needing a cast at `setQueryData`. It
+ * defaults to `unknown`, so callers that only supply `TData`/`TVariables` are unaffected.
  */
-export type MutationOptions<TData, TVariables> = Partial<
-  Omit<UseMutationOptions<TData, Error, TVariables>, 'mutationFn'>
+export type MutationOptions<TData, TVariables, TContext = unknown> = Partial<
+  Omit<UseMutationOptions<TData, Error, TVariables, TContext>, 'mutationFn'>
 >;
 
 /**
- * Structural contract every feature repository implements. Both members are optional: a
- * query-only repository (no mutations) implements neither, and a repository with no cancellable
- * queries implements neither either. `cancel` takes the app's `QueryClient` as its first
+ * Structural contract every feature repository implements. `cancel` is optional: a repository with
+ * no cancellable queries omits it entirely. It takes the app's `QueryClient` as its first
  * parameter — the caller injects it — so this file never imports the app-layer singleton and
  * `@/core/lib` stays free of an app-layer dependency.
  */

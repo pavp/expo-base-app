@@ -15,4 +15,9 @@ export const feedQueryKeys = {
   detail: (id: string, dataSource: DataSource = 'http') => [...feedQueryKeys.details(dataSource), id] as const,
   comments: (postId: string, dataSource: DataSource = 'http') =>
     [...feedQueryKeys.all, 'comments', dataSource, postId] as const,
+  /**
+   * Mutation keys carry no `dataSource` segment. The segment keeps two sources' cached *answers*
+   * apart; a mutation caches nothing, it only identifies an in-flight write.
+   */
+  createComment: (postId: string) => [...feedQueryKeys.all, 'create-comment', postId] as const,
 } as const;
