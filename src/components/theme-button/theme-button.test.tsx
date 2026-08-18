@@ -24,7 +24,6 @@ describe('ThemeButton', () => {
   const toggleTheme = jest.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
     (useSettingsBusiness as jest.Mock).mockReturnValue({ toggleTheme });
   });
 

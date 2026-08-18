@@ -34,10 +34,6 @@ const layout = () => {
 describe('FilterChips', () => {
   const scrollTo = jest.spyOn(ScrollView.prototype, 'scrollTo');
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should report the chip the user pressed', async () => {
     const onSelect = jest.fn();
 

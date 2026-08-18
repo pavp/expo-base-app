@@ -7,10 +7,6 @@ import { usePostAuthors } from './use-post-authors.hook';
 jest.mock('@/shared/user');
 
 describe('usePostAuthors', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should map every user id to its name', async () => {
     const users = generateMockUsers(3);
 

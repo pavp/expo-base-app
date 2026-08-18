@@ -32,7 +32,6 @@ describe('usePostDetailBusiness', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
     mockFavoritesStore();
   });
 

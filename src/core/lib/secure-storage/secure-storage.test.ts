@@ -14,7 +14,6 @@ describe('secureStorage', () => {
 
   afterEach(() => {
     Platform.OS = originalOS;
-    jest.clearAllMocks();
   });
 
   describe('on native (iOS/Android)', () => {
