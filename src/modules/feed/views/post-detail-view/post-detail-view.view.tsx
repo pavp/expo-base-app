@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 import { ActivityIndicator, EmptyState, SafeAreaView } from '@/ui';
 
-import { CommentList } from '../../components';
+import { CommentList, FavoriteButton } from '../../components';
 
 import { usePostDetailBusiness } from './hooks';
 import { styles } from './styles';
@@ -12,7 +12,7 @@ import { styles } from './styles';
 export const PostDetailView = () => {
   const { t } = useTranslation();
   const { id, userId } = useLocalSearchParams<{ id: string; userId: string }>();
-  const { post, user, isLoading, isError } = usePostDetailBusiness({ id, userId });
+  const { post, user, isLoading, isError, isFavorite, onToggleFavorite } = usePostDetailBusiness({ id, userId });
 
   const renderContent = () => {
     if (isLoading)
@@ -43,6 +43,7 @@ export const PostDetailView = () => {
           )}
           <Text style={styles.title}>{post.title}</Text>
           <Text style={styles.body}>{post.body}</Text>
+          <FavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} />
         </View>
         <View style={styles.commentsSection}>
           <CommentList postId={post.id.toString()} />

@@ -24,6 +24,10 @@ const es_ES: typeof en_US = {
     postDetail: {
       errorTitle: 'Publicación no disponible',
       errorDescription: 'No se pudo cargar esta publicación. Vuelve atrás e inténtalo de nuevo.',
+      favorite: {
+        add: 'Añadir a favoritos',
+        remove: 'Quitar de favoritos',
+      },
       comments: 'Comentarios',
       commentForm: {
         title: 'Deja un comentario',
