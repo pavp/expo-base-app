@@ -1,4 +1,4 @@
-import { mockComment } from '@/test/entities';
+import { createMockComment, mockComment } from '@/test/entities';
 import { renderHookWithProviders } from '@/test/test-utils';
 
 import { feedRepository } from '../../../../repositories/feed';
@@ -14,6 +14,7 @@ describe('useCommentListBusiness', () => {
     jest
       .spyOn(feedRepository.mutations, 'useCreateComment')
       .mockReturnValue({ mutate: jest.fn(), isPending: false, isError: false } as any);
+    jest.spyOn(feedRepository.queries, 'useFeedComments').mockReturnValue({ data: [] } as any);
   });
 
   it('should return the comments returned by the feed repository', async () => {
@@ -70,5 +71,60 @@ describe('useCommentListBusiness', () => {
 
     expect(result.current.isCreating).toBe(true);
     expect(result.current.isCreateError).toBe(true);
+  });
+
+  describe('merging locally stored comments', () => {
+    const serverComment = createMockComment({ id: 1, postId: 1 });
+    const localComment = createMockComment({ id: -1750000000000, postId: 1 });
+
+    const mockSources = (server: unknown[], local: unknown[]) => {
+      jest.spyOn(feedRepository.queries, 'useFeedComments').mockImplementation(((
+        _postId: string,
+        dataSource?: string,
+      ) => ({ data: dataSource === 'asyncStorage' ? local : server })) as any);
+    };
+
+    it('should read the same post from both the server and local storage', async () => {
+      const useFeedCommentsSpy = jest
+        .spyOn(feedRepository.queries, 'useFeedComments')
+        .mockReturnValue({ data: [] } as any);
+
+      await renderHookWithProviders(() => useCommentListBusiness('42'));
+
+      expect(useFeedCommentsSpy).toHaveBeenCalledWith('42');
+      expect(useFeedCommentsSpy).toHaveBeenCalledWith('42', 'asyncStorage');
+    });
+
+    it('should append a locally stored comment the server does not know about', async () => {
+      mockSources([serverComment], [localComment]);
+
+      const { result } = await renderHookWithProviders(() => useCommentListBusiness('1'));
+
+      expect(result.current.comments).toEqual([serverComment, localComment]);
+    });
+
+    it('should not duplicate a comment present in both the server list and local storage', async () => {
+      mockSources([serverComment], [serverComment, localComment]);
+
+      const { result } = await renderHookWithProviders(() => useCommentListBusiness('1'));
+
+      expect(result.current.comments).toEqual([serverComment, localComment]);
+    });
+
+    it('should keep the server copy when both sources hold the same id', async () => {
+      mockSources([serverComment], [createMockComment({ id: serverComment.id, body: 'stale local copy' })]);
+
+      const { result } = await renderHookWithProviders(() => useCommentListBusiness('1'));
+
+      expect(result.current.comments).toEqual([serverComment]);
+    });
+
+    it('should return only the server list when nothing was stored locally', async () => {
+      mockSources([serverComment], []);
+
+      const { result } = await renderHookWithProviders(() => useCommentListBusiness('1'));
+
+      expect(result.current.comments).toEqual([serverComment]);
+    });
   });
 });

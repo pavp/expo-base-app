@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { feedApi } from '../../api/feed-api';
 import type { Comment, CreateCommentInput } from '../../feed.types';
 
+import { writeStoredComments } from './gateways/async-storage-gateway/helpers/write-stored-comments/write-stored-comments.helper';
 import { feedQueryKeys } from './feed.repository.keys';
 import type { CreateCommentContext, FeedMutationsRepository } from './feed.repository.types';
 
@@ -16,6 +17,10 @@ export const feedRepositoryMutations: FeedMutationsRepository = {
   useCreateComment: (postId, dataSource = 'http', options) => {
     const queryClient = useQueryClient();
     const commentsKey = feedQueryKeys.comments(postId, dataSource);
+    // The write lands in storage as well as on the server, so both reads of this post go stale.
+    // The keys are listed one by one because `dataSource` precedes `postId`: the shared prefix
+    // `['feed', 'comments']` would invalidate every other post's comments too.
+    const staleKeysOnCreate = [commentsKey, feedQueryKeys.comments(postId, 'asyncStorage')];
 
     return useMutation<Comment, Error, CreateCommentInput, CreateCommentContext>({
       mutationKey: feedQueryKeys.createComment(postId),
@@ -34,13 +39,23 @@ export const feedRepositoryMutations: FeedMutationsRepository = {
         return { previousComments };
       },
 
+      // Persistence sits here rather than in the business hook: the mutation already owns the cache
+      // write, and a second consumer of this hook would otherwise silently lose it.
+      onSuccess: (createdComment) => {
+        const comments = queryClient.getQueryData<Comment[]>(commentsKey) ?? [createdComment];
+
+        return writeStoredComments(postId, comments);
+      },
+
       onError: (_error, _input, context) => {
         // `undefined` is a real snapshot — it means the key held nothing before the write — so it is
         // restored rather than skipped, otherwise the optimistic entry would survive the failure.
         queryClient.setQueryData(commentsKey, context?.previousComments);
       },
 
-      onSettled: () => queryClient.invalidateQueries({ queryKey: commentsKey }),
+      onSettled: async () => {
+        await Promise.all(staleKeysOnCreate.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+      },
 
       ...options,
     });

@@ -33,7 +33,7 @@ export const PostDetailView = () => {
       );
 
     return (
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.postCard}>
           {!!user && (
             <View>
