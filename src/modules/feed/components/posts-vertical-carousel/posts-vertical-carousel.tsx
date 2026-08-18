@@ -1,4 +1,4 @@
-import { ComponentType, memo, useCallback } from 'react';
+import { ComponentType, memo } from 'react';
 import { View } from 'react-native';
 import { withUnistyles } from 'react-native-unistyles';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
@@ -44,25 +44,20 @@ const PostsVerticalCarousel = ({
   onRefresh,
 }: PostsVerticalCarouselProps) => {
 
-  const handlePressItem = useCallback(({ id, userId }: Post) => {
+  const handlePressItem = ({ id, userId }: Post) => {
     router.navigate({ pathname: '/post/[id]', params: { id, userId } });
-  }, []);
+  };
 
-  const renderItem = useCallback(
-    ({ item }: { item: Post }) => (
-      <PostVerticalCarouselItem
-        item={item}
-        authorName={authorsById?.get(item.userId)}
-        handlePressItem={handlePressItem}
-      />
-    ),
-    [authorsById, handlePressItem],
+  const renderItem = ({ item }: { item: Post }) => (
+    <PostVerticalCarouselItem
+      item={item}
+      authorName={authorsById?.get(item.userId)}
+      handlePressItem={handlePressItem}
+    />
   );
 
-  const renderFooter = useCallback(
-    () => (isFetchingNextPage ? <ActivityIndicator size="small" testID={'activity-indicator-footer'} /> : null),
-    [isFetchingNextPage],
-  );
+  const renderFooter = () =>
+    isFetchingNextPage ? <ActivityIndicator size="small" testID={'activity-indicator-footer'} /> : null;
 
   return (
     <View style={styles.container}>
@@ -89,6 +84,8 @@ const PostsVerticalCarousel = ({
   );
 };
 
+// The compiler memoizes inside a component, not the component itself: dropping this `memo`
+// removes `react.memo` from the build. FlashList re-renders recycled cells without it.
 const MemoizedComponent = memo(PostsVerticalCarousel) as typeof PostsVerticalCarousel;
 
 export { MemoizedComponent as PostsVerticalCarousel };

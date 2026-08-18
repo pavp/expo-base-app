@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 
 import { useInitLanguage } from '../use-init-language/use-init-language.hook';
@@ -12,11 +12,10 @@ export const useInitApp = () => {
   const { themeIsReady } = useInitTheme();
   const { languageIsReady } = useInitLanguage();
 
-  const appIsReady = useMemo(
-    () => loaded && themeIsReady && languageIsReady && prepareIsready,
-    [languageIsReady, loaded, prepareIsready, themeIsReady],
-  );
+  const appIsReady = loaded && themeIsReady && languageIsReady && prepareIsready;
 
+  // Kept: this reference is the effect's dependency contract — unmemoized it
+  // would re-run app preparation on every render.
   const prepare = useCallback(async () => {
     try {
       // Make any API calls you need to do here

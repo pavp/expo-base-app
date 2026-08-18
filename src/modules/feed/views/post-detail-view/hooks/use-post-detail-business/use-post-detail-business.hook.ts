@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react';
-
 import { userRepository } from '@/shared/user';
 
 import { feedRepository } from '../../../../repositories/feed';
@@ -29,17 +27,17 @@ export const usePostDetailBusiness = ({ id, userId }: UsePostDetailBusinessProps
   const favoritePostIds = useFavoritesStore((state) => state.postIds);
   const { toggleFavorite } = useFavoritesStore((state) => state.actions);
 
-  const isFavorite = useMemo(() => !!post && favoritePostIds.includes(post.id), [favoritePostIds, post]);
+  const isFavorite = !!post && favoritePostIds.includes(post.id);
 
-  const onToggleFavorite = useCallback(() => {
+  const onToggleFavorite = () => {
     if (post) toggleFavorite(post.id);
-  }, [post, toggleFavorite]);
+  };
 
-  const isLoading = useMemo(() => isLoadingPost || isLoadingUser, [isLoadingPost, isLoadingUser]);
+  const isLoading = isLoadingPost || isLoadingUser;
 
   // Only the post gates the screen. The user request backs a byline, so a
   // failure there costs the author name rather than the post itself.
-  const isError = useMemo(() => isErrorPost || (!isLoadingPost && !post), [isErrorPost, isLoadingPost, post]);
+  const isError = isErrorPost || (!isLoadingPost && !post);
 
   return {
     post,

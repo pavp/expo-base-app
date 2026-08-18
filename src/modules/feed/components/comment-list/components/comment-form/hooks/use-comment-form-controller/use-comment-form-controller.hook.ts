@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -25,7 +24,7 @@ export const useCommentFormController = ({ postId, onSubmit }: UseCommentFormCon
     resolver: zodResolver(CreateCommentInputSchema),
   });
 
-  const clear = useCallback(() => reset({ postId, name: '', email: '', body: '' }), [postId, reset]);
+  const clear = () => reset({ postId, name: '', email: '', body: '' });
 
   const submit = handleSubmit((input) => onSubmit(input, clear));
 

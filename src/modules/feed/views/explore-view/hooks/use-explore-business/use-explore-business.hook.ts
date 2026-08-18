@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { userRepository } from '@/shared/user';
 
 import type { FeedFilters } from '../../../../feed.types';
@@ -20,7 +18,7 @@ export const useExploreBusiness = (filters: FeedFilters, enabled: boolean) => {
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, refetch, fetchNextPage, isRefetching } =
     feedRepository.queries.useFeedPosts(filters, undefined, { enabled });
 
-  const postsData = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
+  const postsData = data?.pages.flatMap((page) => page) ?? [];
 
   return {
     users,

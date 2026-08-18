@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react';
-
 import { usePostAuthors } from '../../../../hooks';
 import { feedRepository } from '../../../../repositories/feed';
 
@@ -14,11 +12,11 @@ export const useHomeBusiness = () => {
 
   const authorsById = usePostAuthors();
 
-  const onEndReached = useCallback(() => {
+  const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
-  }, [fetchNextPage, hasNextPage]);
+  };
 
-  const postsData = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
+  const postsData = data?.pages.flatMap((page) => page) ?? [];
 
   return {
     postsData,
