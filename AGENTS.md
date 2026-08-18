@@ -163,7 +163,8 @@ differently; a cycle invisible to tests can blank the screen on device.
   `unknown` and `select` stops matching
 - `cancel` helpers take `QueryClient` as their **first parameter**, injected by the caller, so `@/core/lib` never
   imports an app-layer singleton
-- **No mutation exists today.** `MutationOptions` is defined in `react-query.types.ts` and unused
+- `feed.repository.mutations.ts` holds the only mutation: `useCreateComment`, with an optimistic insert, a rollback
+  on error, and invalidation of both the `http` and `asyncStorage` comment keys on settle
 
 ---
 
@@ -174,8 +175,8 @@ differently; a cycle invisible to tests can blank the screen on device.
 - `createFeedGateway(dataSource)` switches; `http` is the default case
 - `async-storage-gateway` **ignores filters** (`_filters`) — local storage holds what was cached, so server-side
   filtering has nothing to apply
-- **Nothing writes the AsyncStorage keys.** `FEED_POSTS_STORAGE_KEY` and `FEED_COMMENTS_STORAGE_KEY_PREFIX` are read
-  but never written — a documented, accepted dead branch
+- `FEED_COMMENTS_STORAGE_KEY_PREFIX` is written by `useCreateComment` on success, so a locally created comment
+  survives a restart. `FEED_POSTS_STORAGE_KEY` is still only read — an empty local posts result is expected, not a bug
 - `src/shared/user/` deliberately has **no gateway**: one data source means the factory would have one branch and the
   key segment one value. `queryFn` calls `userApi` directly
 
@@ -243,9 +244,11 @@ header buttons.
 
 ## Client state
 
-**No store exists.** The only one ever written held an auth token and was deleted with the rest of the auth
-scaffolding — **this app has no authentication and will not have one.** Do not add a bearer-token interceptor, a
-session store, or a refresh flow.
+`src/modules/feed/stores/favorites.store.ts` is the only store: favourited post ids, persisted through the factory's
+`persist: true`. Ids are held as an array rather than a `Set`, which `JSON.stringify` turns into `{}`.
+
+**This app has no authentication and will not have one.** Do not add a bearer-token interceptor, a session store, or a
+refresh flow.
 
 `createStoreWithMiddleware` from `@/core/lib/zustand` remains, tested, so the first store with real client state has
 one documented way to be built. It composes immer, `persist`, and devtools, and drops `actions` and `hasHydrated` from
@@ -274,7 +277,8 @@ only — it no-ops on web, so a value set under `pnpm web` is not persisted.
 
 ## Testing
 
-39 test files, co-located. `jest-expo` preset, `testEnvironment: 'jsdom'`, `clearMocks: true`.
+47 test files — 46 co-located under `src/`, plus `plugins/with-ios-file-protection.test.js`, which is the one that is
+not. `jest-expo` preset, `testEnvironment: 'jsdom'`, `clearMocks: true`.
 
 ### Mock level by test type
 
@@ -468,9 +472,9 @@ import { getItem } from '@/core/lib/async-storage';
 
 ## Known issues
 
-| Item                                                               | File                                 | Severity |
-| ------------------------------------------------------------------ | ------------------------------------ | -------- |
-| AsyncStorage gateway keys are read but never written — dead branch | `async-storage-gateway.constants.ts` | LOW      |
+| Item                                                                         | File                                 | Severity |
+| ---------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| The AsyncStorage gateway's posts key is read but never written — dead branch | `async-storage-gateway.constants.ts` | LOW      |
 
 **`@shopify/flash-list` is pinned to exactly `2.0.2` because Expo SDK 57 requires that version** —
 `expo install --check` reports `expected version: 2.0.2` against anything else. The pin is a compatibility

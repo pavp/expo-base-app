@@ -123,6 +123,21 @@ React's act scope open, and the next `renderHook` in that file yields `result.cu
 That failure is silent: `null` passes `toBeDefined()`, so a suite can go green while asserting on nothing. Assert with
 `not.toBeNull()`, and `await` every `act`.
 
+### Settle Each Field Before Typing the Next
+
+Filling several inputs with back-to-back `fireEvent.changeText` calls batches a state update that outlives the test,
+which leaves the **next** `render` in the same file unmounted — every later test then fails on a missing `testID`. One
+field is fine; three break it. This is React Native Testing Library's own behaviour, not a quirk of the helpers here.
+
+Wait for each value to land before entering the next one:
+
+```typescript
+const typeInto = async (testID: string, value: string) => {
+  fireEvent.changeText(screen.getByTestId(testID), value);
+  await screen.findByDisplayValue(value);
+};
+```
+
 ### Mocking a Module Boundary
 
 When a module's barrel pulls in native dependencies that cannot load in a test environment, mock the boundary with an
