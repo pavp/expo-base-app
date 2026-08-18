@@ -4,4 +4,5 @@ export const API_ENDPOINT = {
   GET_POST: 'posts/',
   GET_USER: 'users/',
   GET_COMMENTS: 'posts/{postId}/comments',
+  CREATE_COMMENT: 'comments',
 };

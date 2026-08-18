@@ -1,5 +1,5 @@
 import { HttpValidationError } from '@/api/api.types';
-import { generateMockPosts, mockComment, mockPost } from '@/test/entities';
+import { createMockComment, generateMockPosts, mockComment, mockPost } from '@/test/entities';
 import { setupHttpMock } from '@/test/http-mock';
 
 import { feedApi } from './feed-api';
@@ -13,6 +13,7 @@ describe('feedApi', () => {
       expect(typeof feedApi.getPosts).toBe('function');
       expect(typeof feedApi.getPostById).toBe('function');
       expect(typeof feedApi.getCommentsByPostId).toBe('function');
+      expect(typeof feedApi.createComment).toBe('function');
     });
   });
 
@@ -132,6 +133,55 @@ describe('feedApi', () => {
       mock.onGet('posts/1/comments').reply(200, [{ ...mockComment, postId: String(mockComment.postId) }]);
 
       await expect(feedApi.getCommentsByPostId('1')).rejects.toBeInstanceOf(HttpValidationError);
+    });
+  });
+
+  describe('createComment', () => {
+    it('posts the submitted comment to the flat comments collection and returns the created comment', async () => {
+      const created = createMockComment({ postId: 1, email: 'a@b.com', body: 'hello world' });
+      mock.onPost('comments').reply(201, created);
+
+      const result = await feedApi.createComment({
+        postId: created.postId,
+        name: created.name,
+        email: created.email,
+        body: created.body,
+      });
+
+      expect(result).toEqual(created);
+      expect(mock.history.post[0].url).toBe('comments');
+      expect(JSON.parse(String(mock.history.post[0].data))).toEqual({
+        postId: created.postId,
+        name: created.name,
+        email: created.email,
+        body: created.body,
+      });
+    });
+
+    it('rejects an input whose email is not an address without reaching the network', async () => {
+      mock.onPost('comments').reply(201, mockComment);
+
+      await expect(
+        feedApi.createComment({ postId: 1, name: 'someone', email: 'not-an-email', body: 'hello world' }),
+      ).rejects.toBeInstanceOf(Error);
+      expect(mock.history.post).toHaveLength(0);
+    });
+
+    it('rejects an empty body without reaching the network', async () => {
+      mock.onPost('comments').reply(201, mockComment);
+
+      await expect(
+        feedApi.createComment({ postId: 1, name: 'someone', email: 'a@b.com', body: '' }),
+      ).rejects.toBeInstanceOf(Error);
+      expect(mock.history.post).toHaveLength(0);
+    });
+
+    it('throws HttpValidationError when the created comment payload does not match CommentSchema', async () => {
+      mock.onPost('comments').reply(201, { postId: 1 });
+
+      await expect(
+        feedApi.createComment({ postId: 1, name: 'someone', email: 'a@b.com', body: 'hello world' }),
+      ).rejects.toBeInstanceOf(HttpValidationError);
     });
   });
 });
