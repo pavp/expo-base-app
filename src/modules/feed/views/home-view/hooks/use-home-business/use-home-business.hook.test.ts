@@ -14,7 +14,6 @@ describe('useHomeBusiness', () => {
   const refetch = jest.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
     (usePostAuthors as jest.Mock).mockReturnValue(new Map());
   });
 

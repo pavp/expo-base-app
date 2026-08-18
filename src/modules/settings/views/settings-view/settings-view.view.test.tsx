@@ -24,7 +24,6 @@ describe('SettingsView', () => {
   const setLanguage = jest.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
     (useSettingsBusiness as jest.Mock).mockReturnValue({ setTheme, toggleTheme, setLanguage });
     (useTranslation as jest.Mock).mockReturnValue({
       t: (key: string) => key,

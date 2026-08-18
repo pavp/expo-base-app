@@ -16,7 +16,6 @@ describe('useExploreBusiness', () => {
   const refetch = jest.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
     (usePostAuthors as jest.Mock).mockReturnValue(new Map());
     jest.spyOn(userRepository.queries, 'useUsers').mockReturnValue({ data: [mockUser] } as any);
   });
