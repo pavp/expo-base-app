@@ -114,6 +114,15 @@ Asserting on request parameters is what catches a builder that quietly stops for
 **Do not add `afterEach(() => jest.clearAllMocks())`.** The jest configuration sets `clearMocks: true`, which clears
 mock state before every test. A hand-written block repeats what the config already guarantees.
 
+### Always `await` `act`
+
+`act` from the test utilities is React Native Testing Library's, and it wraps its callback as `async () => await
+callback()` — so it returns a thenable even when the work inside is synchronous. Calling it without `await` leaves
+React's act scope open, and the next `renderHook` in that file yields `result.current === null`.
+
+That failure is silent: `null` passes `toBeDefined()`, so a suite can go green while asserting on nothing. Assert with
+`not.toBeNull()`, and `await` every `act`.
+
 ### Mocking a Module Boundary
 
 When a module's barrel pulls in native dependencies that cannot load in a test environment, mock the boundary with an

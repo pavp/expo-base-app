@@ -39,11 +39,16 @@ export const createStore = (<T>(stateCreator: zustand.StateCreator<T>) => {
   return typeof stateCreator === 'function' ? createStoreUncurried(stateCreator) : createStoreUncurried;
 }) as typeof zustand.createStore;
 
-// Reset every store after each test. `act` rather than `waitFor`: the reset is
-// synchronous, and `waitFor` returns a promise nothing awaits here, so the
-// resets would fire outside the test that scheduled them.
-afterEach(() => {
-  act(() => {
+// Reset every store after each test, inside `act` so React flushes the
+// re-render the reset triggers before the next test mounts anything.
+//
+// The `await` is load-bearing. RNTL's `act` wraps its callback as
+// `async () => await callback()`, so it ALWAYS returns a thenable. Dropping it
+// on the floor leaves React's act scope open, and the next render in the file
+// returns `result.current === null` — silently, because `null` still passes
+// `toBeDefined()`. Guarded by src/core/lib/zustand/zustand.mock-reset.test.tsx.
+afterEach(async () => {
+  await act(() => {
     storeResetFns.forEach((resetFn) => {
       resetFn();
     });
