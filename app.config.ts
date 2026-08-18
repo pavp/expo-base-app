@@ -46,6 +46,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   experiments: {
     typedRoutes: true,
+    // Babel ordering is handled by `babel-preset-expo` from SDK 54 on, so the compiler needs no
+    // entry in babel.config.js — and none that would clash with the unistyles plugin, which has to
+    // process its variants first.
+    reactCompiler: true,
   },
   extra: {
     router: {
