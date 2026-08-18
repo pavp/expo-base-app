@@ -22,6 +22,10 @@ export default {
     postDetail: {
       errorTitle: 'Post unavailable',
       errorDescription: 'This post could not be loaded. Go back and try again.',
+      favorite: {
+        add: 'Add to favorites',
+        remove: 'Remove from favorites',
+      },
       comments: 'Comments',
       commentForm: {
         title: 'Leave a comment',

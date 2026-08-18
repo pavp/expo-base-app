@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { mockPost, mockUser } from '@/test/entities';
-import { renderWithProviders, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, renderWithProviders, screen, waitFor } from '@/test/test-utils';
 
 import * as hooks from './hooks';
 import { PostDetailView } from './post-detail-view.view';
@@ -13,6 +13,10 @@ jest.mock('./hooks', () => ({
 describe('PostDetailView', () => {
   const post = mockPost;
   const user = mockUser;
+  const favoriteDefaults = {
+    isFavorite: false,
+    onToggleFavorite: jest.fn(),
+  };
 
   it('should display ActivityIndicator while loading', async () => {
     jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValueOnce({
@@ -20,6 +24,7 @@ describe('PostDetailView', () => {
       user,
       isLoading: true,
       isError: false,
+      ...favoriteDefaults,
     });
 
     await renderWithProviders(<PostDetailView />);
@@ -39,6 +44,7 @@ describe('PostDetailView', () => {
       user,
       isLoading: false,
       isError: false,
+      ...favoriteDefaults,
     });
 
     await renderWithProviders(<PostDetailView />);
@@ -59,6 +65,7 @@ describe('PostDetailView', () => {
       user: undefined,
       isLoading: false,
       isError: true,
+      ...favoriteDefaults,
     });
 
     await renderWithProviders(<PostDetailView />);
@@ -72,11 +79,46 @@ describe('PostDetailView', () => {
       user: undefined,
       isLoading: false,
       isError: false,
+      ...favoriteDefaults,
     });
 
     await renderWithProviders(<PostDetailView />);
 
     expect(screen.getByText(post.title)).toBeTruthy();
     expect(screen.queryByTestId('detail-error')).toBeNull();
+  });
+
+  it('should render the favorite button for a post that is not favorite', async () => {
+    jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValue({
+      post,
+      user,
+      isLoading: false,
+      isError: false,
+      ...favoriteDefaults,
+    });
+
+    await renderWithProviders(<PostDetailView />);
+
+    expect(screen.getByLabelText('postDetail.favorite.add')).toBeTruthy();
+  });
+
+  it('should toggle the favorite from the detail view', async () => {
+    const onToggleFavorite = jest.fn();
+
+    jest.spyOn(hooks, 'usePostDetailBusiness').mockReturnValue({
+      post,
+      user,
+      isLoading: false,
+      isError: false,
+      ...favoriteDefaults,
+      isFavorite: true,
+      onToggleFavorite,
+    });
+
+    await renderWithProviders(<PostDetailView />);
+
+    fireEvent(screen.getByLabelText('postDetail.favorite.remove'), 'press');
+
+    expect(onToggleFavorite).toHaveBeenCalledTimes(1);
   });
 });
