@@ -6,9 +6,6 @@ export const styles = StyleSheet.create((theme) => ({
     flex: 1,
     paddingHorizontal: theme.padding.xxl,
   },
-  keyboardAvoider: {
-    flex: 1,
-  },
   postCard: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
