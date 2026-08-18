@@ -2,6 +2,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
+// `Keyboard` extends the auto-mocked NativeEventEmitter above, so `addListener` returns `undefined`
+// and any component that unsubscribes on unmount — `KeyboardAvoidingView` does — throws. Hand back a
+// real subscription shape so the teardown has something to call.
+jest.mock('react-native/Libraries/Components/Keyboard/Keyboard', () => ({
+  addListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
+  removeAllListeners: jest.fn(),
+  dismiss: jest.fn(),
+  scheduleLayoutAnimation: jest.fn(),
+  isVisible: jest.fn().mockReturnValue(false),
+  metrics: jest.fn(),
+}));
+
 jest.mock('@expo/vector-icons/Ionicons', () => {
   return {
     __esModule: true,

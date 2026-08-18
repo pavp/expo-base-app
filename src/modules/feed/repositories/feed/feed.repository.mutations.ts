@@ -17,6 +17,10 @@ export const feedRepositoryMutations: FeedMutationsRepository = {
   useCreateComment: (postId, dataSource = 'http', options) => {
     const queryClient = useQueryClient();
     const commentsKey = feedQueryKeys.comments(postId, dataSource);
+    // The write lands in storage as well as on the server, so both reads of this post go stale.
+    // The keys are listed one by one because `dataSource` precedes `postId`: the shared prefix
+    // `['feed', 'comments']` would invalidate every other post's comments too.
+    const staleKeysOnCreate = [commentsKey, feedQueryKeys.comments(postId, 'asyncStorage')];
 
     return useMutation<Comment, Error, CreateCommentInput, CreateCommentContext>({
       mutationKey: feedQueryKeys.createComment(postId),
@@ -49,7 +53,9 @@ export const feedRepositoryMutations: FeedMutationsRepository = {
         queryClient.setQueryData(commentsKey, context?.previousComments);
       },
 
-      onSettled: () => queryClient.invalidateQueries({ queryKey: commentsKey }),
+      onSettled: async () => {
+        await Promise.all(staleKeysOnCreate.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+      },
 
       ...options,
     });

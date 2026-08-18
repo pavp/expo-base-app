@@ -16,6 +16,7 @@ const mockedSetItem = setItem as jest.MockedFunction<typeof setItem>;
 
 const POST_ID = 1;
 const commentsKey = feedQueryKeys.comments(String(POST_ID));
+const storedCommentsKey = feedQueryKeys.comments(String(POST_ID), 'asyncStorage');
 const commentsStorageKey = `${FEED_COMMENTS_STORAGE_KEY_PREFIX}${POST_ID}`;
 
 // The default test client uses `gcTime: 0`, which evicts a seeded entry the moment it has no
@@ -160,6 +161,27 @@ describe('feedRepositoryMutations', () => {
       // Assert
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: commentsKey });
+    });
+
+    it('invalidates the stored comments too, so the list on screen is not the pre-write snapshot', async () => {
+      // Arrange — the local query resolved before the mutation wrote to storage, so its cache holds
+      // the empty list storage had at the time. Only an invalidation of its own key can refresh it.
+      mock.onPost('comments').reply(201, createMockComment({ postId: POST_ID }));
+
+      const { result, queryClient } = await renderHookWithProviders(() =>
+        feedRepositoryMutations.useCreateComment(String(POST_ID)),
+        seededCacheOptions,
+      );
+      setupMockQueryData(queryClient, [...storedCommentsKey], []);
+
+      const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries');
+
+      // Act
+      result.current.mutate(buildInput());
+
+      // Assert
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: storedCommentsKey });
     });
 
     it('persists the resulting comment list to storage, so it survives a restart', async () => {
