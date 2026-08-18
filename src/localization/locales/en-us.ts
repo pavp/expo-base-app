@@ -23,6 +23,20 @@ export default {
       errorTitle: 'Post unavailable',
       errorDescription: 'This post could not be loaded. Go back and try again.',
       comments: 'Comments',
+      commentForm: {
+        title: 'Leave a comment',
+        namePlaceholder: 'Your name',
+        emailPlaceholder: 'Your email',
+        bodyPlaceholder: 'Write your comment',
+        submit: 'Post comment',
+        submitting: 'Posting…',
+        error: 'Your comment could not be posted. Try again.',
+        validation: {
+          nameRequired: 'Enter your name.',
+          emailInvalid: 'Enter a valid email address.',
+          bodyRequired: 'Write your comment before posting.',
+        },
+      },
     },
     explore: {
       searchPlaceholder: 'Search posts',

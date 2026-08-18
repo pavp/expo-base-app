@@ -39,11 +39,15 @@ export type Comment = z.infer<typeof CommentSchema>;
  * `id`, so the input carries no `id` of its own. The server does not persist — a later GET still
  * returns the original comments.
  */
+// Messages are i18n keys, not English: the form translates them with `t()`. The api layer
+// validates against this same schema, so a message here never reaches a user un-translated.
 export const CreateCommentInputSchema = z.object({
   postId: z.number(),
-  name: z.string().min(1),
-  email: z.email(),
-  body: z.string().min(1),
+  name: z.string().min(1, { message: 'postDetail.commentForm.validation.nameRequired' }),
+  // `z.email()` already rejects the empty string, so a separate `.min(1)` would only add a second
+  // issue for one empty field.
+  email: z.email({ message: 'postDetail.commentForm.validation.emailInvalid' }),
+  body: z.string().min(1, { message: 'postDetail.commentForm.validation.bodyRequired' }),
 });
 
 export type CreateCommentInput = z.infer<typeof CreateCommentInputSchema>;
